@@ -1,8 +1,8 @@
 # WorkbookEventReader
 查看其他语言: [English](README.md) | 中文
 
-这是一款基于事件的工作簿阅读器。它封装了 [Apache POI](https://poi.apache.org/) Event API 来处理 Excel 工作簿文档。他提供了一个
-统一的接口来处理 SpreadsheetML(.xlsx) 和传统 Excel 文档(.xls)。所有从 Excel 文档中读取的值均可被转换谓合理的 Java 类型。
+这是一款基于事件的工作簿阅读器。它封装了 [Apache POI](https://poi.apache.org/) Event API 来处理 Excel 工作簿文档。
+他提供了一个统一的接口来处理 SpreadsheetML(.xlsx) 和传统 Excel 文档(.xls)。所有从 Excel 文档中读取的值均可被转换谓合理的 Java 类型。
 
 ## 分支
 在这个仓库中有两种类型的分支。每种分支都有它独自的前缀：

@@ -154,4 +154,4 @@ public class ToXmlPrinter {
     }
 }
 ``` 
-_This sample is written in Java 11, you might need change some part of it when using Java 8_
+_This sample is written in Java 11, you might need to change some part of it when using Java 8_
