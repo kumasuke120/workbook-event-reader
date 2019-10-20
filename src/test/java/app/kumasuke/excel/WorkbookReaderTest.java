@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -27,6 +28,20 @@ class WorkbookReaderTest {
         } while (CORRECT_PASSWORD.equals(result));
 
         return result;
+    }
+
+    @Test
+    void nullCheck() {
+        assertThrows(NullPointerException.class, () -> {
+            try (final WorkbookEventReader ignore = WorkbookEventReader.open((InputStream) null)) {
+                // no-op
+            }
+        });
+        assertThrows(NullPointerException.class, () -> {
+            try (final WorkbookEventReader ignore = WorkbookEventReader.open((Path) null)) {
+                // no-op
+            }
+        });
     }
 
     @Test

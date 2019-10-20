@@ -36,6 +36,11 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         try (final WorkbookEventReader reader = pathConstructor().newInstance(filePath)) {
             consumer.accept(reader);
         }
+        assertThrows(NullPointerException.class, () -> {
+            try (final WorkbookEventReader ignore = pathConstructor().newInstance((Object) null)) {
+                // no-op
+            }
+        });
 
         // constructor(InputStream)
         try (final var in = ClassLoader.getSystemResourceAsStream(normalFileName)) {
@@ -45,6 +50,11 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         } catch (IOException e) {
             throw new AssertionError(e);
         }
+        assertThrows(NullPointerException.class, () -> {
+            try (final WorkbookEventReader ignore = inputStreamConstructor().newInstance((Object) null)) {
+                // no-op
+            }
+        });
 
         // constructor(Path, String)
         final Path filePath2 = ResourceUtil.getPathOfClasspathResource(encryptedFileName);
