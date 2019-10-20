@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document>
+    <sheet index="0" name="Sheet1">
+        <row index="0">
+            <cell index="0" javaType="java.lang.String">Integer or Long</cell>
+            <cell index="1" javaType="java.lang.Integer">1</cell>
+            <cell index="2" javaType="java.lang.Integer">-10</cell>
+            <cell index="3" javaType="java.lang.Long">10000000000</cell>
+            <cell index="4" javaType="java.lang.Long">-10000000000</cell>
+        </row>
+        <row index="1">
+            <cell index="0" javaType="java.lang.String">Double</cell>
+            <cell index="1" javaType="java.lang.Double">9.9</cell>
+            <cell index="2" javaType="java.lang.Double">-0.5555555555555556</cell>
+            <cell index="3" javaType="java.lang.Integer">0</cell>
+            <cell index="4" javaType="java.lang.Double">1.23456789012345E-4</cell>
+            <cell index="5" javaType="java.lang.Double">222.222222222222</cell>
+        </row>
+        <row index="2">
+            <cell index="0" javaType="java.lang.String">LocalTime</cell>
+            <cell index="1" javaType="java.time.LocalTime">10:30</cell>
+            <cell index="2" javaType="java.time.LocalTime">21:30:01</cell>
+        </row>
+        <row index="3">
+            <cell index="0" javaType="java.lang.String">LocalDate</cell>
+            <cell index="1" javaType="java.time.LocalDate">2018-11-09</cell>
+        </row>
+        <row index="4">
+            <cell index="0" javaType="java.lang.String">LocalDateTime</cell>
+            <cell index="1" javaType="java.time.LocalDateTime">2018-11-09T08:00</cell>
+        </row>
+        <row index="5">
+            <cell index="0" javaType="java.lang.String">String</cell>
+            <cell index="1" javaType="java.lang.String">The quick brown fox jumps over the lazy dog</cell>
+            <cell index="2" javaType="java.lang.String">123</cell>
+            <cell index="3" javaType="java.lang.String">1234567890</cell>
+            <cell index="4" javaType="java.lang.String">654321654321654321</cell>
+            <cell index="5" javaType="java.lang.String">123456789012345678</cell>
+            <cell index="6" javaType="java.lang.String">123456789  </cell>
+            <cell index="7" javaType="java.lang.String">0.12345678901234567890</cell>
+        </row>
+        <row index="6">
+            <cell index="0" javaType="java.lang.String">Boolean</cell>
+            <cell index="1" javaType="java.lang.Boolean">true</cell>
+            <cell index="2" javaType="java.lang.Boolean">false</cell>
+        </row>
+        <row index="7">
+            <cell index="0" javaType="java.lang.String">Error/Exception</cell>
+            <cell index="1" javaType="null"/>
+            <cell index="2" javaType="null"/>
+            <cell index="3" javaType="null"/>
+            <cell index="4" javaType="java.lang.String">123456789</cell>
+            <cell index="5" javaType="java.lang.String">abc123</cell>
+        </row>
+    </sheet>
+</document>
