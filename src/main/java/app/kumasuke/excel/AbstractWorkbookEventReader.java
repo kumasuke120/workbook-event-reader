@@ -63,7 +63,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      */
     static InputStream getWorkbookInputStream(Path filePath) {
         try {
-            return Files.newInputStream(filePath);
+            return Files.newInputStream(Objects.requireNonNull(filePath));
         } catch (IOException e) {
             throw new WorkbookIOException("Cannot open workbook", e);
         }
