@@ -108,7 +108,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             if (password == null) {
                 stream = in;
             } else {
-                var fs = new POIFSFileSystem(in);
+                final var fs = new POIFSFileSystem(in);
                 stream = DocumentFactoryHelper.getDecryptedStream(fs, password);
             }
 

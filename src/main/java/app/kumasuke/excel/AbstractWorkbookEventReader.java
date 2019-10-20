@@ -100,10 +100,12 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * @param in       {@link InputStream} of the workbook to be opened
      * @param password password to open the file
      * @return {@link WorkbookEventReader} to read the specified file
-     * @throws NullPointerException <code>in</code> and <code>filePath</code> are both <code>null</code>
+     * @throws NullPointerException <code>in</code> is <code>null</code>
      * @throws WorkbookIOException  errors happened when opening
      */
     static WorkbookEventReader autoOpen(InputStream in, String password, boolean firstTryXSSF) {
+        Objects.requireNonNull(in);
+
         final byte[] bytes;
         try {
             bytes = IOUtils.toByteArray(in);
