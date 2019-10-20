@@ -108,7 +108,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             if (password == null) {
                 stream = in;
             } else {
-                var fs = new POIFSFileSystem(in);
+                final POIFSFileSystem fs = new POIFSFileSystem(in);
                 stream = DocumentFactoryHelper.getDecryptedStream(fs, password);
             }
 
@@ -135,7 +135,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         handler.onStartDocument();
 
         final SAXParser saxParser = createSAXParser();
-        final var saxHandler = new ReaderSheetHandler(handler);
+        final ReaderSheetHandler saxHandler = new ReaderSheetHandler(handler);
 
         final XSSFReader.SheetIterator sheetIt = getSheetIterator();
         while (sheetIt.hasNext()) {
@@ -173,7 +173,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
     }
 
     private SAXParser createSAXParser() throws ParserConfigurationException, SAXException {
-        final var factory = SAXParserFactory.newInstance();
+        final SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setNamespaceAware(true);
         return factory.newSAXParser();
     }

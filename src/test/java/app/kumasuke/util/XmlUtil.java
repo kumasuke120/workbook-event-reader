@@ -88,12 +88,12 @@ public class XmlUtil {
                             System.err.println("Child element count <" + name + "> : " +
                                                        aElementsSize + " != " + bElementsSize +
                                                        System.lineSeparator() +
-                                                       "=".repeat(80) + System.lineSeparator() +
+                                                       repeat80Times("=") + System.lineSeparator() +
                                                        aElement.toXML() + System.lineSeparator() +
-                                                       "-".repeat(80) + System.lineSeparator() +
+                                                       repeat80Times("-") + System.lineSeparator() +
                                                        bElement.toXML() +
                                                        System.lineSeparator() +
-                                                       "=".repeat(80));
+                                                       repeat80Times("="));
                             return false;
                         }
 
@@ -139,11 +139,19 @@ public class XmlUtil {
     }
 
     private static Document buildSilently(String xml) {
-        final var builder = new Builder();
+        final Builder builder = new Builder();
         try {
             return builder.build(xml, null);
         } catch (ParsingException | IOException e) {
             throw new AssertionError(e);
         }
+    }
+
+    private static String repeat80Times(String s) {
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 80; i++) {
+            sb.append(s);
+        }
+        return sb.toString();
     }
 }

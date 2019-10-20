@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -31,23 +32,23 @@ class WorkbookReaderTest {
 
     @Test
     void openWithPath() {
-        final var xlsPath = ResourceUtil.getPathOfClasspathResource("workbook.xls");
-        try (final var reader = WorkbookEventReader.open(xlsPath)) {
+        final Path xlsPath = ResourceUtil.getPathOfClasspathResource("workbook.xls");
+        try (final WorkbookEventReader reader = WorkbookEventReader.open(xlsPath)) {
             assertTrue(reader instanceof HSSFWorkbookEventReader);
         }
 
-        final var xlsxPath = ResourceUtil.getPathOfClasspathResource("workbook.xlsx");
-        try (final var reader = WorkbookEventReader.open(xlsxPath)) {
+        final Path xlsxPath = ResourceUtil.getPathOfClasspathResource("workbook.xlsx");
+        try (final WorkbookEventReader reader = WorkbookEventReader.open(xlsxPath)) {
             assertTrue(reader instanceof XSSFWorkbookEventReader);
         }
 
-        final var plainPath = ResourceUtil.getPathOfClasspathResource("workbook");
-        try (final var reader = WorkbookEventReader.open(plainPath)) {
+        final Path plainPath = ResourceUtil.getPathOfClasspathResource("workbook");
+        try (final WorkbookEventReader reader = WorkbookEventReader.open(plainPath)) {
             assertTrue(reader instanceof XSSFWorkbookEventReader);
         }
 
         assertThrows(WorkbookIOException.class, () -> {
-            try (final var ignore = WorkbookEventReader.open(Paths.get("fileNotFound.xlsx"))) {
+            try (final WorkbookEventReader ignore = WorkbookEventReader.open(Paths.get("fileNotFound.xlsx"))) {
                 // no-op
             }
         });
@@ -55,32 +56,32 @@ class WorkbookReaderTest {
 
     @Test
     void openWithPathAndPassword() {
-        final var xlsPath = ResourceUtil.getPathOfClasspathResource("workbook-encrypted.xls");
-        try (final var reader = WorkbookEventReader.open(xlsPath, CORRECT_PASSWORD)) {
+        final Path xlsPath = ResourceUtil.getPathOfClasspathResource("workbook-encrypted.xls");
+        try (final WorkbookEventReader reader = WorkbookEventReader.open(xlsPath, CORRECT_PASSWORD)) {
             assertTrue(reader instanceof HSSFWorkbookEventReader);
         }
         assertThrows(WorkbookIOException.class, () -> {
-            try (final var ignore = WorkbookEventReader.open(xlsPath)) {
+            try (final WorkbookEventReader ignore = WorkbookEventReader.open(xlsPath)) {
                 // no-op
             }
         });
         assertThrows(WorkbookIOException.class, () -> {
-            try (final var ignore = WorkbookEventReader.open(xlsPath, randomWrongPassword())) {
+            try (final WorkbookEventReader ignore = WorkbookEventReader.open(xlsPath, randomWrongPassword())) {
                 // no-op
             }
         });
 
-        final var xlsxPath = ResourceUtil.getPathOfClasspathResource("workbook-encrypted.xlsx");
-        try (final var reader = WorkbookEventReader.open(xlsxPath, CORRECT_PASSWORD)) {
+        final Path xlsxPath = ResourceUtil.getPathOfClasspathResource("workbook-encrypted.xlsx");
+        try (final WorkbookEventReader reader = WorkbookEventReader.open(xlsxPath, CORRECT_PASSWORD)) {
             assertTrue(reader instanceof XSSFWorkbookEventReader);
         }
         assertThrows(WorkbookIOException.class, () -> {
-            try (final var ignore = WorkbookEventReader.open(xlsxPath)) {
+            try (final WorkbookEventReader ignore = WorkbookEventReader.open(xlsxPath)) {
                 // no-op
             }
         });
         assertThrows(WorkbookIOException.class, () -> {
-            try (final var ignore = WorkbookEventReader.open(xlsxPath, randomWrongPassword())) {
+            try (final WorkbookEventReader ignore = WorkbookEventReader.open(xlsxPath, randomWrongPassword())) {
                 // no-op
             }
         });
@@ -89,26 +90,26 @@ class WorkbookReaderTest {
     @Test
     void openWithStream() throws IOException {
         try (final InputStream in = ClassLoader.getSystemResourceAsStream("workbook.xls")) {
-            try (final var reader = WorkbookEventReader.open(in)) {
+            try (final WorkbookEventReader reader = WorkbookEventReader.open(in)) {
                 assertTrue(reader instanceof HSSFWorkbookEventReader);
             }
         }
 
         try (final InputStream in = ClassLoader.getSystemResourceAsStream("workbook.xlsx")) {
-            try (final var reader = WorkbookEventReader.open(in)) {
+            try (final WorkbookEventReader reader = WorkbookEventReader.open(in)) {
                 assertTrue(reader instanceof XSSFWorkbookEventReader);
             }
         }
 
         try (final InputStream in = ClassLoader.getSystemResourceAsStream("workbook")) {
-            try (final var reader = WorkbookEventReader.open(in)) {
+            try (final WorkbookEventReader reader = WorkbookEventReader.open(in)) {
                 assertTrue(reader instanceof XSSFWorkbookEventReader);
             }
         }
 
         try (final InputStream in = ClassLoader.getSystemResourceAsStream("sample-output.xml")) {
             assertThrows(WorkbookIOException.class, () -> {
-                try (final var ignore = WorkbookEventReader.open(in)) {
+                try (final WorkbookEventReader ignore = WorkbookEventReader.open(in)) {
                     // no-op
                 }
             });
@@ -118,40 +119,40 @@ class WorkbookReaderTest {
     @Test
     void openWithStreamAndPassword() throws IOException {
         try (final InputStream in = ClassLoader.getSystemResourceAsStream("workbook-encrypted.xls")) {
-            try (final var reader = WorkbookEventReader.open(in, CORRECT_PASSWORD)) {
+            try (final WorkbookEventReader reader = WorkbookEventReader.open(in, CORRECT_PASSWORD)) {
                 assertTrue(reader instanceof HSSFWorkbookEventReader);
             }
         }
         assertThrows(WorkbookIOException.class, () -> {
             try (final InputStream in = ClassLoader.getSystemResourceAsStream("workbook-encrypted.xls")) {
-                try (final var ignore = WorkbookEventReader.open(in)) {
+                try (final WorkbookEventReader ignore = WorkbookEventReader.open(in)) {
                     // no-op
                 }
             }
         });
         assertThrows(WorkbookIOException.class, () -> {
             try (final InputStream in = ClassLoader.getSystemResourceAsStream("workbook-encrypted.xls")) {
-                try (final var ignore = WorkbookEventReader.open(in, randomWrongPassword())) {
+                try (final WorkbookEventReader ignore = WorkbookEventReader.open(in, randomWrongPassword())) {
                     // no-op
                 }
             }
         });
 
         try (final InputStream in = ClassLoader.getSystemResourceAsStream("workbook-encrypted.xlsx")) {
-            try (final var reader = WorkbookEventReader.open(in, CORRECT_PASSWORD)) {
+            try (final WorkbookEventReader reader = WorkbookEventReader.open(in, CORRECT_PASSWORD)) {
                 assertTrue(reader instanceof XSSFWorkbookEventReader);
             }
         }
         assertThrows(WorkbookIOException.class, () -> {
             try (final InputStream in = ClassLoader.getSystemResourceAsStream("workbook-encrypted.xlsx")) {
-                try (final var ignore = WorkbookEventReader.open(in)) {
+                try (final WorkbookEventReader ignore = WorkbookEventReader.open(in)) {
                     // no-op
                 }
             }
         });
         assertThrows(WorkbookIOException.class, () -> {
             try (final InputStream in = ClassLoader.getSystemResourceAsStream("workbook-encrypted.xlsx")) {
-                try (final var ignore = WorkbookEventReader.open(in, randomWrongPassword())) {
+                try (final WorkbookEventReader ignore = WorkbookEventReader.open(in, randomWrongPassword())) {
                     // no-op
                 }
             }

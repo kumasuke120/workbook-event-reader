@@ -3,6 +3,7 @@ package app.kumasuke.excel;
 import org.apache.poi.hssf.eventusermodel.*;
 import org.apache.poi.hssf.record.*;
 import org.apache.poi.hssf.record.crypto.Biff8EncryptionKey;
+import org.apache.poi.poifs.filesystem.DocumentInputStream;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
@@ -79,7 +80,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
     }
 
     private void checkWorkbookPassword() throws IOException {
-        final var request = new HSSFRequest();
+        final HSSFRequest request = new HSSFRequest();
         request.addListenerForAllRecords(new InstantAbortHSSFListener());
 
         processRequest(request);
@@ -94,8 +95,8 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
     void doRead(EventHandler handler) throws Exception {
         handler.onStartDocument();
 
-        final var request = new HSSFRequest();
-        final var readerListener = new ReaderHSSFListener(handler);
+        final HSSFRequest request = new HSSFRequest();
+        final ReaderHSSFListener readerListener = new ReaderHSSFListener(handler);
         request.addListenerForAllRecords(readerListener);
 
         short userCode;
@@ -110,7 +111,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     private short processRequest(HSSFRequest request) throws IOException {
         short userCode;
-        try (final var documentIs = fileSystem.createDocumentInputStream("Workbook")) {
+        try (final DocumentInputStream documentIs = fileSystem.createDocumentInputStream("Workbook")) {
             boolean passwordSet = false;
             String oldStoredUserPassword = null;
             try {
@@ -121,7 +122,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 }
 
                 // processes the document
-                final var factory = new HSSFEventFactory();
+                final HSSFEventFactory factory = new HSSFEventFactory();
                 userCode = factory.abortableProcessEvents(request, documentIs);
             } catch (HSSFUserException hue) {
                 // cancelled by user-thrown exception, ReaderHSSFListener does not throw any
@@ -193,7 +194,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             final short currentSid = record.getSid();
             switch (currentSid) {
                 case BoundSheetRecord.sid: {
-                    final var boundSheet = (BoundSheetRecord) record;
+                    final BoundSheetRecord boundSheet = (BoundSheetRecord) record;
                     assert boundSheets != null;
 
                     boundSheets.put(++tSheetIndex, boundSheet);
@@ -208,7 +209,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                     break;
                 }
                 case DateWindow1904Record.sid: {
-                    final var dateWindow1904 = (DateWindow1904Record) record;
+                    final DateWindow1904Record dateWindow1904 = (DateWindow1904Record) record;
                     use1904Windowing = dateWindow1904.getWindowing() == 1;
                     break;
                 }
@@ -217,7 +218,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                     break;
                 }
                 case BOFRecord.sid: {
-                    final var bof = (BOFRecord) record;
+                    final BOFRecord bof = (BOFRecord) record;
                     if (BOFRecord.TYPE_WORKBOOK == bof.getType()) { // workbook starts
                         boundSheets = new HashMap<>();
                     } else if (BOFRecord.TYPE_WORKSHEET == bof.getType()) { // new sheet starts
@@ -226,20 +227,20 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                     break;
                 }
                 case RowRecord.sid: {
-                    final var row = (RowRecord) record;
+                    final RowRecord row = (RowRecord) record;
                     assert currentSheetRows != null;
 
                     currentSheetRows.put(++tRowNum, row);
                     break;
                 }
                 case BlankRecord.sid: {
-                    final var blank = (BlankRecord) record;
+                    final BlankRecord blank = (BlankRecord) record;
 
                     handleCell(blank.getRow(), blank.getColumn(), null);
                     break;
                 }
                 case MulBlankRecord.sid: {
-                    final var mulBlank = (MulBlankRecord) record;
+                    final MulBlankRecord mulBlank = (MulBlankRecord) record;
 
                     for (int column = mulBlank.getFirstColumn();
                          column <= mulBlank.getLastColumn();
@@ -249,14 +250,14 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                     break;
                 }
                 case NumberRecord.sid: {
-                    final var number = (NumberRecord) record;
+                    final NumberRecord number = (NumberRecord) record;
 
                     final Object cellValue = formatNumberDateCell(number);
                     handleCell(number.getRow(), number.getColumn(), cellValue);
                     break;
                 }
                 case FormulaRecord.sid: {
-                    final var formula = (FormulaRecord) record;
+                    final FormulaRecord formula = (FormulaRecord) record;
 
                     @SuppressWarnings("deprecation") final CellType resultType =
                             CellType.forInt(formula.getCachedResultType());
@@ -287,9 +288,9 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                     break;
                 }
                 case StringRecord.sid: {
-                    final var string = (StringRecord) record;
+                    final StringRecord string = (StringRecord) record;
                     if (previousRecord instanceof FormulaRecord) {
-                        final var formula = (FormulaRecord) previousRecord;
+                        final FormulaRecord formula = (FormulaRecord) previousRecord;
 
                         final String cellValue = string.getString();
                         handleCell(formula.getRow(), formula.getColumn(), cellValue);
@@ -297,21 +298,21 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                     break;
                 }
                 case RKRecord.sid: {
-                    final var rk = (RKRecord) record;
+                    final RKRecord rk = (RKRecord) record;
 
                     final double cellValue = rk.getRKNumber();
                     handleCell(rk.getRow(), rk.getColumn(), cellValue);
                     break;
                 }
                 case LabelRecord.sid: {
-                    final var label = (LabelRecord) record;
+                    final LabelRecord label = (LabelRecord) record;
 
                     final String cellValue = label.getValue();
                     handleCell(label.getRow(), label.getColumn(), cellValue);
                     break;
                 }
                 case LabelSSTRecord.sid: {
-                    final var labelSst = (LabelSSTRecord) record;
+                    final LabelSSTRecord labelSst = (LabelSSTRecord) record;
 
                     final int sstIndex = labelSst.getSSTIndex();
                     final String cellValue = sharedStringTable.getString(sstIndex)

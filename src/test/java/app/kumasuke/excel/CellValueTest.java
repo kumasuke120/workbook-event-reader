@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Set;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,7 +17,7 @@ class CellValueTest {
     @Test
     @DisplayName("null()")
     void _null() {
-        final var cellValue = newCellValue(null);
+        final CellValue cellValue = newCellValue(null);
 
         assertTrue(cellValue.isNull());
         assertNull(cellValue.originalValue());
@@ -35,7 +35,7 @@ class CellValueTest {
     @Test
     @DisplayName("boolean()")
     void _boolean() {
-        final var cellValue = newCellValue(false);
+        final CellValue cellValue = newCellValue(false);
 
         assertFalse(cellValue.isNull());
         assertEquals(false, cellValue.originalValue());
@@ -55,7 +55,7 @@ class CellValueTest {
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
         assertThrows(CellValueCastException.class, cellValue::localDateTimeValue);
 
-        final var cellValue2 = newCellValue(0);
+        final CellValue cellValue2 = newCellValue(0);
         assertFalse(cellValue2.isNull());
         assertDoesNotThrow(() -> {
             final boolean booleanValue = cellValue2.booleanValue();
@@ -66,7 +66,7 @@ class CellValueTest {
     @Test
     @DisplayName("int()")
     void _int() {
-        final var cellValue = newCellValue(1);
+        final CellValue cellValue = newCellValue(1);
 
         assertFalse(cellValue.isNull());
         assertEquals(1, cellValue.originalValue());
@@ -96,14 +96,14 @@ class CellValueTest {
         assertThrows(CellValueCastException.class, cellValue::localDateTimeValue);
 
 
-        final var cellValue2 = newCellValue("1");
+        final CellValue cellValue2 = newCellValue("1");
         assertEquals(String.class, cellValue2.originalType());
         assertDoesNotThrow(() -> {
             final int intValue = cellValue2.intValue();
             assertEquals(1, intValue);
         });
 
-        final var cellValue3 = newCellValue("1.20");
+        final CellValue cellValue3 = newCellValue("1.20");
         assertEquals(String.class, cellValue3.originalType());
         assertDoesNotThrow(() -> {
             final int intValue = cellValue3.intValue();
@@ -114,7 +114,7 @@ class CellValueTest {
     @Test
     @DisplayName("long()")
     void _long() {
-        final var cellValue = newCellValue(1L);
+        final CellValue cellValue = newCellValue(1L);
 
         assertFalse(cellValue.isNull());
         assertEquals(1L, cellValue.originalValue());
@@ -143,14 +143,14 @@ class CellValueTest {
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
         assertThrows(CellValueCastException.class, cellValue::localDateTimeValue);
 
-        final var cellValue2 = newCellValue(Long.toString(Long.MAX_VALUE));
+        final CellValue cellValue2 = newCellValue(Long.toString(Long.MAX_VALUE));
         assertEquals(String.class, cellValue2.originalType());
         assertDoesNotThrow(() -> {
             final long longValue = cellValue2.longValue();
             assertEquals(Long.MAX_VALUE, longValue);
         });
 
-        final var cellValue3 = newCellValue("1.20");
+        final CellValue cellValue3 = newCellValue("1.20");
         assertEquals(String.class, cellValue3.originalType());
         assertDoesNotThrow(() -> {
             final long longValue = cellValue3.longValue();
@@ -161,7 +161,7 @@ class CellValueTest {
     @Test
     @DisplayName("double()")
     void _double() {
-        final var cellValue = newCellValue(1D);
+        final CellValue cellValue = newCellValue(1D);
 
         assertFalse(cellValue.isNull());
         assertEquals(1D, cellValue.originalValue());
@@ -190,7 +190,7 @@ class CellValueTest {
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
         assertThrows(CellValueCastException.class, cellValue::localDateTimeValue);
 
-        final var cellValue2 = newCellValue("1.20");
+        final CellValue cellValue2 = newCellValue("1.20");
         assertEquals(String.class, cellValue2.originalType());
         assertDoesNotThrow(() -> {
             final double doubleValue = cellValue2.doubleValue();
@@ -200,7 +200,7 @@ class CellValueTest {
 
     @Test
     void string() {
-        final var cellValue = newCellValue("1");
+        final CellValue cellValue = newCellValue("1");
 
         assertFalse(cellValue.isNull());
         assertEquals("1", cellValue.originalValue());
@@ -229,7 +229,7 @@ class CellValueTest {
 
     @Test
     void localTime() {
-        final var cellValue = newCellValue("12:34:56");
+        final CellValue cellValue = newCellValue("12:34:56");
 
         assertFalse(cellValue.isNull());
         assertEquals("12:34:56", cellValue.originalValue());
@@ -246,14 +246,14 @@ class CellValueTest {
             final LocalTime localTimeValue2 = cellValue.localTimeValue(theFormatter);
             assertEquals(LocalTime.of(12, 34, 56), localTimeValue2);
 
-            final LocalTime localTimeValue3 = cellValue.localTimeValue(Set.of(theFormatter));
+            final LocalTime localTimeValue3 = cellValue.localTimeValue(Collections.singleton(theFormatter));
             assertEquals(LocalTime.of(12, 34, 56), localTimeValue3);
         });
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
         assertThrows(CellValueCastException.class, cellValue::localDateTimeValue);
 
         final LocalTime theTimeValue = LocalTime.now();
-        final var cellValue2 = newCellValue(theTimeValue);
+        final CellValue cellValue2 = newCellValue(theTimeValue);
         assertEquals(theTimeValue, cellValue2.originalValue());
         assertEquals(LocalTime.class, cellValue2.originalType());
         assertEquals(theTimeValue, cellValue2.localTimeValue());
@@ -263,7 +263,7 @@ class CellValueTest {
 
     @Test
     void localDate() {
-        final var cellValue = newCellValue("2018-11-11");
+        final CellValue cellValue = newCellValue("2018-11-11");
 
         assertFalse(cellValue.isNull());
         assertEquals("2018-11-11", cellValue.originalValue());
@@ -285,7 +285,7 @@ class CellValueTest {
             final LocalDate localDateValue2 = cellValue.localDateValue(theFormatter);
             assertEquals(LocalDate.of(2018, 11, 11), localDateValue2);
 
-            final LocalDate localDateValue3 = cellValue.localDateValue(Set.of(theFormatter));
+            final LocalDate localDateValue3 = cellValue.localDateValue(Collections.singleton(theFormatter));
             assertEquals(LocalDate.of(2018, 11, 11), localDateValue3);
         });
         assertDoesNotThrow(() -> {
@@ -297,12 +297,12 @@ class CellValueTest {
             final LocalDateTime localDateTimeValue2 = cellValue.localDateTimeValue(theFormatter);
             assertEquals(LocalDate.of(2018, 11, 11).atStartOfDay(), localDateTimeValue2);
 
-            final LocalDateTime localDateTimeValue3 = cellValue.localDateTimeValue(Set.of(theFormatter));
+            final LocalDateTime localDateTimeValue3 = cellValue.localDateTimeValue(Collections.singleton(theFormatter));
             assertEquals(LocalDate.of(2018, 11, 11).atStartOfDay(), localDateTimeValue3);
         });
 
         final LocalDate theDateValue = LocalDate.now();
-        final var cellValue2 = newCellValue(theDateValue);
+        final CellValue cellValue2 = newCellValue(theDateValue);
         assertEquals(theDateValue, cellValue2.originalValue());
         assertEquals(LocalDate.class, cellValue2.originalType());
         assertThrows(CellValueCastException.class, cellValue::localTimeValue);
@@ -312,7 +312,7 @@ class CellValueTest {
 
     @Test
     void localDateTime() {
-        final var cellValue = newCellValue("2011-11-11T11:11:11");
+        final CellValue cellValue = newCellValue("2011-11-11T11:11:11");
 
         assertFalse(cellValue.isNull());
         assertEquals("2011-11-11T11:11:11", cellValue.originalValue());
@@ -337,7 +337,7 @@ class CellValueTest {
             final LocalDate localDateValue2 = cellValue.localDateValue(theFormatter);
             assertEquals(LocalDate.of(2011, 11, 11), localDateValue2);
 
-            final LocalDate localDateValue3 = cellValue.localDateValue(Set.of(theFormatter));
+            final LocalDate localDateValue3 = cellValue.localDateValue(Collections.singleton(theFormatter));
             assertEquals(LocalDate.of(2011, 11, 11), localDateValue3);
         });
         assertDoesNotThrow(() -> {
@@ -349,13 +349,13 @@ class CellValueTest {
             assertEquals(LocalDateTime.of(2011, 11, 11, 11, 11, 11),
                          localDateTimeValue2);
 
-            final LocalDateTime localDateTimeValue3 = cellValue.localDateTimeValue(Set.of(theFormatter));
+            final LocalDateTime localDateTimeValue3 = cellValue.localDateTimeValue(Collections.singleton(theFormatter));
             assertEquals(LocalDateTime.of(2011, 11, 11, 11, 11, 11),
                          localDateTimeValue3);
         });
 
         final LocalDateTime theDateTimeValue = LocalDateTime.now();
-        final var cellValue2 = newCellValue(theDateTimeValue);
+        final CellValue cellValue2 = newCellValue(theDateTimeValue);
         assertEquals(theDateTimeValue, cellValue2.originalValue());
         assertEquals(LocalDateTime.class, cellValue2.originalType());
         assertEquals(theDateTimeValue.toLocalTime(), cellValue2.localTimeValue());
@@ -366,8 +366,8 @@ class CellValueTest {
     @Test
     void equalsAndHashCode() {
         // ide generated code, test for coverage
-        final var a = newCellValue(1);
-        final var b = newCellValue(1);
+        final CellValue a = newCellValue(1);
+        final CellValue b = newCellValue(1);
 
         assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
@@ -376,8 +376,8 @@ class CellValueTest {
     @Test
     @DisplayName("toString()")
     void _toString() {
-        final var a = newCellValue(1);
-        final var b = newCellValue(null);
+        final CellValue a = newCellValue(1);
+        final CellValue b = newCellValue(null);
 
         assertTrue(a.toString().matches("app\\.kumasuke\\.excel\\.CellValue" +
                                                 "\\{type = java\\.lang\\.Integer, value = 1}" +

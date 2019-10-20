@@ -23,7 +23,7 @@ public class DocumentPrinter {
 
     private static void readAndPrint(String fileName) {
         final Path filePath = ResourceUtil.getPathOfClasspathResource(fileName);
-        try (final var reader = WorkbookEventReader.open(filePath)) {
+        try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath)) {
             if (reader instanceof XSSFWorkbookEventReader) {
                 ((XSSFWorkbookEventReader) reader).setUse1904Windowing(true);
             }

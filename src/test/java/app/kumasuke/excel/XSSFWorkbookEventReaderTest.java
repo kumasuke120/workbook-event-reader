@@ -28,7 +28,7 @@ class XSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWo
             assert reader instanceof XSSFWorkbookEventReader;
 
             final boolean[] cancelledRef = {false};
-            final var handler = new WorkbookEventReader.EventHandler() {
+            final WorkbookEventReader.EventHandler handler = new WorkbookEventReader.EventHandler() {
                 @Override
                 public void onStartRow(int sheetIndex, int rowNum) {
                     reader.cancel();

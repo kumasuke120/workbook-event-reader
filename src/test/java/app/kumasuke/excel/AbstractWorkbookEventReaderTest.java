@@ -38,7 +38,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         }
 
         // constructor(InputStream)
-        try (final var in = ClassLoader.getSystemResourceAsStream(normalFileName)) {
+        try (final InputStream in = ClassLoader.getSystemResourceAsStream(normalFileName)) {
             try (final WorkbookEventReader reader = inputStreamConstructor().newInstance(in)) {
                 consumer.accept(reader);
             }
@@ -63,7 +63,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         });
 
         // constructor(InputStream, String)
-        try (final var in = ClassLoader.getSystemResourceAsStream(encryptedFileName)) {
+        try (final InputStream in = ClassLoader.getSystemResourceAsStream(encryptedFileName)) {
             try (final WorkbookEventReader reader = inputStreamAndPasswordConstructor()
                     .newInstance(in, CORRECT_PASSWORD)) {
                 consumer.accept(reader);
@@ -72,7 +72,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
             throw new AssertionError(e);
         }
         assertThrows(WorkbookIOException.class, () -> {
-            try (final var in = ClassLoader.getSystemResourceAsStream(encryptedFileName)) {
+            try (final InputStream in = ClassLoader.getSystemResourceAsStream(encryptedFileName)) {
                 try (final WorkbookEventReader ignore = inputStreamAndPasswordConstructor()
                         .newInstance(in, randomWrongPassword())) {
                     // no-op
@@ -120,7 +120,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
 
     void read() {
         dealWithReader(reader -> {
-            final var handler = new TestEventHandler();
+            final TestEventHandler handler = new TestEventHandler();
             reader.read(handler);
 
             final String xml = handler.getXml();
@@ -136,7 +136,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         });
 
         dealWithReader(reader -> {
-            final var handler = new WorkbookEventReader.EventHandler() {
+            final WorkbookEventReader.EventHandler handler = new WorkbookEventReader.EventHandler() {
                 @Override
                 public void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
                     if (Integer.class.equals(cellValue.originalType())) {
@@ -150,7 +150,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         });
 
         dealWithReader(reader -> {
-            final var handler = new WorkbookEventReader.EventHandler() {
+            final WorkbookEventReader.EventHandler handler = new WorkbookEventReader.EventHandler() {
                 @Override
                 public void onStartDocument() {
                     reader.read(new WorkbookEventReader.EventHandler() {
@@ -165,7 +165,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
     void cancel() {
         dealWithReader(reader -> {
             final boolean[] cancelledRef = {false};
-            final var handler = new TestEventHandler() {
+            final TestEventHandler handler = new TestEventHandler() {
                 @Override
                 public void onEndSheet(int sheetIndex) {
                     super.onEndSheet(sheetIndex);

@@ -10,14 +10,10 @@ import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ref.Cleaner;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.*;
-import java.util.Date;
-import java.util.Map;
-import java.util.Objects;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,9 +22,7 @@ import java.util.regex.Pattern;
  * The base class for {@link WorkbookEventReader}, containing common methods and utilities
  */
 abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
-    private static final Cleaner cleaner = Cleaner.create();
-
-    private final Cleaner.Cleanable cleanable;
+    private final ReaderCleanAction cleanAction;
 
     private volatile boolean closed = false;
     private volatile boolean reading = false;
@@ -51,8 +45,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
             throw new WorkbookIOException("Cannot open workbook", e);
         }
 
-        final ReaderCleanAction action = createCleanAction();
-        cleanable = cleaner.register(this, action);
+        cleanAction = createCleanAction();
     }
 
     /**
@@ -100,10 +93,12 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * @param in       {@link InputStream} of the workbook to be opened
      * @param password password to open the file
      * @return {@link WorkbookEventReader} to read the specified file
-     * @throws NullPointerException <code>in</code> and <code>filePath</code> are both <code>null</code>
+     * @throws NullPointerException <code>in</code> is <code>null</code>
      * @throws WorkbookIOException  errors happened when opening
      */
     static WorkbookEventReader autoOpen(InputStream in, String password, boolean firstTryXSSF) {
+        Objects.requireNonNull(in);
+
         final byte[] bytes;
         try {
             bytes = IOUtils.toByteArray(in);
@@ -178,6 +173,15 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      */
     abstract ReaderCleanAction createCleanAction();
 
+    @Override
+    protected final void finalize() throws Throwable {
+        try {
+            cleanAction.run();
+        } finally {
+            super.finalize();
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -236,7 +240,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
             reading = false;
             closed = true;
 
-            cleanable.clean();
+            cleanAction.run();
         }
     }
 
@@ -408,7 +412,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
          */
         static Object toRelativeType(Object value) {
             if (value instanceof Double) {
-                final var doubleValue = (double) value;
+                final double doubleValue = (double) value;
                 if (Util.isAWholeNumber(doubleValue)) {
                     if (doubleValue > Integer.MAX_VALUE || doubleValue < Integer.MIN_VALUE) {
                         return (long) doubleValue;
@@ -417,7 +421,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
                     }
                 }
             } else if (value instanceof Long) {
-                final var longValue = (long) value;
+                final long longValue = (long) value;
                 if (longValue >= Integer.MIN_VALUE && longValue <= Integer.MAX_VALUE) {
                     return (int) longValue;
                 }
@@ -445,7 +449,10 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
                 final int rowNum = Integer.parseInt(rawRow) - 1;
                 final int columnNum = columnNameToInt(rawColumn);
 
-                return Map.entry(rowNum, columnNum);
+                return Collections.singletonMap(rowNum, columnNum)
+                        .entrySet()
+                        .iterator()
+                        .next();
             } else {
                 return null;
             }
@@ -484,12 +491,18 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * A clean action for closes the resources opened by a {@link WorkbookEventReader}
      */
     static abstract class ReaderCleanAction implements Runnable {
+        private volatile boolean cleaned = false;
+
         @Override
         public final void run() {
-            try {
-                doClean();
-            } catch (Exception e) {
-                throw new WorkbookIOException("Exception encountered when closing the workbook file", e);
+            if (!cleaned) {
+                try {
+                    doClean();
+                } catch (Exception e) {
+                    throw new WorkbookIOException("Exception encountered when closing the workbook file", e);
+                } finally {
+                    cleaned = true;
+                }
             }
         }
 

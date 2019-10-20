@@ -277,7 +277,7 @@ public final class CellValue {
      */
     public LocalTime localTimeValue(DateTimeFormatter formatter) {
         Objects.requireNonNull(formatter);
-        return localTimeValue(Set.of(formatter));
+        return localTimeValue(Collections.singleton(formatter));
     }
 
     /**
@@ -345,7 +345,7 @@ public final class CellValue {
      */
     public LocalDate localDateValue(DateTimeFormatter formatter) {
         Objects.requireNonNull(formatter);
-        return localDateValue(Set.of(formatter));
+        return localDateValue(Collections.singleton(formatter));
     }
 
     /**
@@ -404,7 +404,7 @@ public final class CellValue {
      */
     public LocalDateTime localDateTimeValue(DateTimeFormatter formatter) {
         Objects.requireNonNull(formatter);
-        return localDateTimeValue(Set.of(formatter));
+        return localDateTimeValue(Collections.singleton(formatter));
     }
 
     /**

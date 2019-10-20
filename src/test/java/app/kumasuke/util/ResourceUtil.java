@@ -30,12 +30,12 @@ public class ResourceUtil {
     public static String loadClasspathResourceToString(String resourceName) throws IOException {
         final int bufferSize = 2048;
 
-        final var buffer = new char[bufferSize];
-        final var builder = new StringBuilder();
+        final char[] buffer = new char[bufferSize];
+        final StringBuilder builder = new StringBuilder();
         try (final InputStream is = ClassLoader.getSystemResourceAsStream(resourceName)) {
             assert is != null;
 
-            try (final var isr = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+            try (final InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                 int nChars;
 
                 while ((nChars = isr.read(buffer)) != -1) {
