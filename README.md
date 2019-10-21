@@ -15,7 +15,7 @@ Requirements for different kinds of branches may differ:
 
 | Branch             	| Bundled 	| `java11-*`       	| `java8-*`        	|
 |--------------------	|---------	|------------------	|------------------	|
-| Java Ver.          	| 11      	| 11 onwards    	| 8 onwards     	|
+| Java Ver.          	| None     	| 11 onwards    	| 8 onwards     	|
 | Apache POI Ver.    	| 4.0.0   	| 3.17 onwards  	| 3.17 onwards  	|
 | Apache Xerces Ver. 	| 2.12.0  	| 2.0.0 onwards 	| 2.0.0 onwards 	|
 
