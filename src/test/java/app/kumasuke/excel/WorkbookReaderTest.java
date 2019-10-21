@@ -31,6 +31,20 @@ class WorkbookReaderTest {
     }
 
     @Test
+    void nullCheck() {
+        assertThrows(NullPointerException.class, () -> {
+            try (final WorkbookEventReader ignore = WorkbookEventReader.open((InputStream) null)) {
+                // no-op
+            }
+        });
+        assertThrows(NullPointerException.class, () -> {
+            try (final WorkbookEventReader ignore = WorkbookEventReader.open((Path) null)) {
+                // no-op
+            }
+        });
+    }
+
+    @Test
     void openWithPath() {
         final Path xlsPath = ResourceUtil.getPathOfClasspathResource("workbook.xls");
         try (final WorkbookEventReader reader = WorkbookEventReader.open(xlsPath)) {

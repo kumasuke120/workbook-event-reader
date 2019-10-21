@@ -1,33 +1,33 @@
 # WorkbookEventReader
 See in other languages: English | [中文](README_CN.md)
 
-An event-based workbook reader which re-encapsulates [Apache POI](https://poi.apache.org/) Event API for processing 
-Excel workbook, making it easy for reading SpreadsheetML(.xlsx) and legacy Excel document(.xls) with a same unified interface.
-All values read from Excel document could be converted to sensible corresponding Java types.
+An event-based workbook reader which re-encapsulates [Apache POI](https://poi.apache.org/) Event APIs for processing 
+Excel workbooks, making it easy for reading SpreadsheetML(.xlsx) and legacy Excel documents(.xls) with a same unified interface.
+All values read from an Excel document could be converted to sensible corresponding Java types.
 
 ## Branches
-There are two kinds of branches in this repository. Each kind of branches have their own prefix in their branch names:
-- `java11-*`: written in Java 11, often gets newer features (_master_)
+There are two kinds of branches in this repository. Each kind of branches have their own prefixes in their branch names:
+- `java11-*`: written in Java 11, often gets newer features (_default branch_)
 - `java8-*`: written in Java 8, with more stable features (_recommended for production_)
 
 ## Requirements
-Requirements for different kinds of branches may differs:
+Requirements for different kinds of branches may differ:
 
 | Branch             	| Bundled 	| `java11-*`       	| `java8-*`        	|
 |--------------------	|---------	|------------------	|------------------	|
-| Java Ver.          	| 11      	| 11 or upwards    	| 8 or upwards     	|
-| Apache POI Ver.    	| 4.0.0   	| 3.17 or upwards  	| 3.17 or upwards  	|
-| Apache Xerces Ver. 	| 2.12.0  	| 2.0.0 or upwards 	| 2.0.0 or upwards 	|
+| Java Ver.          	| 11      	| 11 onwards    	| 8 onwards     	|
+| Apache POI Ver.    	| 4.0.0   	| 3.17 onwards  	| 3.17 onwards  	|
+| Apache Xerces Ver. 	| 2.12.0  	| 2.0.0 onwards 	| 2.0.0 onwards 	|
 
 _Click [here](https://bz.apache.org/bugzilla/show_bug.cgi?id=61034) to take a look at the reason 
-for the requirement of Apache POI 3.17 or upwards_
+for the requirement of Apache POI 3.17 onwards_
 
 ## Build and Installation
 You could use the following command to install:
 ```
 $ ./mvnw clean install -DskipTests
 ```
-or you could use you own maven to install:
+or you could use your own maven to install:
 ```
 $ mvn clean install -DskipTests
 ```
@@ -154,4 +154,4 @@ public class ToXmlPrinter {
     }
 }
 ``` 
-_This sample is written in Java 11, you might need to change some part of it when using Java 8_
+_This sample is written in Java 11, you might need to change some parts of it when using Java 8_
