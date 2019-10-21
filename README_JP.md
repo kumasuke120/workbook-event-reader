@@ -1,37 +1,37 @@
 # WorkbookEventReader
-查看其他语言: [English](README.md) | 中文 | [日本語](README_JP.md)
+他の言語で表示: [English](README.md) | [中文](README_CN.md) | 日本語
 
-这是一款基于事件的工作簿阅读器。它封装了 [Apache POI](https://poi.apache.org/) Event API 来处理 Excel 工作簿文档。
-该阅读器提供了一个统一的接口来处理 SpreadsheetML(.xlsx) 和传统 Excel 文档(.xls)。
-所有从 Excel 文档中读取的值均可被转换谓合理的 Java 类型。
+イベントベースのワークブックリーダーです。[Apache POI](https://poi.apache.org/) Event API を再カプセル化して Excel ワークブックを処理し、
+同じ統一されたインターフェイスで SpreadsheetML（.xlsx）とレガシー Excel ドキュメント（.xls）を簡単に読み取ることができます。
+Excel ドキュメントから読み取ったすべての値は、対応する適切な Java データ型に変換できます。
 
-## 分支
-在这个仓库中有两种类型的分支。每种分支都有它独自的前缀：
-- `java11-*`: 使用 Java 11 编写，通常可以获得较新的特性 (_默认分支_)
-- `java8-*`: 使用 Java 8 编写，功能更加稳定 (_推荐生产环境使用_)
+## ブランチ
+このリポジトリには 2 種類のブランチがあります。ブランチの種類ごとに、ブランチ名に独自のプレフィックスがあります：
+- `java11-*`: Java 11 で記述され、多くの場合、新しい機能が追加されます (_デフォルトブランチ_)
+- `java8-*`: Java 8 で記述され、より安定した機能を備えています (_プロダクション環境に推奨_)
 
-## 环境需求
-不同类型分支的需求可能不同：
+## 要件
+それぞれのブランチの要件は異なる場合があります：
 
-| 分支               	| 内置   	| `java11-*`       	| `java8-*`        	|
+| ブランチ             	| 同梱   	| `java11-*`       	| `java8-*`        	|
 |--------------------	|---------	|------------------	|------------------	|
-| Java 版本          	| 11      	| 11 或以上版本    	| 8 或以上版本     	|
-| Apache POI 版本    	| 4.0.0   	| 3.17 或以上版本  	| 3.17 或以上版本  	|
-| Apache Xerces 版本 	| 2.12.0  	| 2.0.0 或以上版本 	| 2.0.0 或以上版本 	|
+| Java Ver.          	| 11      	| 11 onwards    	| 8 onwards     	|
+| Apache POI Ver.    	| 4.0.0   	| 3.17 onwards  	| 3.17 onwards  	|
+| Apache Xerces Ver. 	| 2.12.0  	| 2.0.0 onwards 	| 2.0.0 onwards 	|
 
-_点击[这里](https://bz.apache.org/bugzilla/show_bug.cgi?id=61034)查看需要 Apache POI 3.17 或以上版本的原因_
+_Apache POI 3.17 以降の要件の理由を確認するには、[ここ](https://bz.apache.org/bugzilla/show_bug.cgi?id=61034)をクリックしてください_
 
-## 构建与安装
-可以使用以下命令安装：
+## ビルドとインストール
+次のコマンドを使用してインストールすることができます：
 ```
 $ ./mvnw clean install -DskipTests
 ```
-或者可以选用自己的 Maven：
+または、ご自分の Maven 環境を使用してインストールすることもできます：
 ```
 $ mvn clean install -DskipTests
 ```
 
-`java11-*` 分支的 Maven 依赖为:
+`java11-*`ブランチの Maven 依存関係は次のとおりです：
 ```xml
 <dependency>
     <groupId>app.kumasuke.excel</groupId>
@@ -39,7 +39,7 @@ $ mvn clean install -DskipTests
     <version>1.0.0</version>
 </dependency>
 ```
-`java8-*` 分支的 Maven 依赖为:
+`java8-*`ブランチの Maven 依存関係は次のとおりです：
 ```xml
 <dependency>
     <groupId>app.kumasuke.excel</groupId>
@@ -48,8 +48,8 @@ $ mvn clean install -DskipTests
 </dependency>
 ```
 
-## 示例
-以下的代码读取工作簿，并将它的内容转换为格式化后的 XML 文档：
+## サンプル
+次のソースコードは、ワークブックを読み取り、そのコンテンツを整形式の XML 文書に変換します：
 ```java
 public class ToXmlPrinter {
     public static void main(String[] args) {
@@ -140,7 +140,7 @@ public class ToXmlPrinter {
 
         private void newLine() {
             xml.append(System.lineSeparator());
-            xml.append(/* 四个空格 */"    ".repeat(currentIndentLevel));
+            xml.append(/* 4つのスペース */"    ".repeat(currentIndentLevel));
         }
 
         private void indent() {
@@ -153,4 +153,4 @@ public class ToXmlPrinter {
     }
 }
 ``` 
-_本示例使用 Java 11 编写，使用 Java 8 时可能需要更改某些部分_
+_本例は Java 11 で記述されています。Java 8 を使用する場合は、一部を変更する必要がある場合があります_
