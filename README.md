@@ -1,5 +1,5 @@
 # WorkbookEventReader
-See in other languages: English | [中文](README_CN.md)
+See in other languages: English | [中文](README_CN.md) | [日本語](README_JP.md)
 
 An event-based workbook reader which re-encapsulates [Apache POI](https://poi.apache.org/) Event APIs for processing 
 Excel workbooks, making it easy for reading SpreadsheetML(.xlsx) and legacy Excel documents(.xls) with a same unified interface.
