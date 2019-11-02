@@ -11,6 +11,7 @@ import java.time.LocalTime;
  * A reader that reads Workbook in an event manner and it can only deal with values in cell (not charts)<br>
  */
 public interface WorkbookEventReader extends Closeable {
+
     /**
      * Opens the specified file with an appropriate {@link WorkbookEventReader} if possible.
      *
@@ -225,4 +226,5 @@ public interface WorkbookEventReader extends Closeable {
             // no-op
         }
     }
+
 }

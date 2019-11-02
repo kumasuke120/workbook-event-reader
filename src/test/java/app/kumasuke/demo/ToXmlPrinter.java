@@ -7,6 +7,7 @@ import app.kumasuke.util.ResourceUtil;
 import java.nio.file.Path;
 
 public class ToXmlPrinter {
+
     public static void main(String[] args) {
         final Path filePath = ResourceUtil.getPathOfClasspathResource("workbook.xlsx");
         final XmlGenerator xmlGenerator = new XmlGenerator();
@@ -111,4 +112,5 @@ public class ToXmlPrinter {
             currentIndentLevel -= 1;
         }
     }
+
 }

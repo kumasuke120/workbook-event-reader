@@ -31,6 +31,7 @@ import java.util.Map;
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
+
     private volatile boolean use1904Windowing = false;
 
     private OPCPackage opcPackage;
@@ -65,7 +66,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
      * Creates a new {@link XSSFWorkbookEventReader} based on the given workbook {@link InputStream}
      * and the given password if possible.
      *
-     * @param in       {@link InputStream} of the workbook to be read
+     * @param in {@link InputStream} of the workbook to be read
      * @throws NullPointerException <code>filePath</code> is <code>null</code>
      * @throws WorkbookIOException  errors happened when opening
      */
@@ -443,4 +444,5 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             }
         }
     }
+
 }

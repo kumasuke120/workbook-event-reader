@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class ResourceUtil {
+
     private ResourceUtil() {
         throw new UnsupportedOperationException();
     }
@@ -46,4 +47,5 @@ public class ResourceUtil {
 
         return builder.toString();
     }
+
 }

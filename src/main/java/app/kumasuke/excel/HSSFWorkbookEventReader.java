@@ -19,6 +19,7 @@ import java.util.Map;
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
+
     private static final short USER_CODE_CONTINUE = 0;
     private static final short USER_CODE_ABORT = Short.MIN_VALUE;
 
@@ -426,4 +427,5 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             previousRowEndHandled = true;
         }
     }
+
 }

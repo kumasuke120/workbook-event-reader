@@ -5,7 +5,9 @@ package app.kumasuke.excel;
  */
 @SuppressWarnings("WeakerAccess")
 public class WorkbookIOException extends WorkbookEventReaderException {
+
     WorkbookIOException(String message, Throwable cause) {
         super(message, cause);
     }
+
 }

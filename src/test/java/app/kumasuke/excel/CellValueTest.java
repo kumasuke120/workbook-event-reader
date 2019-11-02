@@ -14,6 +14,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CellValueTest {
+
     @Test
     @DisplayName("null()")
     void _null() {
@@ -423,4 +424,5 @@ class CellValueTest {
             throw new AssertionError(e);
         }
     }
+
 }

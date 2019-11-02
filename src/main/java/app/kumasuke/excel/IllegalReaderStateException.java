@@ -6,7 +6,9 @@ package app.kumasuke.excel;
  */
 @SuppressWarnings("WeakerAccess")
 public class IllegalReaderStateException extends WorkbookEventReaderException {
+
     IllegalReaderStateException(String message) {
         super(message);
     }
+
 }

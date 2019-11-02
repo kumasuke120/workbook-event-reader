@@ -5,10 +5,12 @@ package app.kumasuke.excel;
  */
 @SuppressWarnings("WeakerAccess")
 public class CellValueCastException extends RuntimeException {
+
     CellValueCastException() {
     }
 
     CellValueCastException(Throwable cause) {
         super(cause);
     }
+
 }

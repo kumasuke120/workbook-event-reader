@@ -6,6 +6,7 @@ package app.kumasuke.excel;
  */
 @SuppressWarnings("WeakerAccess")
 public abstract class WorkbookEventReaderException extends RuntimeException {
+
     WorkbookEventReaderException(Throwable cause) {
         super(cause);
     }
@@ -17,4 +18,5 @@ public abstract class WorkbookEventReaderException extends RuntimeException {
     WorkbookEventReaderException(String message, Throwable cause) {
         super(message, cause);
     }
+
 }

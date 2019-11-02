@@ -17,6 +17,7 @@ import static app.kumasuke.excel.WorkbookReaderTest.randomWrongPassword;
 import static org.junit.jupiter.api.Assertions.*;
 
 abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventReader> {
+
     private final String normalFileName;
     private final String encryptedFileName;
     private final Class<R> readerClass;
@@ -357,4 +358,5 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
             assertEquals(rowNum, currentRowNum);
         }
     }
+
 }

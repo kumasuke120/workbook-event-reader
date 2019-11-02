@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings("EmptyTryBlock")
 class WorkbookReaderTest {
+
     static final String CORRECT_PASSWORD = "password";
 
     static String randomWrongPassword() {
@@ -172,4 +173,5 @@ class WorkbookReaderTest {
             }
         });
     }
+
 }

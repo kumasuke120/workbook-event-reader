@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
  * The base class for {@link WorkbookEventReader}, containing common methods and utilities
  */
 abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
+
     private static final Cleaner cleaner = Cleaner.create();
 
     private final Cleaner.Cleanable cleanable;
@@ -505,4 +506,5 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
          */
         abstract void doClean() throws Exception;
     }
+
 }
