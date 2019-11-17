@@ -114,23 +114,27 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
             throw new WorkbookIOException("Cannot open and read workbook", e);
         }
 
-        final FileMagic magic = checkFileMagic(new ByteArrayInputStream(bytes));
-        if (magic == FileMagic.OOXML) {
-            return new XSSFWorkbookEventReader(new ByteArrayInputStream(bytes));
-        } else {
-            if (firstTryXSSF) {
-                return openByOrder(() -> new XSSFWorkbookEventReader(new ByteArrayInputStream(bytes), password),
-                                   () -> new HSSFWorkbookEventReader(new ByteArrayInputStream(bytes), password));
+        final FileMagic magic = checkFileMagic(bytes);
+        try (final var stream = new ByteArrayInputStream(bytes)) {
+            if (magic == FileMagic.OOXML) {
+                return new XSSFWorkbookEventReader(stream);
             } else {
-                return openByOrder(() -> new HSSFWorkbookEventReader(new ByteArrayInputStream(bytes), password),
-                                   () -> new XSSFWorkbookEventReader(new ByteArrayInputStream(bytes), password));
+                if (firstTryXSSF) {
+                    return openByOrder(() -> new XSSFWorkbookEventReader(stream, password),
+                                       () -> new HSSFWorkbookEventReader(stream, password));
+                } else {
+                    return openByOrder(() -> new HSSFWorkbookEventReader(stream, password),
+                                       () -> new XSSFWorkbookEventReader(stream, password));
+                }
             }
+        } catch (IOException e) {
+            throw new AssertionError("Won't happen");
         }
     }
 
-    private static FileMagic checkFileMagic(InputStream in) {
-        final InputStream stream = FileMagic.prepareToCheckMagic(in);
-        try {
+    private static FileMagic checkFileMagic(byte[] bytes) {
+        try (final var in = new ByteArrayInputStream(bytes);
+             final InputStream stream = FileMagic.prepareToCheckMagic(in)) {
             return FileMagic.valueOf(stream);
         } catch (IOException e) {
             return null;

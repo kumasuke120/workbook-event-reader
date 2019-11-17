@@ -145,7 +145,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 break;
             }
 
-            try (InputStream sheetIs = sheetIt.next()) {
+            try (final InputStream sheetIs = sheetIt.next()) {
                 String sheetName = sheetIt.getSheetName();
                 handler.onStartSheet(++currentSheetIndex, sheetName);
 
