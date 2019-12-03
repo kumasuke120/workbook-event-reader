@@ -115,20 +115,16 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
         }
 
         final FileMagic magic = checkFileMagic(bytes);
-        try (final var stream = new ByteArrayInputStream(bytes)) {
-            if (magic == FileMagic.OOXML) {
-                return new XSSFWorkbookEventReader(stream);
+        if (magic == FileMagic.OOXML) {
+            return new XSSFWorkbookEventReader(new ByteArrayInputStream(bytes));
+        } else {
+            if (firstTryXSSF) {
+                return openByOrder(() -> new XSSFWorkbookEventReader(new ByteArrayInputStream(bytes), password),
+                                   () -> new HSSFWorkbookEventReader(new ByteArrayInputStream(bytes), password));
             } else {
-                if (firstTryXSSF) {
-                    return openByOrder(() -> new XSSFWorkbookEventReader(stream, password),
-                                       () -> new HSSFWorkbookEventReader(stream, password));
-                } else {
-                    return openByOrder(() -> new HSSFWorkbookEventReader(stream, password),
-                                       () -> new XSSFWorkbookEventReader(stream, password));
-                }
+                return openByOrder(() -> new HSSFWorkbookEventReader(new ByteArrayInputStream(bytes), password),
+                                   () -> new XSSFWorkbookEventReader(new ByteArrayInputStream(bytes), password));
             }
-        } catch (IOException e) {
-            throw new AssertionError("Won't happen");
         }
     }
 
