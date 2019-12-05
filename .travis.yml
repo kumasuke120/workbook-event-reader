@@ -1,6 +1,15 @@
 language: java
+
 sudo: true
+
 dist: trusty
+
 jdk: oraclejdk11
+
 before_install:
   - chmod +x mvnw
+  
+script: "mvn cobertura:cobertura"
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
