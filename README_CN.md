@@ -1,5 +1,7 @@
 # WorkbookEventReader
-查看其他语言: [English](README.md) | 中文 | [日本語](README_JP.md)
+查看其他语言: [English](README.md) | 中文
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Build Status](https://api.travis-ci.org/kumasuke120/workbook-event-reader.svg?branch=java11-dev)](https://travis-ci.org/kumasuke120/workbook-event-reader) [![codecov](https://codecov.io/gh/kumasuke120/workbook-event-reader/branch/java11-dev/graph/badge.svg)](https://codecov.io/gh/kumasuke120/workbook-event-reader)
 
 这是一款基于事件的工作簿阅读器。它封装了 [Apache POI](https://poi.apache.org/) Event API 来处理 Excel 工作簿文档。
 该阅读器提供了一套统一的接口来处理 SpreadsheetML(.xlsx) 和传统 Excel 文档(.xls)。
