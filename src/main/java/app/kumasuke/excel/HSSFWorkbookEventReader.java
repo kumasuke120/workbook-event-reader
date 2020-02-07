@@ -293,7 +293,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                         final var formula = (FormulaRecord) previousRecord;
 
                         final String cellValue = string.getString();
-                        handleCell(formula.getRow(), formula.getColumn(), cellValue);
+                        handleCell(formula.getRow(), formula.getColumn(), formatString(cellValue));
                     }
                     break;
                 }
@@ -308,7 +308,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                     final var label = (LabelRecord) record;
 
                     final String cellValue = label.getValue();
-                    handleCell(label.getRow(), label.getColumn(), cellValue);
+                    handleCell(label.getRow(), label.getColumn(), formatString(cellValue));
                     break;
                 }
                 case LabelSSTRecord.sid: {
@@ -317,7 +317,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                     final int sstIndex = labelSst.getSSTIndex();
                     final String cellValue = sharedStringTable.getString(sstIndex)
                             .getString();
-                    handleCell(labelSst.getRow(), labelSst.getColumn(), cellValue);
+                    handleCell(labelSst.getRow(), labelSst.getColumn(), formatString(cellValue));
                     break;
                 }
             }
@@ -382,6 +382,10 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             }
 
             return value;
+        }
+
+        private String formatString(String value) {
+            return "".equals(value) ? null : value;
         }
 
         private void handleEndSheet(int sheetIndex) {
