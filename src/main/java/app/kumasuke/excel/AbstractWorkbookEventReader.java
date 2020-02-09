@@ -35,7 +35,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
     private volatile boolean reading = false;
 
     /**
-     * Creates a new {@link AbstractWorkbookEventReader} based on the given file path
+     * Creates a new {@link AbstractWorkbookEventReader} based on the given file {@link InputStream}
      * and the given password if possible.
      *
      * @param in       {@link InputStream} of the workbook to be read

@@ -76,7 +76,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         }
 
         this.password = password; // records for later use
-        checkWorkbookPassword();
+        checkWorkbookPassword(); // all documents should be checked
     }
 
     private void checkWorkbookPassword() throws IOException {
