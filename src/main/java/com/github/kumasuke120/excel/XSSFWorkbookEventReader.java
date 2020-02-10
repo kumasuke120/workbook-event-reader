@@ -1,4 +1,4 @@
-package app.kumasuke.excel;
+package com.github.kumasuke120.excel;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;

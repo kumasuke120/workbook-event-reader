@@ -1,4 +1,4 @@
-package app.kumasuke.excel;
+package com.github.kumasuke120.excel;
 
 /**
  * An abstract {@link RuntimeException} that covers most kinds of exceptions which {@link WorkbookEventReader} may

@@ -1,4 +1,4 @@
-package app.kumasuke.excel;
+package com.github.kumasuke120.excel;
 
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.poifs.filesystem.FileMagic;

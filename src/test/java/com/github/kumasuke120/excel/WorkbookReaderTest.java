@@ -1,6 +1,6 @@
-package app.kumasuke.excel;
+package com.github.kumasuke120.excel;
 
-import app.kumasuke.util.ResourceUtil;
+import com.github.kumasuke120.util.ResourceUtil;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

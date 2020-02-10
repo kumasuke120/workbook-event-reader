@@ -1,4 +1,4 @@
-package app.kumasuke.excel;
+package com.github.kumasuke120.excel;
 
 import org.apache.poi.hssf.eventusermodel.*;
 import org.apache.poi.hssf.record.*;

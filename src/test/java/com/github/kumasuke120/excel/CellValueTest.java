@@ -1,4 +1,4 @@
-package app.kumasuke.excel;
+package com.github.kumasuke120.excel;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

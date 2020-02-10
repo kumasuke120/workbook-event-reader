@@ -1,8 +1,9 @@
-package app.kumasuke.excel;
+package com.github.kumasuke120.excel;
 
-import app.kumasuke.util.ResourceUtil;
-import app.kumasuke.util.XmlUtil;
+import com.github.kumasuke120.util.ResourceUtil;
+import com.github.kumasuke120.util.XmlUtil;
 import org.apache.poi.EncryptedDocumentException;
+import org.junit.jupiter.api.Assertions;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,8 +13,6 @@ import java.nio.file.Path;
 import java.util.Stack;
 import java.util.function.Consumer;
 
-import static app.kumasuke.excel.WorkbookReaderTest.CORRECT_PASSWORD;
-import static app.kumasuke.excel.WorkbookReaderTest.randomWrongPassword;
 import static org.junit.jupiter.api.Assertions.*;
 
 abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventReader> {
@@ -60,12 +59,12 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         // constructor(Path, String)
         final Path filePath2 = ResourceUtil.getPathOfClasspathResource(encryptedFileName);
         try (final WorkbookEventReader reader = pathAndPasswordConstructor()
-                .newInstance(filePath2, CORRECT_PASSWORD)) {
+                .newInstance(filePath2, WorkbookReaderTest.CORRECT_PASSWORD)) {
             consumer.accept(reader);
         }
         assertThrows(WorkbookIOException.class, () -> {
             try (final WorkbookEventReader ignore = pathAndPasswordConstructor()
-                    .newInstance(filePath2, randomWrongPassword())) {
+                    .newInstance(filePath2, WorkbookReaderTest.randomWrongPassword())) {
                 // no-op
             } catch (WorkbookIOException e) {
                 assertTrue(e.getCause() instanceof EncryptedDocumentException);
@@ -76,7 +75,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         // constructor(InputStream, String)
         try (final var in = ClassLoader.getSystemResourceAsStream(encryptedFileName)) {
             try (final WorkbookEventReader reader = inputStreamAndPasswordConstructor()
-                    .newInstance(in, CORRECT_PASSWORD)) {
+                    .newInstance(in, WorkbookReaderTest.CORRECT_PASSWORD)) {
                 consumer.accept(reader);
             }
         } catch (IOException e) {
@@ -85,7 +84,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         assertThrows(WorkbookIOException.class, () -> {
             try (final var in = ClassLoader.getSystemResourceAsStream(encryptedFileName)) {
                 try (final WorkbookEventReader ignore = inputStreamAndPasswordConstructor()
-                        .newInstance(in, randomWrongPassword())) {
+                        .newInstance(in, WorkbookReaderTest.randomWrongPassword())) {
                     // no-op
                 } catch (WorkbookIOException e) {
                     assertTrue(e.getCause() instanceof EncryptedDocumentException);
@@ -236,7 +235,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         } catch (IOException e) {
             throw new AssertionError(e);
         }
-        assertTrue(XmlUtil.isSameXml(expectedXml, actualXml));
+        Assertions.assertTrue(XmlUtil.isSameXml(expectedXml, actualXml));
     }
 
     private static class LightWeightConstructor<T> {

@@ -1,4 +1,4 @@
-package app.kumasuke.util;
+package com.github.kumasuke120.util;
 
 import nu.xom.*;
 

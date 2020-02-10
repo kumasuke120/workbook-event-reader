@@ -1,4 +1,4 @@
-package app.kumasuke.excel;
+package com.github.kumasuke120.excel;
 
 import java.io.Closeable;
 import java.io.InputStream;
