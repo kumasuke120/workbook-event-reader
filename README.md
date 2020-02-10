@@ -37,15 +37,15 @@ $ mvn clean install -DskipTests
 The Maven dependency for `java11-*` branches is:
 ```xml
 <dependency>
-    <groupId>app.kumasuke.excel</groupId>
-    <artifactId>workbook-event-reader-java11</artifactId>
+    <groupId>com.github.kumasuke120</groupId>
+    <artifactId>workbook-event-reader-experimental</artifactId>
     <version>1.0.0</version>
 </dependency>
 ```
 The Maven dependency for `java8-*` branches is:
 ```xml
 <dependency>
-    <groupId>app.kumasuke.excel</groupId>
+    <groupId>com.github.kumasuke120</groupId>
     <artifactId>workbook-event-reader</artifactId>
     <version>1.0.0</version>
 </dependency>
@@ -55,6 +55,7 @@ The Maven dependency for `java8-*` branches is:
 The following code reads a workbook and converts its content to a well-formed XML document:
 ```java
 public class ToXmlPrinter {
+
     public static void main(String[] args) {
         final Path filePath = Paths.get("workbook.xlsx");
         final XmlGenerator xmlGenerator = new XmlGenerator();
@@ -154,6 +155,7 @@ public class ToXmlPrinter {
             currentIndentLevel -= 1;
         }
     }
+
 }
 ``` 
 _This sample is written in Java 11, you might need to change some parts of it when using Java 8_

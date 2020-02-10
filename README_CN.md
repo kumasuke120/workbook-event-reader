@@ -36,15 +36,15 @@ $ mvn clean install -DskipTests
 `java11-*` 分支的 Maven 依赖为:
 ```xml
 <dependency>
-    <groupId>app.kumasuke.excel</groupId>
-    <artifactId>workbook-event-reader-java11</artifactId>
+    <groupId>com.github.kumasuke120</groupId>
+    <artifactId>workbook-event-reader-experimental</artifactId>
     <version>1.0.0</version>
 </dependency>
 ```
 `java8-*` 分支的 Maven 依赖为:
 ```xml
 <dependency>
-    <groupId>app.kumasuke.excel</groupId>
+    <groupId>com.github.kumasuke120</groupId>
     <artifactId>workbook-event-reader</artifactId>
     <version>1.0.0</version>
 </dependency>
@@ -54,6 +54,7 @@ $ mvn clean install -DskipTests
 以下的代码读取工作簿，并将它的内容转换为格式化后的 XML 文档：
 ```java
 public class ToXmlPrinter {
+
     public static void main(String[] args) {
         final Path filePath = Paths.get("workbook.xlsx");
         final XmlGenerator xmlGenerator = new XmlGenerator();
@@ -153,6 +154,7 @@ public class ToXmlPrinter {
             currentIndentLevel -= 1;
         }
     }
+
 }
 ``` 
 _本示例使用 Java 11 编写，使用 Java 8 时可能需要更改某些部分_
