@@ -83,7 +83,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     @Override
     void doOpen(Path filePath, String password) throws Exception {
-        final var channel = FileChannel.open(filePath, StandardOpenOption.READ);
+        final FileChannel channel = FileChannel.open(filePath, StandardOpenOption.READ);
         fileSystem = new POIFSFileSystem(channel, true);
 
         setWorkbookPassword(password);

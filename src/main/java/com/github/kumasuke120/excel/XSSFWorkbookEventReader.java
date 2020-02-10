@@ -20,6 +20,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -125,11 +126,11 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     @Override
     void doOpen(Path filePath, String password) throws Exception {
-        final var file = filePath.toFile();
+        final File file = filePath.toFile();
 
         final InputStream stream;
         if (password != null) {
-            try (final var fs = new POIFSFileSystem(file, true)) {
+            try (final POIFSFileSystem fs = new POIFSFileSystem(file, true)) {
                 stream = DocumentFactoryHelper.getDecryptedStream(fs, password);
                 doOpen(stream, null);
             }

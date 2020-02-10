@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
-import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -261,7 +260,7 @@ class CellValueTest {
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
         assertThrows(CellValueCastException.class, cellValue::localDateTimeValue);
 
-        final var cellValue3 = newCellValue("2020-01-20T12:34:56");
+        final CellValue cellValue3 = newCellValue("2020-01-20T12:34:56");
         assertFalse(cellValue3.isNull());
         assertEquals("2020-01-20T12:34:56", cellValue3.originalValue());
         assertEquals(String.class, cellValue3.originalType());

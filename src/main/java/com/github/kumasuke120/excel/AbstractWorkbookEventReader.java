@@ -10,7 +10,6 @@ import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.*;
 import java.util.*;
@@ -22,6 +21,7 @@ import java.util.regex.Pattern;
  * The base class for {@link WorkbookEventReader}, containing common methods and utilities
  */
 abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
+
     private final ReaderCleanAction cleanAction;
 
     private volatile boolean closed = false;
@@ -45,7 +45,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
             throw new WorkbookIOException("Cannot open workbook", e);
         }
 
-        registerCleaner();
+        cleanAction = createCleanAction();
     }
 
     /**
@@ -66,7 +66,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
             throw new WorkbookIOException("Cannot open workbook", e);
         }
 
-        registerCleaner();
+        cleanAction = createCleanAction();
     }
 
     /**
@@ -147,7 +147,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
     }
 
     private static FileMagic checkFileMagic(byte[] bytes) {
-        try (final var in = new ByteArrayInputStream(bytes);
+        try (final ByteArrayInputStream in = new ByteArrayInputStream(bytes);
              final InputStream stream = FileMagic.prepareToCheckMagic(in)) {
             return FileMagic.valueOf(stream);
         } catch (IOException e) {
@@ -174,11 +174,6 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
                 }
             }
         }
-    }
-
-    private void registerCleaner() {
-        final ReaderCleanAction action = createCleanAction();
-        cleanable = cleaner.register(this, action);
     }
 
     /**
