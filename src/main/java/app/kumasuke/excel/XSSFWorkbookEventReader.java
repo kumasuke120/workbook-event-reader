@@ -1,6 +1,7 @@
 package app.kumasuke.excel;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.poifs.filesystem.DocumentFactoryHelper;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
@@ -59,7 +60,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
      * @throws WorkbookIOException  errors happened when opening
      */
     public XSSFWorkbookEventReader(Path filePath, String password) {
-        this(getWorkbookInputStream(filePath), password);
+        super(filePath, password);
     }
 
     /**
@@ -113,15 +114,35 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 stream = DocumentFactoryHelper.getDecryptedStream(fs, password);
             }
 
-            opcPackage = OPCPackage.open(stream);
-            xssfReader = new XSSFReader(opcPackage);
-            sharedStringsTable = xssfReader.getSharedStringsTable();
-            stylesTable = xssfReader.getStylesTable();
+            opcPackage = OPCPackage.open(stream); // consumes all stream data to memory
+            initFromOpcPackage();
         } catch (Exception e) {
             thrown = e;
         } finally {
             suppressClose(in, thrown);
         }
+    }
+
+    @Override
+    void doOpen(Path filePath, String password) throws Exception {
+        final var file = filePath.toFile();
+
+        final InputStream stream;
+        if (password != null) {
+            try (final var fs = new POIFSFileSystem(file, true)) {
+                stream = DocumentFactoryHelper.getDecryptedStream(fs, password);
+                doOpen(stream, null);
+            }
+        } else {
+            opcPackage = OPCPackage.open(file);
+            initFromOpcPackage();
+        }
+    }
+
+    private void initFromOpcPackage() throws IOException, OpenXML4JException {
+        xssfReader = new XSSFReader(opcPackage);
+        sharedStringsTable = xssfReader.getSharedStringsTable();
+        stylesTable = xssfReader.getStylesTable();
     }
 
     @Override

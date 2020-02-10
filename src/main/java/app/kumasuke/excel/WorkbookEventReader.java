@@ -35,9 +35,7 @@ public interface WorkbookEventReader extends Closeable {
      * @throws WorkbookIOException  errors happened when opening
      */
     static WorkbookEventReader open(Path filePath, String password) {
-        final InputStream in = AbstractWorkbookEventReader.getWorkbookInputStream(filePath);
-        final boolean firstTryXSSF = filePath.toString().endsWith("xlsx");
-        return AbstractWorkbookEventReader.autoOpen(in, password, firstTryXSSF);
+        return AbstractWorkbookEventReader.autoOpen(filePath, password);
     }
 
     /**
@@ -63,7 +61,7 @@ public interface WorkbookEventReader extends Closeable {
      * @throws WorkbookIOException  errors happened when opening
      */
     static WorkbookEventReader open(InputStream in, String password) {
-        return AbstractWorkbookEventReader.autoOpen(in, password, true);
+        return AbstractWorkbookEventReader.autoOpen(in, password);
     }
 
     /**

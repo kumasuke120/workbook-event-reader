@@ -9,7 +9,9 @@ import org.apache.poi.ss.usermodel.DateUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.FileChannel;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,7 +43,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
      * @param filePath the file path of the workbook
      */
     public HSSFWorkbookEventReader(Path filePath, String password) {
-        this(getWorkbookInputStream(filePath), password);
+        super(filePath, password);
     }
 
     /**
@@ -68,13 +70,25 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
     void doOpen(InputStream in, String password) throws Exception {
         Exception thrown = null;
         try {
-            fileSystem = new POIFSFileSystem(in);
+            fileSystem = new POIFSFileSystem(in); // consumes all stream data to memory
         } catch (Exception e) {
             thrown = e;
         } finally {
             suppressClose(in, thrown);
         }
 
+        setWorkbookPassword(password);
+    }
+
+    @Override
+    void doOpen(Path filePath, String password) throws Exception {
+        final var channel = FileChannel.open(filePath, StandardOpenOption.READ);
+        fileSystem = new POIFSFileSystem(channel, true);
+
+        setWorkbookPassword(password);
+    }
+
+    private void setWorkbookPassword(String password) throws IOException {
         this.password = password; // records for later use
         checkWorkbookPassword(); // all documents should be checked
     }
