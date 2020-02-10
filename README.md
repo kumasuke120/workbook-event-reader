@@ -9,7 +9,7 @@ All values read from an Excel document could be converted to sensible correspond
 
 ## Branches
 There are two kinds of branches in this repository. Each kind of branches have their own prefixes in their branch names:
-- `java11-*`: written in Java 11, often gets newer features (_default branch_)
+- `java11-*`: written in Java 11, often gets newer features
 - `java8-*`: written in Java 8, with more stable features (_recommended for production_)
 
 ## Requirements
