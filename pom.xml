@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project
-    xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+        xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.kumasuke120</groupId>
     <artifactId>workbook-event-reader-experimental</artifactId>
     <version>1.0.0</version>
+
     <properties>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,6 +21,7 @@
         <junit.vintage.version>5.3.1</junit.vintage.version>
         <junit.platform.version>1.3.1</junit.platform.version>
     </properties>
+
     <dependencies>
         <!-- Apache POI -->
         <dependency>
@@ -80,6 +82,7 @@
             <version>0.8.2</version>
         </dependency>
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
