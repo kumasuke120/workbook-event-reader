@@ -54,10 +54,11 @@ $ mvn clean install -DskipTests
 以下的代码读取工作簿，并将它的内容转换为格式化后的 XML 文档：
 ```java
 public class ToXmlPrinter {
+
     public static void main(String[] args) {
         final Path filePath = Paths.get("workbook.xlsx");
         final XmlGenerator xmlGenerator = new XmlGenerator();
-        try (final var reader = WorkbookEventReader.open(filePath)) {
+        try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath)) {
             reader.read(xmlGenerator);
         }
 
@@ -142,7 +143,15 @@ public class ToXmlPrinter {
 
         private void newLine() {
             xml.append(System.lineSeparator());
-            xml.append(/* 四个空格 */"    ".repeat(currentIndentLevel));
+            xml.append(repeatFourSpaces(currentIndentLevel));
+        }
+
+        private String repeatFourSpaces(int times) {
+            final StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < times; i++) {
+                sb.append(/* four spaces */"    ");
+            }
+            return sb.toString();
         }
 
         private void indent() {
@@ -153,6 +162,6 @@ public class ToXmlPrinter {
             currentIndentLevel -= 1;
         }
     }
+
 }
 ``` 
-_本示例使用 Java 11 编写，使用 Java 8 时可能需要更改某些部分_
