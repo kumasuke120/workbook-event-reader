@@ -136,4 +136,12 @@
             </plugin>
         </plugins>
     </build>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>workbook-event-reader</name>
+            <url>https://maven.pkg.github.com/kumasuke120/workbook-event-reader</url>
+        </repository>
+    </distributionManagement>
 </project>
