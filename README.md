@@ -37,15 +37,15 @@ $ mvn clean install -DskipTests
 The Maven dependency for `java11-*` branches is:
 ```xml
 <dependency>
-    <groupId>app.kumasuke.excel</groupId>
-    <artifactId>workbook-event-reader-java11</artifactId>
+    <groupId>com.github.kumasuke120</groupId>
+    <artifactId>workbook-event-reader-experimental</artifactId>
     <version>1.0.0</version>
 </dependency>
 ```
 The Maven dependency for `java8-*` branches is:
 ```xml
 <dependency>
-    <groupId>app.kumasuke.excel</groupId>
+    <groupId>com.github.kumasuke120</groupId>
     <artifactId>workbook-event-reader</artifactId>
     <version>1.0.0</version>
 </dependency>

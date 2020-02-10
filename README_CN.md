@@ -36,15 +36,15 @@ $ mvn clean install -DskipTests
 `java11-*` 分支的 Maven 依赖为:
 ```xml
 <dependency>
-    <groupId>app.kumasuke.excel</groupId>
-    <artifactId>workbook-event-reader-java11</artifactId>
+    <groupId>com.github.kumasuke120</groupId>
+    <artifactId>workbook-event-reader-experimental</artifactId>
     <version>1.0.0</version>
 </dependency>
 ```
 `java8-*` 分支的 Maven 依赖为:
 ```xml
 <dependency>
-    <groupId>app.kumasuke.excel</groupId>
+    <groupId>com.github.kumasuke120</groupId>
     <artifactId>workbook-event-reader</artifactId>
     <version>1.0.0</version>
 </dependency>
