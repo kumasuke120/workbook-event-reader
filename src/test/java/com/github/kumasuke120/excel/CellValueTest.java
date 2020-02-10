@@ -4,11 +4,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -260,6 +260,12 @@ class CellValueTest {
         assertEquals(theTimeValue, cellValue2.localTimeValue());
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
         assertThrows(CellValueCastException.class, cellValue::localDateTimeValue);
+
+        final var cellValue3 = newCellValue("2020-01-20T12:34:56");
+        assertFalse(cellValue3.isNull());
+        assertEquals("2020-01-20T12:34:56", cellValue3.originalValue());
+        assertEquals(String.class, cellValue3.originalType());
+        assertEquals(LocalTime.of(12, 34, 56), cellValue3.localTimeValue());
     }
 
     @Test
@@ -322,6 +328,10 @@ class CellValueTest {
         assertThrows(CellValueCastException.class, cellValue::intValue);
         assertThrows(CellValueCastException.class, cellValue::longValue);
         assertThrows(CellValueCastException.class, cellValue::doubleValue);
+        final CellValueCastException valueCastException =
+                assertThrows(CellValueCastException.class,
+                             () -> cellValue.localDateTimeValue(Collections.singletonList(null)));
+        assertTrue(valueCastException.getCause() instanceof NullPointerException);
         assertDoesNotThrow(() -> {
             final String stringValue = cellValue.stringValue();
             assertEquals("2011-11-11T11:11:11", stringValue);
@@ -380,18 +390,18 @@ class CellValueTest {
         final var a = newCellValue(1);
         final var b = newCellValue(null);
 
-        assertTrue(a.toString().matches("app\\.kumasuke\\.excel\\.CellValue" +
+        assertTrue(a.toString().matches("com\\.github\\.kumasuke120\\.excel\\.CellValue" +
                                                 "\\{type = java\\.lang\\.Integer, value = 1}" +
                                                 "@[a-z0-9]+"));
-        assertTrue(b.toString().matches("app\\.kumasuke\\.excel\\.CellValue" +
+        assertTrue(b.toString().matches("com\\.github\\.kumasuke120\\.excel\\.CellValue" +
                                                 "\\{value = null}" +
                                                 "@[a-z0-9]+"));
     }
 
     @Test
     void newInstance() {
-        final CellValue a = newCellValueByStaticMethod(null);
-        final CellValue b = newCellValueByStaticMethod(null);
+        final CellValue a = CellValue.newInstance(null);
+        final CellValue b = CellValue.newInstance(null);
         final CellValue c = newCellValue(null);
 
         assertNotNull(a);
@@ -399,9 +409,9 @@ class CellValueTest {
         assertNotNull(c);
 
         assertSame(a, b);
-        assertSame(a, newCellValueByStaticMethod(null));
+        assertSame(a, CellValue.newInstance(null));
         assertNotSame(a, c);
-        assertNotSame(c, newCellValueByStaticMethod(null));
+        assertNotSame(c, CellValue.newInstance(null));
     }
 
     private CellValue newCellValue(Object originalValue) {
@@ -409,17 +419,6 @@ class CellValueTest {
             final Constructor<CellValue> constructor = CellValue.class.getDeclaredConstructor(Object.class);
             constructor.setAccessible(true);
             return constructor.newInstance(originalValue);
-        } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e);
-        }
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private CellValue newCellValueByStaticMethod(Object originalValue) {
-        try {
-            final Method method = CellValue.class.getDeclaredMethod("newInstance", Object.class);
-            method.setAccessible(true);
-            return (CellValue) method.invoke(null, originalValue);
         } catch (ReflectiveOperationException e) {
             throw new AssertionError(e);
         }
