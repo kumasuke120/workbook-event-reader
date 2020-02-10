@@ -1,6 +1,6 @@
-package app.kumasuke.excel;
+package com.github.kumasuke120.excel;
 
-import app.kumasuke.util.ResourceUtil;
+import com.github.kumasuke120.util.ResourceUtil;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings("EmptyTryBlock")
 class WorkbookReaderTest {
+
     static final String CORRECT_PASSWORD = "password";
 
     static String randomWrongPassword() {
@@ -172,4 +173,5 @@ class WorkbookReaderTest {
             }
         });
     }
+
 }

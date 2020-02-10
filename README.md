@@ -1,5 +1,7 @@
 # WorkbookEventReader
-See in other languages: English | [中文](README_CN.md) | [日本語](README_JP.md)
+See in other languages: English | [中文](README_CN.md)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Build Status](https://api.travis-ci.org/kumasuke120/workbook-event-reader.svg?branch=java11-release)](https://travis-ci.org/kumasuke120/workbook-event-reader) [![codecov](https://codecov.io/gh/kumasuke120/workbook-event-reader/branch/java11-release/graph/badge.svg)](https://codecov.io/gh/kumasuke120/workbook-event-reader)
 
 An event-based workbook reader which re-encapsulates [Apache POI](https://poi.apache.org/) Event APIs for processing 
 Excel workbooks, making it easy for reading SpreadsheetML(.xlsx) and legacy Excel documents(.xls) with a same unified interface.
@@ -7,7 +9,7 @@ All values read from an Excel document could be converted to sensible correspond
 
 ## Branches
 There are two kinds of branches in this repository. Each kind of branches have their own prefixes in their branch names:
-- `java11-*`: written in Java 11, often gets newer features (_default branch_)
+- `java11-*`: written in Java 11, often gets newer features
 - `java8-*`: written in Java 8, with more stable features (_recommended for production_)
 
 ## Requirements

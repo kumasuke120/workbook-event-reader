@@ -1,8 +1,9 @@
-package app.kumasuke.excel;
+package com.github.kumasuke120.excel;
 
 import org.junit.jupiter.api.Test;
 
 class HSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<HSSFWorkbookEventReader> {
+
     private static final String NORMAL_FILE_NAME = "workbook.xls";
     private static final String ENCRYPTED_FILE_NAME = "workbook-encrypted.xls";
 
@@ -27,4 +28,5 @@ class HSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<HSSFWo
     void close() {
         super.close();
     }
+
 }

@@ -1,4 +1,4 @@
-package app.kumasuke.excel;
+package com.github.kumasuke120.excel;
 
 import java.io.Closeable;
 import java.io.InputStream;
@@ -12,6 +12,7 @@ import java.util.Objects;
  * A reader that reads Workbook in an event manner and it can only deal with values in cell (not charts)<br>
  */
 public interface WorkbookEventReader extends Closeable {
+
     /**
      * Opens the specified file with an appropriate {@link WorkbookEventReader} if possible.
      *
@@ -35,11 +36,7 @@ public interface WorkbookEventReader extends Closeable {
      * @throws WorkbookIOException  errors happened when opening
      */
     static WorkbookEventReader open(Path filePath, String password) {
-        Objects.requireNonNull(filePath);
-
-        final InputStream in = AbstractWorkbookEventReader.getWorkbookInputStream(filePath);
-        final boolean firstTryXSSF = filePath.toString().endsWith("xlsx");
-        return AbstractWorkbookEventReader.autoOpen(in, password, firstTryXSSF);
+        return AbstractWorkbookEventReader.autoOpen(filePath, password);
     }
 
     /**
@@ -65,7 +62,7 @@ public interface WorkbookEventReader extends Closeable {
      * @throws WorkbookIOException  errors happened when opening
      */
     static WorkbookEventReader open(InputStream in, String password) {
-        return AbstractWorkbookEventReader.autoOpen(in, password, true);
+        return AbstractWorkbookEventReader.autoOpen(in, password);
     }
 
     /**
@@ -228,4 +225,5 @@ public interface WorkbookEventReader extends Closeable {
             // no-op
         }
     }
+
 }

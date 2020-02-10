@@ -1,4 +1,4 @@
-package app.kumasuke.util;
+package com.github.kumasuke120.util;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class ResourceUtil {
+
     private ResourceUtil() {
         throw new UnsupportedOperationException();
     }
@@ -46,4 +47,5 @@ public class ResourceUtil {
 
         return builder.toString();
     }
+
 }

@@ -1,4 +1,4 @@
-package app.kumasuke.excel;
+package com.github.kumasuke120.excel;
 
 import org.apache.poi.hssf.eventusermodel.*;
 import org.apache.poi.hssf.record.*;
@@ -10,7 +10,9 @@ import org.apache.poi.ss.usermodel.DateUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.FileChannel;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,6 +22,7 @@ import java.util.Map;
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
+
     private static final short USER_CODE_CONTINUE = 0;
     private static final short USER_CODE_ABORT = Short.MIN_VALUE;
 
@@ -41,7 +44,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
      * @param filePath the file path of the workbook
      */
     public HSSFWorkbookEventReader(Path filePath, String password) {
-        this(getWorkbookInputStream(filePath), password);
+        super(filePath, password);
     }
 
     /**
@@ -68,15 +71,27 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
     void doOpen(InputStream in, String password) throws Exception {
         Exception thrown = null;
         try {
-            fileSystem = new POIFSFileSystem(in);
+            fileSystem = new POIFSFileSystem(in); // consumes all stream data to memory
         } catch (Exception e) {
             thrown = e;
         } finally {
             suppressClose(in, thrown);
         }
 
+        setWorkbookPassword(password);
+    }
+
+    @Override
+    void doOpen(Path filePath, String password) throws Exception {
+        final var channel = FileChannel.open(filePath, StandardOpenOption.READ);
+        fileSystem = new POIFSFileSystem(channel, true);
+
+        setWorkbookPassword(password);
+    }
+
+    private void setWorkbookPassword(String password) throws IOException {
         this.password = password; // records for later use
-        checkWorkbookPassword();
+        checkWorkbookPassword(); // all documents should be checked
     }
 
     private void checkWorkbookPassword() throws IOException {
@@ -293,7 +308,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                         final FormulaRecord formula = (FormulaRecord) previousRecord;
 
                         final String cellValue = string.getString();
-                        handleCell(formula.getRow(), formula.getColumn(), cellValue);
+                        handleCell(formula.getRow(), formula.getColumn(), formatString(cellValue));
                     }
                     break;
                 }
@@ -308,7 +323,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                     final LabelRecord label = (LabelRecord) record;
 
                     final String cellValue = label.getValue();
-                    handleCell(label.getRow(), label.getColumn(), cellValue);
+                    handleCell(label.getRow(), label.getColumn(), formatString(cellValue));
                     break;
                 }
                 case LabelSSTRecord.sid: {
@@ -317,7 +332,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                     final int sstIndex = labelSst.getSSTIndex();
                     final String cellValue = sharedStringTable.getString(sstIndex)
                             .getString();
-                    handleCell(labelSst.getRow(), labelSst.getColumn(), cellValue);
+                    handleCell(labelSst.getRow(), labelSst.getColumn(), formatString(cellValue));
                     break;
                 }
             }
@@ -384,6 +399,10 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             return value;
         }
 
+        private String formatString(String value) {
+            return "".equals(value) ? null : value;
+        }
+
         private void handleEndSheet(int sheetIndex) {
             if (!previousRowEndHandled) {
                 handleEndRow(currentRowNumber);
@@ -427,4 +446,5 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             previousRowEndHandled = true;
         }
     }
+
 }

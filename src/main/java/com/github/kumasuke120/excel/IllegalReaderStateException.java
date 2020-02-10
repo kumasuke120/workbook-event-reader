@@ -1,4 +1,4 @@
-package app.kumasuke.excel;
+package com.github.kumasuke120.excel;
 
 /**
  * An exception occurred when the {@link WorkbookEventReader} stays in a particular state where some kind of
@@ -6,7 +6,9 @@ package app.kumasuke.excel;
  */
 @SuppressWarnings("WeakerAccess")
 public class IllegalReaderStateException extends WorkbookEventReaderException {
+
     IllegalReaderStateException(String message) {
         super(message);
     }
+
 }

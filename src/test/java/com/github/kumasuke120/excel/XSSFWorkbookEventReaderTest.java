@@ -1,10 +1,11 @@
-package app.kumasuke.excel;
+package com.github.kumasuke120.excel;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class XSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWorkbookEventReader> {
+
     private static final String NORMAL_FILE_NAME = "workbook.xlsx";
     private static final String ENCRYPTED_FILE_NAME = "workbook-encrypted.xlsx";
 
@@ -86,4 +87,5 @@ class XSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWo
                          () -> ((XSSFWorkbookEventReader) reader).setUse1904Windowing(false));
         });
     }
+
 }

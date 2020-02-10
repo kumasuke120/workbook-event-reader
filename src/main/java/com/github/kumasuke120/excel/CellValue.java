@@ -1,4 +1,4 @@
-package app.kumasuke.excel;
+package com.github.kumasuke120.excel;
 
 
 import java.lang.reflect.Field;
@@ -21,6 +21,7 @@ import java.util.Set;
  */
 @SuppressWarnings("WeakerAccess")
 public final class CellValue {
+
     /**
      * A <code>CellValue</code> singleton whose value is <code>null</code>
      */
@@ -510,4 +511,5 @@ public final class CellValue {
                 "}" +
                 "@" + Integer.toHexString(System.identityHashCode(this));
     }
+
 }

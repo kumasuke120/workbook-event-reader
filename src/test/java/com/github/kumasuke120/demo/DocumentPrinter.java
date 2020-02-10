@@ -1,13 +1,14 @@
-package app.kumasuke.demo;
+package com.github.kumasuke120.demo;
 
-import app.kumasuke.excel.CellValue;
-import app.kumasuke.excel.WorkbookEventReader;
-import app.kumasuke.excel.XSSFWorkbookEventReader;
-import app.kumasuke.util.ResourceUtil;
+import com.github.kumasuke120.excel.CellValue;
+import com.github.kumasuke120.excel.WorkbookEventReader;
+import com.github.kumasuke120.excel.XSSFWorkbookEventReader;
+import com.github.kumasuke120.util.ResourceUtil;
 
 import java.nio.file.Path;
 
 public class DocumentPrinter {
+
     public static void main(String[] args) {
         System.out.println("Print 'workbook.xlsx':");
         System.out.println("--------------------------------------------------");
@@ -71,4 +72,5 @@ public class DocumentPrinter {
                               cellType, cellValue.originalValue());
         }
     }
+
 }

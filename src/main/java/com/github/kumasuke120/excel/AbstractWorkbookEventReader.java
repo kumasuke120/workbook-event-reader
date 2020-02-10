@@ -1,4 +1,4 @@
-package app.kumasuke.excel;
+package com.github.kumasuke120.excel;
 
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.poifs.filesystem.FileMagic;
@@ -28,7 +28,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
     private volatile boolean reading = false;
 
     /**
-     * Creates a new {@link AbstractWorkbookEventReader} based on the given file path
+     * Creates a new {@link AbstractWorkbookEventReader} based on the given file {@link InputStream}
      * and the given password if possible.
      *
      * @param in       {@link InputStream} of the workbook to be read
@@ -45,21 +45,28 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
             throw new WorkbookIOException("Cannot open workbook", e);
         }
 
-        cleanAction = createCleanAction();
+        registerCleaner();
     }
 
     /**
-     * Opens an {@link InputStream} from the given file path.
+     * Creates a new {@link AbstractWorkbookEventReader} based on the given file path
+     * and the given password if possible.
      *
-     * @param filePath file path of the workbook
-     * @return {@link InputStream} opened
+     * @param filePath {@link Path} of the workbook to be read
+     * @param password password to open the file
+     * @throws NullPointerException <code>filePath</code> is <code>null</code>
+     * @throws WorkbookIOException  errors happened when opening
      */
-    static InputStream getWorkbookInputStream(Path filePath) {
+    AbstractWorkbookEventReader(Path filePath, String password) {
+        Objects.requireNonNull(filePath);
+
         try {
-            return Files.newInputStream(Objects.requireNonNull(filePath));
-        } catch (IOException e) {
+            doOpen(filePath, password);
+        } catch (Exception e) {
             throw new WorkbookIOException("Cannot open workbook", e);
         }
+
+        registerCleaner();
     }
 
     /**
@@ -86,6 +93,30 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
     }
 
     /**
+     * Opens the specified file with an appropriate {@link WorkbookEventReader} if possible.<br>
+     * It opens the specified file with {@link XSSFWorkbookEventReader} and {@link HSSFWorkbookEventReader} in
+     * a calculated order. If both creations fails, it will throw {@link WorkbookIOException}
+     *
+     * @param filePath {@link Path} of the workbook to be opened
+     * @param password password to open the file
+     * @return {@link WorkbookEventReader} to read the specified file
+     * @throws NullPointerException <code>in</code> is <code>null</code>
+     * @throws WorkbookIOException  errors happened when opening
+     */
+    static WorkbookEventReader autoOpen(Path filePath, String password) {
+        Objects.requireNonNull(filePath);
+
+        final boolean firstTryXSSF = filePath.toString().endsWith("xlsx");
+        if (firstTryXSSF) {
+            return openByOrder(() -> new XSSFWorkbookEventReader(filePath, password),
+                               () -> new HSSFWorkbookEventReader(filePath, password));
+        } else {
+            return openByOrder(() -> new HSSFWorkbookEventReader(filePath, password),
+                               () -> new XSSFWorkbookEventReader(filePath, password));
+        }
+    }
+
+    /**
      * Opens the specified {@link InputStream} with an appropriate {@link WorkbookEventReader} if possible.<br>
      * It opens the specified file with {@link XSSFWorkbookEventReader} and {@link HSSFWorkbookEventReader} in
      * a calculated order. If both creations fails, it will throw {@link WorkbookIOException}
@@ -96,7 +127,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * @throws NullPointerException <code>in</code> is <code>null</code>
      * @throws WorkbookIOException  errors happened when opening
      */
-    static WorkbookEventReader autoOpen(InputStream in, String password, boolean firstTryXSSF) {
+    static WorkbookEventReader autoOpen(InputStream in, String password) {
         Objects.requireNonNull(in);
 
         final byte[] bytes;
@@ -106,23 +137,18 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
             throw new WorkbookIOException("Cannot open and read workbook", e);
         }
 
-        final FileMagic magic = checkFileMagic(new ByteArrayInputStream(bytes));
+        final FileMagic magic = checkFileMagic(bytes);
         if (magic == FileMagic.OOXML) {
             return new XSSFWorkbookEventReader(new ByteArrayInputStream(bytes));
         } else {
-            if (firstTryXSSF) {
-                return openByOrder(() -> new XSSFWorkbookEventReader(new ByteArrayInputStream(bytes), password),
-                                   () -> new HSSFWorkbookEventReader(new ByteArrayInputStream(bytes), password));
-            } else {
-                return openByOrder(() -> new HSSFWorkbookEventReader(new ByteArrayInputStream(bytes), password),
-                                   () -> new XSSFWorkbookEventReader(new ByteArrayInputStream(bytes), password));
-            }
+            return openByOrder(() -> new XSSFWorkbookEventReader(new ByteArrayInputStream(bytes), password),
+                               () -> new HSSFWorkbookEventReader(new ByteArrayInputStream(bytes), password));
         }
     }
 
-    private static FileMagic checkFileMagic(InputStream in) {
-        final InputStream stream = FileMagic.prepareToCheckMagic(in);
-        try {
+    private static FileMagic checkFileMagic(byte[] bytes) {
+        try (final var in = new ByteArrayInputStream(bytes);
+             final InputStream stream = FileMagic.prepareToCheckMagic(in)) {
             return FileMagic.valueOf(stream);
         } catch (IOException e) {
             return null;
@@ -150,6 +176,11 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
         }
     }
 
+    private void registerCleaner() {
+        final ReaderCleanAction action = createCleanAction();
+        cleanable = cleaner.register(this, action);
+    }
+
     /**
      * Opens the specified file with this {@link AbstractWorkbookEventReader}.<br>
      * <br>
@@ -161,6 +192,18 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * @throws Exception any exception occurred during opening process
      */
     abstract void doOpen(InputStream in, String password) throws Exception;
+
+    /**
+     * Opens the specified file with this {@link AbstractWorkbookEventReader}.<br>
+     * <br>
+     * * This method should not throw any {@link WorkbookEventReaderException}, because it is the duty of its
+     * caller to wrap every exception it throws into {@link WorkbookEventReaderException}.
+     *
+     * @param filePath {@link Path} of the workbook to be opened, and it won't be <code>null</code>
+     * @param password password to open the file, and it might be <code>null</code>
+     * @throws Exception any exception occurred during opening process
+     */
+    abstract void doOpen(Path filePath, String password) throws Exception;
 
     /**
      * Creates a resource-cleaning action to close all resources this {@link WorkbookEventReader}
@@ -516,4 +559,5 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
          */
         abstract void doClean() throws Exception;
     }
+
 }

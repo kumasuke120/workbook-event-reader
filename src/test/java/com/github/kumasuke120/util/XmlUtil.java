@@ -1,4 +1,4 @@
-package app.kumasuke.util;
+package com.github.kumasuke120.util;
 
 import nu.xom.*;
 
@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class XmlUtil {
+
     private XmlUtil() {
         throw new UnsupportedOperationException();
     }
