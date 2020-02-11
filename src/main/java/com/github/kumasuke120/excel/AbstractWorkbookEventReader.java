@@ -87,7 +87,9 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
     static void suppressClose(Closeable closeable, Exception caught) throws Exception {
         Exception thrown = caught;
         try {
-            closeable.close();
+            if (closeable != null) {
+                closeable.close();
+            }
         } catch (IOException e) {
             if (thrown != null) {
                 e.addSuppressed(thrown);
