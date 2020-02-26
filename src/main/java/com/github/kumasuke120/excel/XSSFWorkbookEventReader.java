@@ -106,8 +106,9 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
     @Override
     void doOpen(InputStream in, String password) throws Exception {
         Exception thrown = null;
+
+        InputStream stream = null;
         try {
-            final InputStream stream;
             if (password == null) {
                 stream = in;
             } else {
@@ -120,7 +121,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         } catch (Exception e) {
             thrown = e;
         } finally {
-            suppressClose(in, thrown);
+            suppressClose(stream, thrown);
         }
     }
 
