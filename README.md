@@ -47,7 +47,7 @@ The Maven dependency for `java8-*` branches is:
 <dependency>
     <groupId>com.github.kumasuke120</groupId>
     <artifactId>workbook-event-reader</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
