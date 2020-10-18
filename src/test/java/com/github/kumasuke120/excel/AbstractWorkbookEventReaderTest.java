@@ -96,7 +96,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         });
     }
 
-    private LightWeightConstructor<R> pathConstructor() {
+    LightWeightConstructor<R> pathConstructor() {
         try {
             return new LightWeightConstructor<>(readerClass.getConstructor(Path.class));
         } catch (NoSuchMethodException e) {
@@ -238,7 +238,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         Assertions.assertTrue(XmlUtil.isSameXml(expectedXml, actualXml));
     }
 
-    private static class LightWeightConstructor<T> {
+    static class LightWeightConstructor<T> {
         private final Constructor<T> constructor;
 
         LightWeightConstructor(Constructor<T> constructor) {

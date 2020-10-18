@@ -1,6 +1,9 @@
 package com.github.kumasuke120.excel;
 
+import com.github.kumasuke120.util.ResourceUtil;
 import org.junit.jupiter.api.Test;
+
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,6 +21,25 @@ class XSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWo
     @Override
     void read() {
         super.read();
+
+        final Path filePath = ResourceUtil.getPathOfClasspathResource("ENGINES.xlsx");
+        try (final WorkbookEventReader reader = pathConstructor().newInstance(filePath)) {
+            reader.read(new WorkbookEventReader.EventHandler() {
+
+                @Override
+                public void onStartSheet(int sheetIndex, String sheetName) {
+                    assertEquals("result 1", sheetName);
+                }
+
+                @Override
+                public void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
+                    if (rowNum == 0 && columnNum == 0) {
+                        assertEquals("ENGINE", cellValue.stringValue());
+                    }
+                }
+
+            });
+        }
     }
 
     @Test

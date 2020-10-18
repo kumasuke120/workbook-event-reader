@@ -172,7 +172,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 String sheetName = sheetIt.getSheetName();
                 handler.onStartSheet(++currentSheetIndex, sheetName);
 
-                saxHandler.setCurrentSheetIndex(currentSheetIndex);
+                saxHandler.initializeForNewSheet(currentSheetIndex);
                 try {
                     saxParser.parse(sheetIs, saxHandler);
                 } catch (CancelReadingException e) {
@@ -248,25 +248,26 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         private static final String CELL_VALUE_BOOLEAN_FALSE = "0";
 
         private final EventHandler handler;
+        private final StringBuilder currentCellValueBuilder = new StringBuilder();
 
         private String currentElementQName;
 
         private int currentSheetIndex = -1;
         private int currentRowNum = -1;
+        private int currentColumnNum = -1;
 
-        private String currentCellReference;
         private int currentCellXfIndex = -1;
         private String currentCellType;
 
         private boolean isCurrentCellValue = false;
-        private StringBuilder currentCellValueBuilder = new StringBuilder();
 
         ReaderSheetHandler(EventHandler handler) {
             this.handler = handler;
         }
 
-        void setCurrentSheetIndex(int currentSheetIndex) {
+        void initializeForNewSheet(int currentSheetIndex) {
             this.currentSheetIndex = currentSheetIndex;
+            this.currentRowNum = -1;
         }
 
         @Override
@@ -277,15 +278,49 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             currentElementQName = qName;
 
             if (TAG_CELL.equals(localName)) {
-                currentCellReference = attributes.getValue(ATTRIBUTE_CELL_REFERENCE);
+                final String currentCellReference = attributes.getValue(ATTRIBUTE_CELL_REFERENCE);
+                if (currentCellReference == null) { // cell reference can be left out
+                    // treats as a continuation to previous column
+                    if (currentColumnNum == -1) {
+                        currentColumnNum = 0;
+                    } else {
+                        currentColumnNum += 1;
+                    }
+                } else {
+                    final Map.Entry<Integer, Integer> rowAndColumn =
+                            Util.cellReferenceToRowAndColumn(currentCellReference);
+
+                    if (rowAndColumn == null) {
+                        throw new SAXParseException(
+                                "Cannot parse row number or column number in tag '" + qName + "'", null);
+                    }
+
+                    final int rowNum = rowAndColumn.getKey();
+                    final int columnNum = rowAndColumn.getValue();
+
+                    assert rowNum == currentRowNum;
+                    currentColumnNum = columnNum;
+                }
+
+                // saves styles of current cell
                 currentCellXfIndex = Util.toInt(attributes.getValue(ATTRIBUTE_CELL_STYLE), -1);
                 currentCellType = attributes.getValue(ATTRIBUTE_CELL_TYPE);
             } else if (TAG_ROW.equals(localName)) {
-                try {
-                    currentRowNum = Integer.parseInt(attributes.getValue(ATTRIBUTE_ROW_REFERENCE)) - 1;
-                } catch (NumberFormatException e) {
-                    throw new SAXParseException("Cannot parse row number in tag '" + qName + "'",
-                                                null, e);
+                final String rawValue = attributes.getValue(ATTRIBUTE_ROW_REFERENCE);
+                if (rawValue == null) { // row reference can be left out
+                    // treats as a continuation to previous row
+                    if (currentRowNum == -1) {
+                        currentRowNum = 0;
+                    } else {
+                        currentRowNum += 1;
+                    }
+                } else {
+                    try {
+                        currentRowNum = Integer.parseInt(attributes.getValue(ATTRIBUTE_ROW_REFERENCE)) - 1;
+                    } catch (NumberFormatException e) {
+                        throw new SAXParseException("Cannot parse row number in tag '" + qName + "'",
+                                                    null, e);
+                    }
                 }
 
                 handler.onStartRow(currentSheetIndex, currentRowNum);
@@ -306,26 +341,15 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             currentElementQName = qName;
 
             if (TAG_CELL.equals(localName)) {
-                final Map.Entry<Integer, Integer> rowAndColumn =
-                        Util.cellReferenceToRowAndColumn(currentCellReference);
-
-                if (rowAndColumn == null) {
-                    throw new SAXParseException(
-                            "Cannot parse row number or column number in tag '" + qName + "'", null);
-                }
-
-                final int rowNum = rowAndColumn.getKey();
-                final int columnNum = rowAndColumn.getValue();
-
-                assert rowNum == currentRowNum;
                 final Object cellValue = getCurrentCellValue();
-                handler.onHandleCell(currentSheetIndex, currentRowNum, columnNum,
+                handler.onHandleCell(currentSheetIndex, currentRowNum, currentColumnNum,
                                      CellValue.newInstance(cellValue));
 
                 // clear its content after processing
                 currentCellValueBuilder.setLength(0);
                 currentCellType = null;
             } else if (TAG_ROW.equals(localName)) {
+                currentColumnNum = -1;
                 handler.onEndRow(currentSheetIndex, currentRowNum);
             } else if (isCellValueRelated(localName)) {
                 isCurrentCellValue = false; // indicates cell value ends
