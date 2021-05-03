@@ -4,7 +4,7 @@ sudo: true
 
 dist: trusty
 
-jdk: oraclejdk11
+jdk: oraclejdk8
 
 before_install:
   - chmod +x mvnw
