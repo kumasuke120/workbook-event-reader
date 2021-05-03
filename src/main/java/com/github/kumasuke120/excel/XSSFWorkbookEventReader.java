@@ -93,7 +93,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     /**
      * Sets all following-opened instances of {@link XSSFWorkbookEventReader} on the current thread using
-     * 1904 windowing for parsing date cells.<br>
+     * 1904 windowing for parsing date cells whether or not.<br>
      *
      * @param use1904Windowing whether use 1904 date windowing or not
      */
