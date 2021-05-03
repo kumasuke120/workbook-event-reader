@@ -25,7 +25,6 @@ class XSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWo
         final Path filePath = ResourceUtil.getPathOfClasspathResource("ENGINES.xlsx");
         try (final WorkbookEventReader reader = pathConstructor().newInstance(filePath)) {
             reader.read(new WorkbookEventReader.EventHandler() {
-
                 @Override
                 public void onStartSheet(int sheetIndex, String sheetName) {
                     assertEquals("result 1", sheetName);
@@ -37,7 +36,6 @@ class XSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWo
                         assertEquals("ENGINE", cellValue.stringValue());
                     }
                 }
-
             });
         }
     }

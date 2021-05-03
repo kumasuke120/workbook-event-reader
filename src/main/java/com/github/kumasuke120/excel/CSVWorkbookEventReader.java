@@ -101,7 +101,7 @@ public class CSVWorkbookEventReader extends AbstractWorkbookEventReader {
         final EventHandler delegate = new CancelFastEventHandler(handler);
 
         /*
-         * csv files don't have sheet, we triggers sheet-related events for compatibility;
+         * csv files don't have sheets, we triggers sheet-related events for compatibility;
          * treats the sheet-related event identical to document-related events
          */
 
