@@ -1,19 +1,18 @@
 package com.github.kumasuke120.excel;
 
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
+import java.util.function.Function;
+
+import static com.github.kumasuke120.excel.WorkbookDateTimeFormatters.DEFAULT_DATE_TIME_FORMATTERS;
+import static com.github.kumasuke120.excel.WorkbookDateTimeFormatters.parseTemporalAccessor;
 
 /**
  * A value class which encapsulates all possible values that the {@link WorkbookEventReader} may return and which
@@ -27,45 +26,10 @@ public final class CellValue {
      */
     private static final CellValue NULL = new CellValue(null);
 
-    /**
-     * The default <code>DateTimeFormatter</code>s that will be used when converting <code>String</code>
-     * to <code>LocalTime</code>, <code>LocalDate</code>, <code>LocalDateTime</code>
-     */
-    private static final Set<DateTimeFormatter> DEFAULT_DATE_TIME_FORMATTERS;
-
-    static {
-        final Set<DateTimeFormatter> formatters = new HashSet<>();
-        final Field[] fields = DateTimeFormatter.class.getFields();
-        for (Field field : fields) {
-            final int modifiers = field.getModifiers();
-
-            // public static final DateTimeFormatter ...
-            if (Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers) &&
-                    DateTimeFormatter.class.equals(field.getType())) {
-                try {
-                    final DateTimeFormatter f = (DateTimeFormatter) field.get(null);
-                    formatters.add(f);
-                } catch (IllegalAccessException e) {
-                    throw new AssertionError(e);
-                }
-            }
-        }
-
-        DEFAULT_DATE_TIME_FORMATTERS = Collections.unmodifiableSet(formatters);
-    }
-
     private final Object originalValue;
 
     private CellValue(Object originalValue) {
-        assert originalValue == null ||
-                originalValue instanceof Boolean ||
-                originalValue instanceof Integer ||
-                originalValue instanceof Long ||
-                originalValue instanceof Double ||
-                originalValue instanceof String ||
-                originalValue instanceof LocalTime ||
-                originalValue instanceof LocalDate ||
-                originalValue instanceof LocalDateTime;
+        assert isTypeAllowed(originalValue);
 
         this.originalValue = originalValue;
     }
@@ -83,6 +47,18 @@ public final class CellValue {
         } else {
             return new CellValue(originalValue);
         }
+    }
+
+    private boolean isTypeAllowed(Object originalValue) {
+        return originalValue == null ||
+                originalValue instanceof Boolean ||
+                originalValue instanceof Integer ||
+                originalValue instanceof Long ||
+                originalValue instanceof Double ||
+                originalValue instanceof String ||
+                originalValue instanceof LocalTime ||
+                originalValue instanceof LocalDate ||
+                originalValue instanceof LocalDateTime;
     }
 
     /**
@@ -446,31 +422,46 @@ public final class CellValue {
         }
     }
 
-    private TemporalAccessor parseTemporalAccessor(String value, Iterable<DateTimeFormatter> formatters) {
-        RuntimeException previousEx = null;
+    /**
+     * Uses the given function to map the {@link #originalValue()} to a new value, and returns a new
+     * {@link CellValue} based on the new value.<br>
+     * The return value of <code>mappingFunction</code> must be one of the types listed on the javadoc of
+     * {@link #originalValue()}.
+     *
+     * @param mappingFunction value mapping function
+     * @return {@link CellValue} based on the mapped value
+     * @throws CellValueCastException cannot perform mapping or the mapped value is not in the allow type
+     */
+    public CellValue mapOriginalValue(Function<Object, Object> mappingFunction) {
+        Objects.requireNonNull(mappingFunction);
 
-        for (DateTimeFormatter formatter : formatters) {
-            if (formatter == null) {
-                if (previousEx == null) {
-                    previousEx = new NullPointerException();
-                } else {
-                    previousEx.addSuppressed(new NullPointerException());
-                }
-                continue;
-            }
-
-            try {
-                return formatter.parse(value);
-            } catch (DateTimeParseException e) {
-                if (previousEx != null) {
-                    previousEx.addSuppressed(e);
-                }
-                previousEx = e;
-            }
+        final Object newOriginalValue;
+        try {
+            newOriginalValue = mappingFunction.apply(originalValue);
+        } catch (RuntimeException e) {
+            throw new CellValueCastException(e);
         }
 
-        assert previousEx != null;
-        throw new CellValueCastException(previousEx);
+        if (newOriginalValue == originalValue) { // prevents creating a new instance if two values are identical
+            return this;
+        } else {
+            if (!isTypeAllowed(newOriginalValue)) {
+                throw new CellValueCastException("mapped value should be in one of the allowed types");
+            }
+
+            return CellValue.newInstance(newOriginalValue);
+        }
+    }
+
+    /**
+     * Trims the original value if its type is of {@link String}.<br>
+     * A new instance of {@link CellValue} will be created if there is any change to this
+     * {@link CellValue} instance.
+     *
+     * @return {@link CellValue} based on the trimmed value
+     */
+    public CellValue trim() {
+        return mapOriginalValue(v -> v instanceof String ? ((String) v).trim() : v);
     }
 
     @Override
@@ -511,5 +502,6 @@ public final class CellValue {
                 "}" +
                 "@" + Integer.toHexString(System.identityHashCode(this));
     }
+
 
 }

@@ -9,6 +9,10 @@ public class CellValueCastException extends RuntimeException {
     CellValueCastException() {
     }
 
+    CellValueCastException(String message) {
+        super(message);
+    }
+
     CellValueCastException(Throwable cause) {
         super(cause);
     }
