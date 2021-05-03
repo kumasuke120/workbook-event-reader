@@ -115,8 +115,7 @@ public class CSVWorkbookEventReader extends AbstractWorkbookEventReader {
                 delegate.onStartRow(0, ++currentRowNumber);
 
                 // handles cells
-                int currentColumnNum;
-                for (currentColumnNum = 0; currentColumnNum < record.size(); currentColumnNum++) {
+                for (int currentColumnNum = 0; currentColumnNum < record.size(); currentColumnNum++) {
                     final CellValue cellValue = getRecordCellValue(record, currentColumnNum);
                     delegate.onHandleCell(0, currentRowNumber, currentColumnNum, cellValue);
                 }
