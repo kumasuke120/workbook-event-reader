@@ -31,10 +31,12 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         this.readerClass = readerClass;
     }
 
+    @SuppressWarnings("SameParameterValue")
     void setSampleReadFileName(String sampleReadFileName) {
         this.sampleReadFileName = sampleReadFileName;
     }
 
+    @SuppressWarnings("SameParameterValue")
     void setSampleCancelFileName(String sampleCancelFileName) {
         this.sampleCancelFileName = sampleCancelFileName;
     }

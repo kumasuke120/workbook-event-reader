@@ -1,4 +1,4 @@
-ENGINE,SUPPORT,COMMENT,TRANSACTIONS,XA,SAVEPOINTS
+﻿ENGINE,SUPPORT,COMMENT,TRANSACTIONS,XA,SAVEPOINTS
 InnoDB,DEFAULT,"Supports transactions, row-level locking, and foreign keys",YES,YES,YES
 MRG_MYISAM,YES,Collection of identical MyISAM tables,NO,NO,NO
 MEMORY,YES,"Hash based, stored in memory, useful for temporary tables",NO,NO,NO
