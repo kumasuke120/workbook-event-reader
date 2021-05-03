@@ -5,13 +5,13 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class XSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWorkbookEventReader> {
 
     private static final String NORMAL_FILE_NAME = "workbook.xlsx";
     private static final String ENCRYPTED_FILE_NAME = "workbook-encrypted.xlsx";
-
 
     XSSFWorkbookEventReaderTest() {
         super(NORMAL_FILE_NAME, ENCRYPTED_FILE_NAME, XSSFWorkbookEventReader.class);
@@ -84,21 +84,25 @@ class XSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWo
     void setUse1904Windowing() {
         XSSFWorkbookEventReader.setUse1904Windowing(true);
 
-        dealWithReader(reader -> {
-            assert reader instanceof XSSFWorkbookEventReader;
-            reader.read(new WorkbookEventReader.EventHandler() {
-                @Override
-                public void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
-                    if (sheetIndex == 0 && (rowNum == 3 || rowNum == 4) && columnNum == 1) {
-                        if (!cellValue.isNull()) {
-                            assertEquals(2022, cellValue.localDateValue().getYear());
+        try {
+            dealWithReader(reader -> {
+                assert reader instanceof XSSFWorkbookEventReader;
+                reader.read(new WorkbookEventReader.EventHandler() {
+                    @Override
+                    public void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
+                        if (sheetIndex == 0 && (rowNum == 3 || rowNum == 4) && columnNum == 1) {
+                            if (!cellValue.isNull()) {
+                                assertEquals(2022, cellValue.localDateValue().getYear());
+                            }
                         }
                     }
-                }
-            });
+                });
 
-            reader.close();
-        });
+                reader.close();
+            });
+        } finally {
+            XSSFWorkbookEventReader.setUse1904Windowing(false);
+        }
     }
 
 }
