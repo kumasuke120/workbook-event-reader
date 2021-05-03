@@ -34,12 +34,14 @@ import java.util.Map;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
-    private volatile boolean use1904Windowing = false;
+    private static final ThreadLocal<Boolean> use1904WindowingLocal = ThreadLocal.withInitial(() -> false);
 
     private OPCPackage opcPackage;
     private XSSFReader xssfReader;
     private SharedStringsTable sharedStringsTable;
     private StylesTable stylesTable;
+
+    private boolean use1904Windowing;
 
     /**
      * Creates a new {@link XSSFWorkbookEventReader} based on the given file path.
@@ -90,17 +92,18 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
     }
 
     /**
-     * Sets this {@link XSSFWorkbookEventReader} to use 1904 windowing to parse date cells.
+     * Sets all following-opened instances of {@link XSSFWorkbookEventReader} on the current thread using
+     * 1904 windowing for parsing date cells.<br>
      *
      * @param use1904Windowing whether use 1904 date windowing or not
-     * @throws IllegalReaderStateException this {@link WorkbookEventReader} has been closed;
-     *                                     or called during reading process
      */
-    public void setUse1904Windowing(boolean use1904Windowing) {
-        assertNotClosed();
-        assertNotBeingRead();
+    public static void setUse1904Windowing(boolean use1904Windowing) {
+        use1904WindowingLocal.set(use1904Windowing);
+    }
 
-        this.use1904Windowing = use1904Windowing;
+    @Override
+    void doOnStartOpen() {
+        use1904Windowing = use1904WindowingLocal.get();
     }
 
     @Override

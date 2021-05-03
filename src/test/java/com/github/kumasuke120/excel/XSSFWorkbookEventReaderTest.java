@@ -82,17 +82,11 @@ class XSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWo
 
     @Test
     void setUse1904Windowing() {
+        XSSFWorkbookEventReader.setUse1904Windowing(true);
+
         dealWithReader(reader -> {
             assert reader instanceof XSSFWorkbookEventReader;
-            ((XSSFWorkbookEventReader) reader).setUse1904Windowing(true);
-
             reader.read(new WorkbookEventReader.EventHandler() {
-                @Override
-                public void onStartDocument() {
-                    assertThrows(IllegalReaderStateException.class,
-                                 () -> ((XSSFWorkbookEventReader) reader).setUse1904Windowing(false));
-                }
-
                 @Override
                 public void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
                     if (sheetIndex == 0 && (rowNum == 3 || rowNum == 4) && columnNum == 1) {
@@ -104,9 +98,6 @@ class XSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWo
             });
 
             reader.close();
-
-            assertThrows(IllegalReaderStateException.class,
-                         () -> ((XSSFWorkbookEventReader) reader).setUse1904Windowing(false));
         });
     }
 

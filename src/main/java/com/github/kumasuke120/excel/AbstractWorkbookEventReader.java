@@ -39,6 +39,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
     AbstractWorkbookEventReader(InputStream in, String password) {
         Objects.requireNonNull(in);
 
+        doOnStartOpen();
         try {
             doOpen(in, password);
         } catch (Exception e) {
@@ -60,6 +61,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
     AbstractWorkbookEventReader(Path filePath, String password) {
         Objects.requireNonNull(filePath);
 
+        doOnStartOpen();
         try {
             doOpen(filePath, password);
         } catch (Exception e) {
@@ -176,6 +178,15 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
                 }
             }
         }
+    }
+
+    /**
+     * Callback which will be called before the actual opening process is completed or cancelled.<br>
+     * <br>
+     * * This method shouldn't throw any kind of exceptions, including unchecked exceptions.
+     */
+    void doOnStartOpen() {
+        // no-op
     }
 
     /**
@@ -443,7 +454,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
         }
 
         /**
-         * Converts given value to relative type.<br>
+         * Converts given value to relative types.<br>
          * For instance, if a <code>double</code> could be treated as a <code>int</code>, it will be converted
          * to its <code>int</code> counterpart.
          *
