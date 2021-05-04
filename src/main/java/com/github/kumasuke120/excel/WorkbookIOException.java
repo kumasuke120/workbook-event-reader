@@ -6,6 +6,10 @@ package com.github.kumasuke120.excel;
 @SuppressWarnings("WeakerAccess")
 public class WorkbookIOException extends WorkbookEventReaderException {
 
+    WorkbookIOException(Throwable cause) {
+        super(cause);
+    }
+
     WorkbookIOException(String message, Throwable cause) {
         super(message, cause);
     }

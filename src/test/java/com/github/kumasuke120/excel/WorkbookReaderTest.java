@@ -57,6 +57,11 @@ class WorkbookReaderTest {
             assertTrue(reader instanceof XSSFWorkbookEventReader);
         }
 
+        final Path csvPath = ResourceUtil.getPathOfClasspathResource("ENGINES.csv");
+        try (final WorkbookEventReader reader = WorkbookEventReader.open(csvPath)) {
+            assertTrue(reader instanceof CSVWorkbookEventReader);
+        }
+
         final Path plainPath = ResourceUtil.getPathOfClasspathResource("workbook");
         try (final WorkbookEventReader reader = WorkbookEventReader.open(plainPath)) {
             assertTrue(reader instanceof XSSFWorkbookEventReader);
@@ -113,6 +118,12 @@ class WorkbookReaderTest {
         try (final InputStream in = ClassLoader.getSystemResourceAsStream("workbook.xlsx")) {
             try (final WorkbookEventReader reader = WorkbookEventReader.open(in)) {
                 assertTrue(reader instanceof XSSFWorkbookEventReader);
+            }
+        }
+
+        try (final InputStream in = ClassLoader.getSystemResourceAsStream("ENGINES.csv")) {
+            try (final WorkbookEventReader reader = WorkbookEventReader.open(in)) {
+                assertTrue(reader instanceof CSVWorkbookEventReader);
             }
         }
 

@@ -35,7 +35,7 @@ public interface WorkbookEventReader extends Closeable {
      * @throws WorkbookIOException  errors happened when opening
      */
     static WorkbookEventReader open(Path filePath, String password) {
-        return AbstractWorkbookEventReader.autoOpen(filePath, password);
+        return new WorkbookAutoOpener(filePath, password).open();
     }
 
     /**
@@ -61,7 +61,7 @@ public interface WorkbookEventReader extends Closeable {
      * @throws WorkbookIOException  errors happened when opening
      */
     static WorkbookEventReader open(InputStream in, String password) {
-        return AbstractWorkbookEventReader.autoOpen(in, password);
+        return new WorkbookAutoOpener(in, password).open();
     }
 
     /**

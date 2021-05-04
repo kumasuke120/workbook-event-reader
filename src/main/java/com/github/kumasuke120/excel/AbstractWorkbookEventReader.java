@@ -1,19 +1,14 @@
 package com.github.kumasuke120.excel;
 
-import org.apache.poi.EncryptedDocumentException;
-import org.apache.poi.poifs.filesystem.FileMagic;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.DateUtil;
-import org.apache.poi.util.IOUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.time.*;
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -94,90 +89,6 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
         }
 
         if (thrown != null) throw thrown;
-    }
-
-    /**
-     * Opens the specified file with an appropriate {@link WorkbookEventReader} if possible.<br>
-     * It opens the specified file with {@link XSSFWorkbookEventReader} and {@link HSSFWorkbookEventReader} in
-     * a calculated order. If both creations fails, it will throw {@link WorkbookIOException}
-     *
-     * @param filePath {@link Path} of the workbook to be opened
-     * @param password password to open the file
-     * @return {@link WorkbookEventReader} to read the specified file
-     * @throws NullPointerException <code>in</code> is <code>null</code>
-     * @throws WorkbookIOException  errors happened when opening
-     */
-    static WorkbookEventReader autoOpen(Path filePath, String password) {
-        Objects.requireNonNull(filePath);
-
-        final boolean firstTryXSSF = filePath.toString().endsWith("xlsx");
-        if (firstTryXSSF) {
-            return openByOrder(() -> new XSSFWorkbookEventReader(filePath, password),
-                               () -> new HSSFWorkbookEventReader(filePath, password));
-        } else {
-            return openByOrder(() -> new HSSFWorkbookEventReader(filePath, password),
-                               () -> new XSSFWorkbookEventReader(filePath, password));
-        }
-    }
-
-    /**
-     * Opens the specified {@link InputStream} with an appropriate {@link WorkbookEventReader} if possible.<br>
-     * It opens the specified file with {@link XSSFWorkbookEventReader} and {@link HSSFWorkbookEventReader} in
-     * a calculated order. If both creations fails, it will throw {@link WorkbookIOException}
-     *
-     * @param in       {@link InputStream} of the workbook to be opened
-     * @param password password to open the file
-     * @return {@link WorkbookEventReader} to read the specified file
-     * @throws NullPointerException <code>in</code> is <code>null</code>
-     * @throws WorkbookIOException  errors happened when opening
-     */
-    static WorkbookEventReader autoOpen(InputStream in, String password) {
-        Objects.requireNonNull(in);
-
-        final byte[] bytes;
-        try {
-            bytes = IOUtils.toByteArray(in);
-        } catch (IOException e) {
-            throw new WorkbookIOException("Cannot open and read workbook", e);
-        }
-
-        final FileMagic magic = checkFileMagic(bytes);
-        if (magic == FileMagic.OOXML) {
-            return new XSSFWorkbookEventReader(new ByteArrayInputStream(bytes));
-        } else {
-            return openByOrder(() -> new XSSFWorkbookEventReader(new ByteArrayInputStream(bytes), password),
-                               () -> new HSSFWorkbookEventReader(new ByteArrayInputStream(bytes), password));
-        }
-    }
-
-    private static FileMagic checkFileMagic(byte[] bytes) {
-        try (final ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-             final InputStream stream = FileMagic.prepareToCheckMagic(in)) {
-            return FileMagic.valueOf(stream);
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
-    private static WorkbookEventReader openByOrder(Supplier<WorkbookEventReader> firstConstructor,
-                                                   Supplier<WorkbookEventReader> secondConstructor) {
-        try {
-            return firstConstructor.get();
-        } catch (WorkbookIOException e1) {
-            // EncryptedDocumentException means password incorrect, it should be thrown directly
-            if (e1.getCause() instanceof EncryptedDocumentException) {
-                throw e1;
-            } else {
-                try {
-                    return secondConstructor.get();
-                } catch (WorkbookIOException e2) {
-                    if (!(e2.getCause() instanceof EncryptedDocumentException)) {
-                        e2.addSuppressed(e1);
-                    }
-                    throw e2;
-                }
-            }
-        }
     }
 
     /**
