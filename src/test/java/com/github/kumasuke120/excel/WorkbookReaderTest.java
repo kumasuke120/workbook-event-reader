@@ -31,6 +31,7 @@ class WorkbookReaderTest {
         return result;
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Test
     void nullCheck() {
         assertThrows(NullPointerException.class, () -> {
@@ -55,6 +56,11 @@ class WorkbookReaderTest {
         final Path xlsxPath = ResourceUtil.getPathOfClasspathResource("workbook.xlsx");
         try (final WorkbookEventReader reader = WorkbookEventReader.open(xlsxPath)) {
             assertTrue(reader instanceof XSSFWorkbookEventReader);
+        }
+
+        final Path csvPath = ResourceUtil.getPathOfClasspathResource("ENGINES.csv");
+        try (final WorkbookEventReader reader = WorkbookEventReader.open(csvPath)) {
+            assertTrue(reader instanceof CSVWorkbookEventReader);
         }
 
         final Path plainPath = ResourceUtil.getPathOfClasspathResource("workbook");
@@ -102,6 +108,7 @@ class WorkbookReaderTest {
         });
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Test
     void openWithStream() throws IOException {
         try (final InputStream in = ClassLoader.getSystemResourceAsStream("workbook.xls")) {
@@ -113,6 +120,12 @@ class WorkbookReaderTest {
         try (final InputStream in = ClassLoader.getSystemResourceAsStream("workbook.xlsx")) {
             try (final WorkbookEventReader reader = WorkbookEventReader.open(in)) {
                 assertTrue(reader instanceof XSSFWorkbookEventReader);
+            }
+        }
+
+        try (final InputStream in = ClassLoader.getSystemResourceAsStream("ENGINES.csv")) {
+            try (final WorkbookEventReader reader = WorkbookEventReader.open(in)) {
+                assertTrue(reader instanceof CSVWorkbookEventReader);
             }
         }
 
@@ -131,6 +144,7 @@ class WorkbookReaderTest {
         }
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Test
     void openWithStreamAndPassword() throws IOException {
         try (final InputStream in = ClassLoader.getSystemResourceAsStream("workbook-encrypted.xls")) {

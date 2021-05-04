@@ -38,6 +38,7 @@
             <cell index="5" javaType="java.lang.String">123456789012345678</cell>
             <cell index="6" javaType="java.lang.String">123456789  </cell>
             <cell index="7" javaType="java.lang.String">0.12345678901234567890</cell>
+            <cell index="8" javaType="java.lang.String">123</cell>
         </row>
         <row index="6">
             <cell index="0" javaType="java.lang.String">Boolean</cell>

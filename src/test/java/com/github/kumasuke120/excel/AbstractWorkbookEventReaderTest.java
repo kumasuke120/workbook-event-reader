@@ -1,14 +1,15 @@
 package com.github.kumasuke120.excel;
 
+import com.github.kumasuke120.util.LightWeightConstructor;
 import com.github.kumasuke120.util.ResourceUtil;
 import com.github.kumasuke120.util.XmlUtil;
 import org.apache.poi.EncryptedDocumentException;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.Stack;
 import java.util.function.Consumer;
@@ -21,17 +22,30 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
     private final String encryptedFileName;
     private final Class<R> readerClass;
 
-    AbstractWorkbookEventReaderTest(String normalFileName,
-                                    String encryptedFileName,
-                                    Class<R> readerClass) {
+    private String sampleReadFileName = "sample-output.xml";
+    private String sampleCancelFileName = "sample-output-2.xml";
+
+    AbstractWorkbookEventReaderTest(@NotNull String normalFileName,
+                                    @Nullable String encryptedFileName,
+                                    @NotNull Class<R> readerClass) {
         this.normalFileName = normalFileName;
         this.encryptedFileName = encryptedFileName;
         this.readerClass = readerClass;
     }
 
+    @SuppressWarnings("SameParameterValue")
+    void setSampleReadFileName(@NotNull String sampleReadFileName) {
+        this.sampleReadFileName = sampleReadFileName;
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    void setSampleCancelFileName(@NotNull String sampleCancelFileName) {
+        this.sampleCancelFileName = sampleCancelFileName;
+    }
+
     @SuppressWarnings("EmptyTryBlock")
-    final void dealWithReader(Consumer<WorkbookEventReader> consumer) {
-        // constructor(Path)
+    final void dealWithReader(@NotNull Consumer<WorkbookEventReader> consumer) {
+        // region constructor(Path)
         final Path filePath = ResourceUtil.getPathOfClasspathResource(normalFileName);
         try (final WorkbookEventReader reader = pathConstructor().newInstance(filePath)) {
             consumer.accept(reader);
@@ -41,8 +55,9 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
                 // no-op
             }
         });
+        // endregion
 
-        // constructor(InputStream)
+        // region constructor(InputStream)
         try (final InputStream in = ClassLoader.getSystemResourceAsStream(normalFileName)) {
             try (final WorkbookEventReader reader = inputStreamConstructor().newInstance(in)) {
                 consumer.accept(reader);
@@ -55,8 +70,13 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
                 // no-op
             }
         });
+        // endregion
 
-        // constructor(Path, String)
+        if (encryptedFileName == null || "".equals(encryptedFileName)) { // skips encryption test
+            return;
+        }
+
+        // region constructor(Path, String)
         final Path filePath2 = ResourceUtil.getPathOfClasspathResource(encryptedFileName);
         try (final WorkbookEventReader reader = pathAndPasswordConstructor()
                 .newInstance(filePath2, WorkbookReaderTest.CORRECT_PASSWORD)) {
@@ -71,8 +91,9 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
                 throw e;
             }
         });
+        // endregion
 
-        // constructor(InputStream, String)
+        // region constructor(InputStream, String)
         try (final InputStream in = ClassLoader.getSystemResourceAsStream(encryptedFileName)) {
             try (final WorkbookEventReader reader = inputStreamAndPasswordConstructor()
                     .newInstance(in, WorkbookReaderTest.CORRECT_PASSWORD)) {
@@ -94,38 +115,27 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
                 throw new AssertionError(e);
             }
         });
+        // endregion
     }
 
+    @NotNull
     LightWeightConstructor<R> pathConstructor() {
-        try {
-            return new LightWeightConstructor<>(readerClass.getConstructor(Path.class));
-        } catch (NoSuchMethodException e) {
-            throw new AssertionError(e);
-        }
+        return new LightWeightConstructor<>(readerClass, Path.class);
     }
 
+    @NotNull
     private LightWeightConstructor<R> pathAndPasswordConstructor() {
-        try {
-            return new LightWeightConstructor<>(readerClass.getConstructor(Path.class, String.class));
-        } catch (NoSuchMethodException e) {
-            throw new AssertionError(e);
-        }
+        return new LightWeightConstructor<>(readerClass, Path.class, String.class);
     }
 
+    @NotNull
     private LightWeightConstructor<R> inputStreamConstructor() {
-        try {
-            return new LightWeightConstructor<>(readerClass.getConstructor(InputStream.class));
-        } catch (NoSuchMethodException e) {
-            throw new AssertionError(e);
-        }
+        return new LightWeightConstructor<>(readerClass, InputStream.class);
     }
 
+    @NotNull
     private LightWeightConstructor<R> inputStreamAndPasswordConstructor() {
-        try {
-            return new LightWeightConstructor<>(readerClass.getConstructor(InputStream.class, String.class));
-        } catch (NoSuchMethodException e) {
-            throw new AssertionError(e);
-        }
+        return new LightWeightConstructor<>(readerClass, InputStream.class, String.class);
     }
 
     void read() {
@@ -134,7 +144,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
             reader.read(handler);
 
             final String xml = handler.getXml();
-            assertSameWithSample("sample-output.xml", xml);
+            assertSameWithSample(sampleReadFileName, xml);
 
             // read cannot be started when reader is in reading process
             reader.read(new TestEventHandler() {
@@ -148,7 +158,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         dealWithReader(reader -> {
             final WorkbookEventReader.EventHandler handler = new WorkbookEventReader.EventHandler() {
                 @Override
-                public void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
+                public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
                     if (Integer.class.equals(cellValue.originalType())) {
                         // triggers an CellValueCastException
                         cellValue.localDateValue();
@@ -195,7 +205,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
 
             handler.onEndDocument();
             final String xml = handler.getXml();
-            assertSameWithSample("sample-output-2.xml", xml);
+            assertSameWithSample(sampleCancelFileName, xml);
 
             // reader has been cancelled
             assertTrue(cancelledRef[0]);
@@ -238,34 +248,10 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         Assertions.assertTrue(XmlUtil.isSameXml(expectedXml, actualXml));
     }
 
-    static class LightWeightConstructor<T> {
-        private final Constructor<T> constructor;
-
-        LightWeightConstructor(Constructor<T> constructor) {
-            this.constructor = constructor;
-        }
-
-        T newInstance(Object... initArgs) {
-            try {
-                return constructor.newInstance(initArgs);
-            } catch (InvocationTargetException e) {
-                final Throwable targetException = e.getTargetException();
-                if (targetException instanceof RuntimeException) {
-                    throw (RuntimeException) targetException;
-                } else {
-                    throw new AssertionError(e);
-                }
-            } catch (ReflectiveOperationException e) {
-                throw new AssertionError(e);
-            }
-        }
-    }
-
     private static class TestEventHandler implements WorkbookEventReader.EventHandler {
         private final Stack<Integer> sheetStack;
         private final Stack<Integer> rowStack;
         private final StringBuilder xml;
-
 
         TestEventHandler() {
             xml = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
@@ -288,7 +274,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         }
 
         @Override
-        public void onStartSheet(int sheetIndex, String sheetName) {
+        public void onStartSheet(int sheetIndex, @NotNull String sheetName) {
             xml.append("<sheet index=\"")
                     .append(sheetIndex)
                     .append("\" name=\"")
@@ -298,7 +284,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
             sheetStack.push(sheetIndex);
 
             if (sheetIndex == 0) {
-                assertEquals("Sheet1", sheetName);
+                assertTrue("Sheet1".equals(sheetName) || "".equals(sheetName));
             } else if (sheetIndex == 1) {
                 assertEquals("Sheet2", sheetName);
             } else {
@@ -338,7 +324,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         }
 
         @Override
-        public void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
+        public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
             // run for coverage
             WorkbookEventReader.EventHandler.super.onHandleCell(sheetIndex, rowNum, columnNum, cellValue);
 

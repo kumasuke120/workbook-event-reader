@@ -3,12 +3,13 @@ package com.github.kumasuke120.demo;
 import com.github.kumasuke120.excel.CellValue;
 import com.github.kumasuke120.excel.WorkbookEventReader;
 import com.github.kumasuke120.util.ResourceUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
 
 public class ToXmlPrinter {
 
-    public static void main(String[] args) {
+    public static void main(@NotNull String[] args) {
         final Path filePath = ResourceUtil.getPathOfClasspathResource("workbook.xlsx");
         final XmlGenerator xmlGenerator = new XmlGenerator();
         try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath)) {
@@ -28,6 +29,7 @@ public class ToXmlPrinter {
             xml = new StringBuilder();
         }
 
+        @NotNull
         String getXml() {
             return xml.toString();
         }
@@ -49,7 +51,7 @@ public class ToXmlPrinter {
         }
 
         @Override
-        public void onStartSheet(int sheetIndex, String sheetName) {
+        public void onStartSheet(int sheetIndex, @NotNull String sheetName) {
             newLine();
             xml.append("<sheet index=\"")
                     .append(sheetIndex)
@@ -83,7 +85,7 @@ public class ToXmlPrinter {
         }
 
         @Override
-        public void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
+        public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
             newLine();
             xml.append("<cell index=\"")
                     .append(columnNum)

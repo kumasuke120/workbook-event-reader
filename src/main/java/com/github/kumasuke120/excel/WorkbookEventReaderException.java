@@ -1,21 +1,22 @@
 package com.github.kumasuke120.excel;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * An abstract {@link RuntimeException} that covers most kinds of exceptions which {@link WorkbookEventReader} may
  * throw
  */
-@SuppressWarnings("WeakerAccess")
 public abstract class WorkbookEventReaderException extends RuntimeException {
 
-    WorkbookEventReaderException(Throwable cause) {
+    WorkbookEventReaderException(@NotNull Throwable cause) {
         super(cause);
     }
 
-    WorkbookEventReaderException(String message) {
+    WorkbookEventReaderException(@NotNull String message) {
         super(message);
     }
 
-    WorkbookEventReaderException(String message, Throwable cause) {
+    WorkbookEventReaderException(@NotNull String message, Throwable cause) {
         super(message, cause);
     }
 

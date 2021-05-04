@@ -11,6 +11,8 @@ import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.model.SharedStringsTable;
 import org.apache.poi.xssf.model.StylesTable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTXf;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -31,15 +33,17 @@ import java.util.Map;
  * A {@link WorkbookEventReader} reads a SpreadsheetML workbook (Excel 2007 onwards) whose file extension
  * usually is <code>xlsx</code>
  */
-@SuppressWarnings({"WeakerAccess", "unused"})
+@SuppressWarnings("unused")
 public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
-    private volatile boolean use1904Windowing = false;
+    private static final ThreadLocal<Boolean> use1904WindowingLocal = ThreadLocal.withInitial(() -> false);
 
     private OPCPackage opcPackage;
     private XSSFReader xssfReader;
     private SharedStringsTable sharedStringsTable;
     private StylesTable stylesTable;
+
+    private boolean use1904Windowing;
 
     /**
      * Creates a new {@link XSSFWorkbookEventReader} based on the given file path.
@@ -48,7 +52,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
      * @throws NullPointerException <code>filePath</code> is <code>null</code>
      * @throws WorkbookIOException  errors happened when opening
      */
-    public XSSFWorkbookEventReader(Path filePath) {
+    public XSSFWorkbookEventReader(@NotNull(exception = NullPointerException.class) Path filePath) {
         this(filePath, null);
     }
 
@@ -60,7 +64,8 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
      * @throws NullPointerException <code>filePath</code> is <code>null</code>
      * @throws WorkbookIOException  errors happened when opening
      */
-    public XSSFWorkbookEventReader(Path filePath, String password) {
+    public XSSFWorkbookEventReader(@NotNull(exception = NullPointerException.class) Path filePath,
+                                   @Nullable String password) {
         super(filePath, password);
     }
 
@@ -72,7 +77,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
      * @throws NullPointerException <code>filePath</code> is <code>null</code>
      * @throws WorkbookIOException  errors happened when opening
      */
-    public XSSFWorkbookEventReader(InputStream in) {
+    public XSSFWorkbookEventReader(@NotNull(exception = NullPointerException.class) InputStream in) {
         this(in, null);
     }
 
@@ -85,26 +90,28 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
      * @throws NullPointerException <code>filePath</code> is <code>null</code>
      * @throws WorkbookIOException  errors happened when opening
      */
-    public XSSFWorkbookEventReader(InputStream in, String password) {
+    public XSSFWorkbookEventReader(@NotNull(exception = NullPointerException.class) InputStream in,
+                                   @Nullable String password) {
         super(in, password);
     }
 
     /**
-     * Sets this {@link XSSFWorkbookEventReader} to use 1904 windowing to parse date cells.
+     * Sets all following-opened instances of {@link XSSFWorkbookEventReader} on the current thread using
+     * 1904 windowing for parsing date cells whether or not.<br>
      *
      * @param use1904Windowing whether use 1904 date windowing or not
-     * @throws IllegalReaderStateException this {@link WorkbookEventReader} has been closed;
-     *                                     or called during reading process
      */
-    public void setUse1904Windowing(boolean use1904Windowing) {
-        assertNotClosed();
-        assertNotBeingRead();
-
-        this.use1904Windowing = use1904Windowing;
+    public static void setUse1904Windowing(boolean use1904Windowing) {
+        use1904WindowingLocal.set(use1904Windowing);
     }
 
     @Override
-    void doOpen(InputStream in, String password) throws Exception {
+    void doOnStartOpen() {
+        use1904Windowing = use1904WindowingLocal.get();
+    }
+
+    @Override
+    void doOpen(@NotNull InputStream in, @Nullable String password) throws Exception {
         Exception thrown = null;
 
         InputStream stream = null;
@@ -126,7 +133,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
     }
 
     @Override
-    void doOpen(Path filePath, String password) throws Exception {
+    void doOpen(@NotNull Path filePath, @Nullable String password) throws Exception {
         final File file = filePath.toFile();
 
         final InputStream stream;
@@ -148,12 +155,13 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
     }
 
     @Override
+    @NotNull
     ReaderCleanAction createCleanAction() {
         return new XSSFReaderCleanAction(this);
     }
 
     @Override
-    void doRead(EventHandler handler) throws Exception {
+    void doRead(@NotNull EventHandler handler) throws Exception {
         int currentSheetIndex = -1;
 
         handler.onStartDocument();
@@ -190,12 +198,14 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         }
     }
 
+    @NotNull
     private XSSFReader.SheetIterator getSheetIterator() throws IOException, InvalidFormatException {
         final Iterator<InputStream> sheetsData = xssfReader.getSheetsData();
         assert sheetsData instanceof XSSFReader.SheetIterator;
         return (XSSFReader.SheetIterator) sheetsData;
     }
 
+    @NotNull
     private SAXParser createSAXParser() throws ParserConfigurationException, SAXException {
         final SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setNamespaceAware(true);
@@ -209,7 +219,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
     private static class XSSFReaderCleanAction extends ReaderCleanAction {
         private final OPCPackage opcPackage;
 
-        XSSFReaderCleanAction(XSSFWorkbookEventReader reader) {
+        XSSFReaderCleanAction(@NotNull XSSFWorkbookEventReader reader) {
             this.opcPackage = reader.opcPackage;
         }
 
@@ -240,6 +250,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         // attribute values for ATTRIBUTE_CELL_REFERENCE
         private static final String CELL_TYPE_SHARED_STRING = "s";
         private static final String CELL_TYPE_INLINE_STRING = "inlineStr";
+        private static final String CELL_TYPE_STRING = "str";
         private static final String CELL_TYPE_BOOLEAN = "b";
         private static final String CELL_TYPE_ERROR = "e";
 
@@ -261,7 +272,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
         private boolean isCurrentCellValue = false;
 
-        ReaderSheetHandler(EventHandler handler) {
+        ReaderSheetHandler(@NotNull EventHandler handler) {
             this.handler = handler;
         }
 
@@ -271,8 +282,8 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         }
 
         @Override
-        public final void startElement(String uri, String localName,
-                                       String qName, Attributes attributes) throws SAXException {
+        public final void startElement(@NotNull String uri, @NotNull String localName,
+                                       @NotNull String qName, @NotNull Attributes attributes) throws SAXException {
             cancelReadingWhenNecessary();
 
             currentElementQName = qName;
@@ -335,7 +346,8 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         }
 
         @Override
-        public final void endElement(String uri, String localName, String qName) throws SAXException {
+        public final void endElement(@NotNull String uri, @NotNull String localName,
+                                     @NotNull String qName) throws SAXException {
             cancelReadingWhenNecessary();
 
             currentElementQName = qName;
@@ -356,11 +368,12 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             }
         }
 
-        private boolean isCellValueRelated(String localName) {
+        private boolean isCellValueRelated(@NotNull String localName) {
             return TAG_CELL_VALUE.equals(localName) ||
                     (CELL_TYPE_INLINE_STRING.equals(currentCellType) && TAG_INLINE_CELL_VALUE.equals(localName));
         }
 
+        @Nullable
         private Object getCurrentCellValue() throws SAXParseException {
             final Object cellValue;
             if (CELL_TYPE_ERROR.equals(currentCellType)) {
@@ -375,12 +388,13 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             return Util.toRelativeType(cellValue);
         }
 
-        private Object getCurrentBooleanCellValue() throws SAXParseException {
+        @NotNull
+        private Boolean getCurrentBooleanCellValue() throws SAXParseException {
             final String currentCellValue = currentCellValueBuilder.toString();
             if (CELL_VALUE_BOOLEAN_TRUE.equals(currentCellValue)) {
-                return true;
+                return Boolean.TRUE;
             } else if (CELL_VALUE_BOOLEAN_FALSE.equals(currentCellValue)) {
-                return false;
+                return Boolean.FALSE;
             } else {
                 throw new SAXParseException("Cannot parse boolean value in tag '" + currentElementQName + "', " +
                                                     "which should be 'TRUE' or 'FALSE': " + currentCellValue,
@@ -388,6 +402,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             }
         }
 
+        @Nullable
         private String getCurrentStringCellValue() throws SAXParseException {
             if (CELL_TYPE_SHARED_STRING.equals(currentCellType)) {
                 return getCurrentSharedStringCellValue();
@@ -396,6 +411,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             }
         }
 
+        @Nullable
         private String getCurrentSharedStringCellValue() throws SAXParseException {
             final String currentCellValue = currentCellValueBuilder.toString();
 
@@ -413,7 +429,8 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             return sharedString.getString();
         }
 
-        private Object formatNumberDateCellValue(String stringCellValue) {
+        @Nullable
+        private Object formatNumberDateCellValue(@Nullable String stringCellValue) {
             final Object cellValue;
 
             // valid numFmtId is non-negative, -1 denotes there is no cell format for the cell
@@ -463,6 +480,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             }
         }
 
+        @NotNull
         private String getFormatString(short numFmtId) {
             String numberFormat = stylesTable.getNumberFormatAt(numFmtId);
             if (numberFormat == null) {
@@ -473,7 +491,8 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
         private boolean isCurrentCellString() {
             return CELL_TYPE_INLINE_STRING.equals(currentCellType) ||
-                    CELL_TYPE_SHARED_STRING.equals(currentCellType);
+                    CELL_TYPE_SHARED_STRING.equals(currentCellType) ||
+                    CELL_TYPE_STRING.equals(currentCellType);
         }
 
         @Override

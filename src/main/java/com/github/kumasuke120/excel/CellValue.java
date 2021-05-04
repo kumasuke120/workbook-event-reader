@@ -1,25 +1,27 @@
 package com.github.kumasuke120.excel;
 
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
+import java.util.function.Function;
+
+import static com.github.kumasuke120.excel.WorkbookDateTimeFormatters.DEFAULT_DATE_TIME_FORMATTERS;
+import static com.github.kumasuke120.excel.WorkbookDateTimeFormatters.parseTemporalAccessor;
 
 /**
  * A value class which encapsulates all possible values that the {@link WorkbookEventReader} may return and which
  * provides convenient ways to convert between them
  */
-@SuppressWarnings("WeakerAccess")
 public final class CellValue {
 
     /**
@@ -27,45 +29,10 @@ public final class CellValue {
      */
     private static final CellValue NULL = new CellValue(null);
 
-    /**
-     * The default <code>DateTimeFormatter</code>s that will be used when converting <code>String</code>
-     * to <code>LocalTime</code>, <code>LocalDate</code>, <code>LocalDateTime</code>
-     */
-    private static final Set<DateTimeFormatter> DEFAULT_DATE_TIME_FORMATTERS;
-
-    static {
-        final Set<DateTimeFormatter> formatters = new HashSet<>();
-        final Field[] fields = DateTimeFormatter.class.getFields();
-        for (Field field : fields) {
-            final int modifiers = field.getModifiers();
-
-            // public static final DateTimeFormatter ...
-            if (Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers) &&
-                    DateTimeFormatter.class.equals(field.getType())) {
-                try {
-                    final DateTimeFormatter f = (DateTimeFormatter) field.get(null);
-                    formatters.add(f);
-                } catch (IllegalAccessException e) {
-                    throw new AssertionError(e);
-                }
-            }
-        }
-
-        DEFAULT_DATE_TIME_FORMATTERS = Collections.unmodifiableSet(formatters);
-    }
-
     private final Object originalValue;
 
-    private CellValue(Object originalValue) {
-        assert originalValue == null ||
-                originalValue instanceof Boolean ||
-                originalValue instanceof Integer ||
-                originalValue instanceof Long ||
-                originalValue instanceof Double ||
-                originalValue instanceof String ||
-                originalValue instanceof LocalTime ||
-                originalValue instanceof LocalDate ||
-                originalValue instanceof LocalDateTime;
+    private CellValue(@Nullable Object originalValue) {
+        assert isTypeAllowed(originalValue);
 
         this.originalValue = originalValue;
     }
@@ -77,12 +44,26 @@ public final class CellValue {
      * @param originalValue the given value
      * @return an instance of <code>CellValue</code>
      */
-    static CellValue newInstance(Object originalValue) {
+    @NotNull
+    @Contract("!null -> new")
+    static CellValue newInstance(@Nullable Object originalValue) {
         if (originalValue == null) {
             return NULL;
         } else {
             return new CellValue(originalValue);
         }
+    }
+
+    private boolean isTypeAllowed(@Nullable Object originalValue) {
+        return originalValue == null ||
+                originalValue instanceof Boolean ||
+                originalValue instanceof Integer ||
+                originalValue instanceof Long ||
+                originalValue instanceof Double ||
+                originalValue instanceof String ||
+                originalValue instanceof LocalTime ||
+                originalValue instanceof LocalDate ||
+                originalValue instanceof LocalDateTime;
     }
 
     /**
@@ -102,6 +83,7 @@ public final class CellValue {
      *
      * @return original value
      */
+    @Nullable
     public Object originalValue() {
         return originalValue;
     }
@@ -112,6 +94,7 @@ public final class CellValue {
      * @return the type of the original value if possible, otherwise a {@link NullPointerException} will be thrown
      * @throws NullPointerException the original value is null
      */
+    @NotNull
     public Class<?> originalType() {
         return Objects.requireNonNull(originalValue).getClass();
     }
@@ -242,6 +225,7 @@ public final class CellValue {
      * @return {@link String} version of the original value
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      */
+    @NotNull
     public String stringValue() {
         if (originalValue != null) {
             return String.valueOf(originalValue);
@@ -261,6 +245,7 @@ public final class CellValue {
      * @return {@link LocalTime} version of the original value
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      */
+    @NotNull
     public LocalTime localTimeValue() {
         return localTimeValue(DEFAULT_DATE_TIME_FORMATTERS);
     }
@@ -276,7 +261,8 @@ public final class CellValue {
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      * @throws NullPointerException   the given formatter is <code>null</code>
      */
-    public LocalTime localTimeValue(DateTimeFormatter formatter) {
+    @NotNull
+    public LocalTime localTimeValue(@NotNull(exception = NullPointerException.class) DateTimeFormatter formatter) {
         Objects.requireNonNull(formatter);
         return localTimeValue(Collections.singleton(formatter));
     }
@@ -292,7 +278,9 @@ public final class CellValue {
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      * @throws NullPointerException   the given formatters is <code>null</code>
      */
-    public LocalTime localTimeValue(Iterable<DateTimeFormatter> formatters) {
+    @NotNull
+    public LocalTime localTimeValue(@NotNull(exception = NullPointerException.class)
+                                            Iterable<DateTimeFormatter> formatters) {
         Objects.requireNonNull(formatters);
 
         if (originalValue instanceof LocalTime) {
@@ -329,6 +317,7 @@ public final class CellValue {
      * @return {@link LocalDate} version of the original value
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      */
+    @NotNull
     public LocalDate localDateValue() {
         return localDateValue(DEFAULT_DATE_TIME_FORMATTERS);
     }
@@ -344,7 +333,9 @@ public final class CellValue {
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      * @throws NullPointerException   the given formatter is <code>null</code>
      */
-    public LocalDate localDateValue(DateTimeFormatter formatter) {
+    @NotNull
+    public LocalDate localDateValue(@NotNull(exception = NullPointerException.class)
+                                            DateTimeFormatter formatter) {
         Objects.requireNonNull(formatter);
         return localDateValue(Collections.singleton(formatter));
     }
@@ -360,7 +351,9 @@ public final class CellValue {
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      * @throws NullPointerException   the given formatters is <code>null</code>
      */
-    public LocalDate localDateValue(Iterable<DateTimeFormatter> formatters) {
+    @NotNull
+    public LocalDate localDateValue(@NotNull(exception = NullPointerException.class)
+                                            Iterable<DateTimeFormatter> formatters) {
         Objects.requireNonNull(formatters);
 
         if (originalValue instanceof LocalDate) {
@@ -388,6 +381,7 @@ public final class CellValue {
      * @return {@link LocalDateTime} version of the original value
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      */
+    @NotNull
     public LocalDateTime localDateTimeValue() {
         return localDateTimeValue(DEFAULT_DATE_TIME_FORMATTERS);
     }
@@ -403,7 +397,9 @@ public final class CellValue {
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      * @throws NullPointerException   the given formatter is <code>null</code>
      */
-    public LocalDateTime localDateTimeValue(DateTimeFormatter formatter) {
+    @NotNull
+    public LocalDateTime localDateTimeValue(@NotNull(exception = NullPointerException.class)
+                                                    DateTimeFormatter formatter) {
         Objects.requireNonNull(formatter);
         return localDateTimeValue(Collections.singleton(formatter));
     }
@@ -419,7 +415,9 @@ public final class CellValue {
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      * @throws NullPointerException   the given formatters is <code>null</code>
      */
-    public LocalDateTime localDateTimeValue(Iterable<DateTimeFormatter> formatters) {
+    @NotNull
+    public LocalDateTime localDateTimeValue(@NotNull(exception = NullPointerException.class)
+                                                    Iterable<DateTimeFormatter> formatters) {
         Objects.requireNonNull(formatters);
 
         if (originalValue instanceof LocalDateTime) {
@@ -446,35 +444,55 @@ public final class CellValue {
         }
     }
 
-    private TemporalAccessor parseTemporalAccessor(String value, Iterable<DateTimeFormatter> formatters) {
-        RuntimeException previousEx = null;
+    /**
+     * Uses the given function to map the {@link #originalValue()} to a new value, and returns a new
+     * {@link CellValue} based on the new value.<br>
+     * The return value of <code>mappingFunction</code> must be one of the types listed on the javadoc of
+     * {@link #originalValue()}.
+     *
+     * @param mappingFunction value mapping function
+     * @return {@link CellValue} based on the mapped value
+     * @throws CellValueCastException cannot perform mapping or the mapped value is not in the allow type
+     */
+    @NotNull
+    @Contract(pure = true)
+    public CellValue mapOriginalValue(@NotNull(exception = NullPointerException.class)
+                                              Function<Object, Object> mappingFunction) {
+        Objects.requireNonNull(mappingFunction);
 
-        for (DateTimeFormatter formatter : formatters) {
-            if (formatter == null) {
-                if (previousEx == null) {
-                    previousEx = new NullPointerException();
-                } else {
-                    previousEx.addSuppressed(new NullPointerException());
-                }
-                continue;
-            }
-
-            try {
-                return formatter.parse(value);
-            } catch (DateTimeParseException e) {
-                if (previousEx != null) {
-                    previousEx.addSuppressed(e);
-                }
-                previousEx = e;
-            }
+        final Object newOriginalValue;
+        try {
+            newOriginalValue = mappingFunction.apply(originalValue);
+        } catch (RuntimeException e) {
+            throw new CellValueCastException(e);
         }
 
-        assert previousEx != null;
-        throw new CellValueCastException(previousEx);
+        if (newOriginalValue == originalValue) { // prevents creating a new instance if two values are identical
+            return this;
+        } else {
+            if (!isTypeAllowed(newOriginalValue)) {
+                throw new CellValueCastException("mapped value should be in one of the allowed types");
+            }
+
+            return CellValue.newInstance(newOriginalValue);
+        }
+    }
+
+    /**
+     * Trims the original value if its type is of {@link String}.<br>
+     * A new instance of {@link CellValue} will be created if there is any change to this
+     * {@link CellValue} instance.
+     *
+     * @return {@link CellValue} based on the trimmed value
+     */
+    @NotNull
+    @Contract(pure = true)
+    public CellValue trim() {
+        return mapOriginalValue(v -> v instanceof String ? ((String) v).trim() : v);
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o) return true;
         if (!(o instanceof CellValue)) return false;
         CellValue cellValue = (CellValue) o;
@@ -503,6 +521,7 @@ public final class CellValue {
      * @return a string representation of the <code>CellValue</code>
      */
     @Override
+    @NotNull
     public String toString() {
         return getClass().getName() +
                 "{" +
@@ -511,5 +530,6 @@ public final class CellValue {
                 "}" +
                 "@" + Integer.toHexString(System.identityHashCode(this));
     }
+
 
 }

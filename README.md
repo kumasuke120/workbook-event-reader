@@ -7,19 +7,20 @@ An event-based workbook reader which re-encapsulates [Apache POI](https://poi.ap
 Excel workbooks, making it easy for reading SpreadsheetML(.xlsx) and legacy Excel documents(.xls) with a same unified interface.
 All values read from an Excel document could be converted to sensible corresponding Java types.
 
-## Branches
-There are two kinds of branches in this repository. Each kind of branches have their own prefixes in their branch names:
-- `java11-*`: written in Java 11, often gets newer features
-- `java8-*`: written in Java 8, with more stable features (_recommended for production_)
+## Supported Documents
+- *.xlsx
+- *.xls
+- *.csv (UTF-8 by default)
 
 ## Requirements
-Requirements for different kinds of branches may differ:
+Requirements for this project are as follows:
 
-| Branch             	| Bundled 	| `java11-*`       	| `java8-*`        	|
-|--------------------	|---------	|------------------	|------------------	|
-| Java Ver.          	| None     	| 11 onwards    	| 8 onwards     	|
-| Apache POI Ver.    	| 4.0.0   	| 3.17 onwards  	| 3.17 onwards  	|
-| Apache Xerces Ver. 	| 2.12.0  	| 2.0.0 onwards 	| 2.0.0 onwards 	|
+| Dependency               	| Bundled 	| Minimum  	|
+|-----------------------	|---------	|-----------|
+| Java Ver.             	| None     	| 8      	|
+| Apache POI Ver.       	| 4.0.0   	| 3.17  	|
+| Apache Xerces Ver.    	| 2.12.0  	| 2.0.0 	|
+| Apache Commons CSV Ver. 	| 1.8     	| 1.0   	|
 
 _Click [here](https://bz.apache.org/bugzilla/show_bug.cgi?id=61034) to take a look at the reason 
 for the requirement of Apache POI 3.17 onwards_
@@ -34,24 +35,16 @@ or you could use your own maven to install:
 $ mvn clean install -DskipTests
 ```
 
-The Maven dependency for `java11-*` branches is:
-```xml
-<dependency>
-    <groupId>com.github.kumasuke120</groupId>
-    <artifactId>workbook-event-reader-experimental</artifactId>
-    <version>1.0.0</version>
-</dependency>
-```
-The Maven dependency for `java8-*` branches is:
+The Maven dependency for this project is:
 ```xml
 <dependency>
     <groupId>com.github.kumasuke120</groupId>
     <artifactId>workbook-event-reader</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 </dependency>
 ```
 
-## Sample
+## Quick Start
 The following code reads a workbook and converts its content to a well-formed XML document:
 ```java
 public class ToXmlPrinter {

@@ -7,19 +7,20 @@
 该阅读器提供了一套统一的接口来处理 SpreadsheetML(.xlsx) 和传统 Excel 文档(.xls)。
 所有从 Excel 文档中读取的值均可被转换为合理的 Java 类型。
 
-## 分支
-在这个仓库中有两种类型的分支。每种分支都有它独自的前缀：
-- `java11-*`: 使用 Java 11 编写，通常可以获得较新的特性
-- `java8-*`: 使用 Java 8 编写，功能更加稳定 (_推荐生产环境使用_)
+## 受支持的文档
+- *.xlsx
+- *.xls
+- *.csv (默认编码 UTF-8)
 
 ## 环境需求
-不同类型分支的需求可能不同：
+本项目依赖的外部库如下所示：
 
-| 分支               	| 内置   	| `java11-*`       	| `java8-*`        	|
-|--------------------	|---------	|------------------	|------------------	|
-| Java 版本          	| 无      	| 11 或以上版本    	| 8 或以上版本     	|
-| Apache POI 版本    	| 4.0.0   	| 3.17 或以上版本  	| 3.17 或以上版本  	|
-| Apache Xerces 版本 	| 2.12.0  	| 2.0.0 或以上版本 	| 2.0.0 或以上版本 	|
+| 依赖                    	| 内置   	| 最低		|
+|-----------------------	|---------	|---------	|
+| Java 版本              	| 无      	| 11   	    |
+| Apache POI 版本         	| 4.0.0   	| 3.17 	    |
+| Apache Xerces 版本        	| 2.12.0  	| 2.0.0     |
+| Apache Commons CSV 版本 	| 1.8     	| 1.0       |
 
 _点击[这里](https://bz.apache.org/bugzilla/show_bug.cgi?id=61034)查看需要 Apache POI 3.17 或以上版本的原因_
 
@@ -33,24 +34,16 @@ $ ./mvnw clean install -DskipTests
 $ mvn clean install -DskipTests
 ```
 
-`java11-*` 分支的 Maven 依赖为:
-```xml
-<dependency>
-    <groupId>com.github.kumasuke120</groupId>
-    <artifactId>workbook-event-reader-experimental</artifactId>
-    <version>1.0.0</version>
-</dependency>
-```
-`java8-*` 分支的 Maven 依赖为:
+本项目的 Maven 依赖为:
 ```xml
 <dependency>
     <groupId>com.github.kumasuke120</groupId>
     <artifactId>workbook-event-reader</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 </dependency>
 ```
 
-## 示例
+## 快速开始
 以下的代码读取工作簿，并将它的内容转换为格式化后的 XML 文档：
 ```java
 public class ToXmlPrinter {

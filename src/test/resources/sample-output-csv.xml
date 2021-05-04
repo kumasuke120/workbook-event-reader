@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document>
+    <sheet index="0" name="">
+        <row index="0">
+            <cell index="0" javaType="java.lang.String">ENGINE</cell>
+            <cell index="1" javaType="java.lang.String">SUPPORT</cell>
+            <cell index="2" javaType="java.lang.String">COMMENT</cell>
+            <cell index="3" javaType="java.lang.String">TRANSACTIONS</cell>
+            <cell index="4" javaType="java.lang.String">XA</cell>
+            <cell index="5" javaType="java.lang.String">SAVEPOINTS</cell>
+        </row>
+        <row index="1">
+            <cell index="0" javaType="java.lang.String">InnoDB</cell>
+            <cell index="1" javaType="java.lang.String">DEFAULT</cell>
+            <cell index="2" javaType="java.lang.String">Supports transactions, row-level locking, and foreign keys</cell>
+            <cell index="3" javaType="java.lang.String">YES</cell>
+            <cell index="4" javaType="java.lang.String">YES</cell>
+            <cell index="5" javaType="java.lang.String">YES</cell>
+        </row>
+        <row index="2">
+            <cell index="0" javaType="java.lang.String">MRG_MYISAM</cell>
+            <cell index="1" javaType="java.lang.String">YES</cell>
+            <cell index="2" javaType="java.lang.String">Collection of identical MyISAM tables</cell>
+            <cell index="3" javaType="java.lang.String">NO</cell>
+            <cell index="4" javaType="java.lang.String">NO</cell>
+            <cell index="5" javaType="java.lang.String">NO</cell>
+        </row>
+        <row index="3">
+            <cell index="0" javaType="java.lang.String">MEMORY</cell>
+            <cell index="1" javaType="java.lang.String">YES</cell>
+            <cell index="2" javaType="java.lang.String">Hash based, stored in memory, useful for temporary tables</cell>
+            <cell index="3" javaType="java.lang.String">NO</cell>
+            <cell index="4" javaType="java.lang.String">NO</cell>
+            <cell index="5" javaType="java.lang.String">NO</cell>
+        </row>
+        <row index="4">
+            <cell index="0" javaType="java.lang.String">BLACKHOLE</cell>
+            <cell index="1" javaType="java.lang.String">YES</cell>
+            <cell index="2" javaType="java.lang.String">/dev/null storage engine (anything you write to it disappears)</cell>
+            <cell index="3" javaType="java.lang.String">NO</cell>
+            <cell index="4" javaType="java.lang.String">NO</cell>
+            <cell index="5" javaType="java.lang.String">NO</cell>
+        </row>
+        <row index="5">
+            <cell index="0" javaType="java.lang.String">MyISAM</cell>
+            <cell index="1" javaType="java.lang.String">YES</cell>
+            <cell index="2" javaType="java.lang.String">MyISAM storage engine</cell>
+            <cell index="3" javaType="java.lang.String">NO</cell>
+            <cell index="4" javaType="java.lang.String">NO</cell>
+            <cell index="5" javaType="java.lang.String">NO</cell>
+        </row>
+        <row index="6">
+            <cell index="0" javaType="java.lang.String">CSV</cell>
+            <cell index="1" javaType="java.lang.String">YES</cell>
+            <cell index="2" javaType="java.lang.String">CSV storage engine</cell>
+            <cell index="3" javaType="java.lang.String">NO</cell>
+            <cell index="4" javaType="java.lang.String">NO</cell>
+            <cell index="5" javaType="java.lang.String">NO</cell>
+        </row>
+        <row index="7">
+            <cell index="0" javaType="java.lang.String">ARCHIVE</cell>
+            <cell index="1" javaType="java.lang.String">YES</cell>
+            <cell index="2" javaType="java.lang.String">Archive storage engine</cell>
+            <cell index="3" javaType="java.lang.String">NO</cell>
+            <cell index="4" javaType="java.lang.String">NO</cell>
+            <cell index="5" javaType="java.lang.String">NO</cell>
+        </row>
+        <row index="8">
+            <cell index="0" javaType="java.lang.String">PERFORMANCE_SCHEMA</cell>
+            <cell index="1" javaType="java.lang.String">YES</cell>
+            <cell index="2" javaType="java.lang.String">Performance Schema</cell>
+            <cell index="3" javaType="java.lang.String">NO</cell>
+            <cell index="4" javaType="java.lang.String">NO</cell>
+            <cell index="5" javaType="java.lang.String">NO</cell>
+        </row>
+        <row index="9">
+            <cell index="0" javaType="java.lang.String">FEDERATED</cell>
+            <cell index="1" javaType="java.lang.String">NO</cell>
+            <cell index="2" javaType="java.lang.String">Federated MySQL storage engine</cell>
+            <cell index="3" javaType="null"/>
+            <cell index="4" javaType="null"/>
+            <cell index="5" javaType="null"/>
+        </row>
+    </sheet>
+</document>

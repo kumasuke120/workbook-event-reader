@@ -1,5 +1,7 @@
 package com.github.kumasuke120.util;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -15,7 +17,8 @@ public class ResourceUtil {
         throw new UnsupportedOperationException();
     }
 
-    public static Path getPathOfClasspathResource(String resourceName) {
+    @NotNull
+    public static Path getPathOfClasspathResource(@NotNull String resourceName) {
         final URL resourceURL = ClassLoader.getSystemResource(resourceName);
         if (resourceURL != null) {
             try {
@@ -28,7 +31,8 @@ public class ResourceUtil {
         }
     }
 
-    public static String loadClasspathResourceToString(String resourceName) throws IOException {
+    @NotNull
+    public static String loadClasspathResourceToString(@NotNull String resourceName) throws IOException {
         final int bufferSize = 2048;
 
         final char[] buffer = new char[bufferSize];

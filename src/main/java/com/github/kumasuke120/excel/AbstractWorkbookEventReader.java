@@ -1,21 +1,14 @@
 package com.github.kumasuke120.excel;
 
-import org.apache.poi.EncryptedDocumentException;
-import org.apache.poi.poifs.filesystem.FileMagic;
-import org.apache.poi.ss.usermodel.BuiltinFormats;
-import org.apache.poi.ss.usermodel.DateUtil;
-import org.apache.poi.util.IOUtils;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.time.*;
-import java.util.*;
-import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Objects;
 
 /**
  * The base class for {@link WorkbookEventReader}, containing common methods and utilities
@@ -36,9 +29,11 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * @throws NullPointerException <code>filePath</code> is <code>null</code>
      * @throws WorkbookIOException  errors happened when opening
      */
-    AbstractWorkbookEventReader(InputStream in, String password) {
+    AbstractWorkbookEventReader(@NotNull(exception = NullPointerException.class) InputStream in,
+                                @Nullable String password) {
         Objects.requireNonNull(in);
 
+        doOnStartOpen();
         try {
             doOpen(in, password);
         } catch (Exception e) {
@@ -57,9 +52,11 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * @throws NullPointerException <code>filePath</code> is <code>null</code>
      * @throws WorkbookIOException  errors happened when opening
      */
-    AbstractWorkbookEventReader(Path filePath, String password) {
+    AbstractWorkbookEventReader(@NotNull(exception = NullPointerException.class) Path filePath,
+                                @Nullable String password) {
         Objects.requireNonNull(filePath);
 
+        doOnStartOpen();
         try {
             doOpen(filePath, password);
         } catch (Exception e) {
@@ -78,7 +75,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * @param caught    previous caught {@link Exception}
      * @throws Exception previous caught {@link Exception} or {@link Exception} thrown when closing
      */
-    static void suppressClose(Closeable closeable, Exception caught) throws Exception {
+    static void suppressClose(@Nullable Closeable closeable, @Nullable Exception caught) throws Exception {
         Exception thrown = caught;
         try {
             if (closeable != null) {
@@ -95,87 +92,12 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
     }
 
     /**
-     * Opens the specified file with an appropriate {@link WorkbookEventReader} if possible.<br>
-     * It opens the specified file with {@link XSSFWorkbookEventReader} and {@link HSSFWorkbookEventReader} in
-     * a calculated order. If both creations fails, it will throw {@link WorkbookIOException}
-     *
-     * @param filePath {@link Path} of the workbook to be opened
-     * @param password password to open the file
-     * @return {@link WorkbookEventReader} to read the specified file
-     * @throws NullPointerException <code>in</code> is <code>null</code>
-     * @throws WorkbookIOException  errors happened when opening
+     * Callback which will be called before the actual opening process is completed or cancelled.<br>
+     * <br>
+     * * This method shouldn't throw any kind of exceptions, including unchecked exceptions.
      */
-    static WorkbookEventReader autoOpen(Path filePath, String password) {
-        Objects.requireNonNull(filePath);
-
-        final boolean firstTryXSSF = filePath.toString().endsWith("xlsx");
-        if (firstTryXSSF) {
-            return openByOrder(() -> new XSSFWorkbookEventReader(filePath, password),
-                               () -> new HSSFWorkbookEventReader(filePath, password));
-        } else {
-            return openByOrder(() -> new HSSFWorkbookEventReader(filePath, password),
-                               () -> new XSSFWorkbookEventReader(filePath, password));
-        }
-    }
-
-    /**
-     * Opens the specified {@link InputStream} with an appropriate {@link WorkbookEventReader} if possible.<br>
-     * It opens the specified file with {@link XSSFWorkbookEventReader} and {@link HSSFWorkbookEventReader} in
-     * a calculated order. If both creations fails, it will throw {@link WorkbookIOException}
-     *
-     * @param in       {@link InputStream} of the workbook to be opened
-     * @param password password to open the file
-     * @return {@link WorkbookEventReader} to read the specified file
-     * @throws NullPointerException <code>in</code> is <code>null</code>
-     * @throws WorkbookIOException  errors happened when opening
-     */
-    static WorkbookEventReader autoOpen(InputStream in, String password) {
-        Objects.requireNonNull(in);
-
-        final byte[] bytes;
-        try {
-            bytes = IOUtils.toByteArray(in);
-        } catch (IOException e) {
-            throw new WorkbookIOException("Cannot open and read workbook", e);
-        }
-
-        final FileMagic magic = checkFileMagic(bytes);
-        if (magic == FileMagic.OOXML) {
-            return new XSSFWorkbookEventReader(new ByteArrayInputStream(bytes));
-        } else {
-            return openByOrder(() -> new XSSFWorkbookEventReader(new ByteArrayInputStream(bytes), password),
-                               () -> new HSSFWorkbookEventReader(new ByteArrayInputStream(bytes), password));
-        }
-    }
-
-    private static FileMagic checkFileMagic(byte[] bytes) {
-        try (final ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-             final InputStream stream = FileMagic.prepareToCheckMagic(in)) {
-            return FileMagic.valueOf(stream);
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
-    private static WorkbookEventReader openByOrder(Supplier<WorkbookEventReader> firstConstructor,
-                                                   Supplier<WorkbookEventReader> secondConstructor) {
-        try {
-            return firstConstructor.get();
-        } catch (WorkbookIOException e1) {
-            // EncryptedDocumentException means password incorrect, it should be thrown directly
-            if (e1.getCause() instanceof EncryptedDocumentException) {
-                throw e1;
-            } else {
-                try {
-                    return secondConstructor.get();
-                } catch (WorkbookIOException e2) {
-                    if (!(e2.getCause() instanceof EncryptedDocumentException)) {
-                        e2.addSuppressed(e1);
-                    }
-                    throw e2;
-                }
-            }
-        }
+    void doOnStartOpen() {
+        // no-op
     }
 
     /**
@@ -188,7 +110,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * @param password password to open the file, and it might be <code>null</code>
      * @throws Exception any exception occurred during opening process
      */
-    abstract void doOpen(InputStream in, String password) throws Exception;
+    abstract void doOpen(@NotNull InputStream in, @Nullable String password) throws Exception;
 
     /**
      * Opens the specified file with this {@link AbstractWorkbookEventReader}.<br>
@@ -200,7 +122,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * @param password password to open the file, and it might be <code>null</code>
      * @throws Exception any exception occurred during opening process
      */
-    abstract void doOpen(Path filePath, String password) throws Exception;
+    abstract void doOpen(@NotNull Path filePath, @Nullable String password) throws Exception;
 
     /**
      * Creates a resource-cleaning action to close all resources this {@link WorkbookEventReader}
@@ -211,6 +133,8 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      *
      * @return a non-anonymous instance of {@link ReaderCleanAction}
      */
+    @NotNull
+    @Contract("-> new")
     abstract ReaderCleanAction createCleanAction();
 
     @Override
@@ -226,7 +150,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * {@inheritDoc}
      */
     @Override
-    public final void read(EventHandler handler) {
+    public final void read(@NotNull(exception = NullPointerException.class) EventHandler handler) {
         assertNotClosed();
         assertNotBeingRead();
 
@@ -258,7 +182,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * @param handler an non-<code>null</code> {@link EventHandler} that handles read events as reading process going
      * @throws Exception any exception occurred during reading process
      */
-    abstract void doRead(EventHandler handler) throws Exception;
+    abstract void doRead(@NotNull EventHandler handler) throws Exception;
 
     /**
      * {@inheritDoc}
@@ -323,207 +247,6 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
     private void assertBeingRead() {
         if (!reading) {
             throw new IllegalReaderStateException("This '" + getClass().getSimpleName() + "' is not being read");
-        }
-    }
-
-    /**
-     * An utility class that contains various methods for dealing with workbook
-     */
-    static class Util {
-        private static final double MAX_EXCEL_DATE_EXCLUSIVE = 2958466;
-        private static final Pattern cellReferencePattern = Pattern.compile("([A-Z]+)(\\d+)");
-
-        private Util() {
-            throw new UnsupportedOperationException();
-        }
-
-        /**
-         * Tests if the given value is a whole number.
-         *
-         * @param value <code>double</code> value to be tested
-         * @return <code>true</code> if the given value is a whole number, otherwise <code>false</code>
-         */
-        static boolean isAWholeNumber(double value) {
-            return value % 1 == 0;
-        }
-
-        /**
-         * Tests if the given value is a whole number that Java could represent with primitive type.
-         *
-         * @param value <code>String</code> value to be tested
-         * @return <code>true</code> if the given value is a whole number, otherwise <code>false</code>
-         */
-        static boolean isAWholeNumber(String value) {
-            if (value == null) return false;
-
-            try {
-                Long.parseLong(value);
-                return true;
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
-
-        /**
-         * Tests if the given value is a decimal fraction that Java could represent with primitive type.
-         *
-         * @param value <code>String</code> value to be tested
-         * @return <code>true</code> if the given value is a decimal fraction, otherwise <code>false</code>
-         */
-        static boolean isADecimalFraction(String value) {
-            if (value == null) return false;
-
-            try {
-                Double.parseDouble(value);
-                return true;
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
-
-        /**
-         * Parses the <code>String</code> value to <code>int</code> silently.<br>
-         * It will return <code>defaultValue</code> if the <code>String</code> value could not be parsed.
-         *
-         * @param value the <code>String</code> value to be parsed
-         * @return parsed <code>int</code> value if parse succeeds, otherwise the <code>defaultValue</code>
-         */
-        @SuppressWarnings("SameParameterValue")
-        static int toInt(String value, int defaultValue) {
-            if (value == null) return defaultValue;
-
-            try {
-                return Integer.parseInt(value);
-            } catch (NumberFormatException e) {
-                return defaultValue;
-            }
-        }
-
-        /**
-         * Tests if the given value is a valid excel date.
-         *
-         * @param excelDateValue excel date value
-         * @return code>true</code> if the given value is a valid excel date, otherwise <code>false</code>
-         */
-        static boolean isValidExcelDate(double excelDateValue) {
-            return DateUtil.isValidExcelDate(excelDateValue) &&
-                    excelDateValue > 0 && excelDateValue < MAX_EXCEL_DATE_EXCLUSIVE;
-        }
-
-        /**
-         * Converts the given excel date value to @{@link LocalTime}, {@link LocalDateTime} or
-         * {@link LocalDate} accordingly.
-         *
-         * @param excelDateValue   excel date value
-         * @param use1904Windowing <code>true</code> if date uses 1904 windowing,
-         *                         or <code>false</code> if using 1900 date windowing.
-         * @return converted @{@link LocalTime}, {@link LocalDateTime} or {@link LocalDate}
-         */
-        static Object toJsr310DateOrTime(double excelDateValue, boolean use1904Windowing) {
-            if (isValidExcelDate(excelDateValue)) {
-                final Date date = DateUtil.getJavaDate(excelDateValue, use1904Windowing,
-                                                       TimeZone.getTimeZone("UTC"));
-                final LocalDateTime localDateTime = toLocalDateTimeOffsetByUTC(date);
-
-                if (Util.isAWholeNumber(excelDateValue)) { // date only
-                    return localDateTime.toLocalDate();
-                } else if (excelDateValue < 1) { // time only
-                    return localDateTime.toLocalTime();
-                } else { // date with time
-                    return localDateTime;
-                }
-            } else {
-                return null;
-            }
-        }
-
-        private static LocalDateTime toLocalDateTimeOffsetByUTC(Date date) {
-            final Instant instant = date.toInstant();
-            return LocalDateTime.ofInstant(instant, ZoneId.of("UTC"));
-        }
-
-        /**
-         * Converts given value to relative type.<br>
-         * For instance, if a <code>double</code> could be treated as a <code>int</code>, it will be converted
-         * to its <code>int</code> counterpart.
-         *
-         * @param value value to be converted
-         * @return value converted accordingly
-         */
-        static Object toRelativeType(Object value) {
-            if (value instanceof Double) {
-                final double doubleValue = (double) value;
-                if (Util.isAWholeNumber(doubleValue)) {
-                    if (doubleValue > Integer.MAX_VALUE || doubleValue < Integer.MIN_VALUE) {
-                        return (long) doubleValue;
-                    } else {
-                        return (int) doubleValue;
-                    }
-                }
-            } else if (value instanceof Long) {
-                final long longValue = (long) value;
-                if (longValue >= Integer.MIN_VALUE && longValue <= Integer.MAX_VALUE) {
-                    return (int) longValue;
-                }
-            }
-
-            return value;
-        }
-
-        /**
-         * Converts excel cell reference (e.g. A1) to a {@link Map.Entry} containing row number (starts with 0)
-         * and column number (starts with 0).<br>
-         * It will return <code>null</code> if either of them cannot be parse correctly.
-         *
-         * @param cellReference excel cell reference
-         * @return row number and column number, both starts with 0 or <code>null</code>
-         */
-        static Map.Entry<Integer, Integer> cellReferenceToRowAndColumn(String cellReference) {
-            assert cellReference != null;
-
-            final Matcher cellRefMatcher = cellReferencePattern.matcher(cellReference);
-            if (cellRefMatcher.matches()) {
-                final String rawColumn = cellRefMatcher.group(1);
-                final String rawRow = cellRefMatcher.group(2);
-
-                final int rowNum = Integer.parseInt(rawRow) - 1;
-                final int columnNum = columnNameToInt(rawColumn);
-
-                return Collections.singletonMap(rowNum, columnNum)
-                        .entrySet()
-                        .iterator()
-                        .next();
-            } else {
-                return null;
-            }
-        }
-
-        // converts 'A' to 0, 'B' to 1, ..., 'AA' to 26, and etc.
-        private static int columnNameToInt(String columnName) {
-            int index = 0;
-
-            for (int i = 0; i < columnName.length(); i++) {
-                char c = columnName.charAt(i);
-                if (i == columnName.length() - 1) {
-                    index = index * 26 + (c - 'A');
-                } else {
-                    index = index * 26 + (c - 'A' + 1);
-                }
-            }
-
-            return index;
-        }
-
-        /**
-         * Tests if the given index of format or format string stands for a text format.
-         *
-         * @param formatIndex  index of format
-         * @param formatString format string
-         * @return <code>true</code> if the given arguments stand for a text format, otherwise <code>false</code>
-         */
-        static boolean isATextFormat(int formatIndex, String formatString) {
-            return formatIndex == 0x31 ||
-                    (formatString != null && BuiltinFormats.getBuiltinFormat(formatString) == 0x31);
         }
     }
 

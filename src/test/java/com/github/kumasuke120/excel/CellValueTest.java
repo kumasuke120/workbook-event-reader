@@ -1,5 +1,7 @@
 package com.github.kumasuke120.excel;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -9,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -373,6 +376,53 @@ class CellValueTest {
         assertEquals(theDateTimeValue, cellValue2.localDateTimeValue());
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    void mapOriginalValue() {
+        // region square
+        final Function<Object, Object> mappingFunction1 = (Object v) -> {
+            if (v instanceof Integer) {
+                final int integerValue = (int) v;
+                return integerValue * integerValue;
+            } else {
+                return v;
+            }
+        };
+
+        final CellValue cellValue1 = CellValue.newInstance(42);
+        final CellValue cellValue2 = cellValue1.mapOriginalValue(mappingFunction1);
+        assertEquals(42 * 42, cellValue2.originalValue());
+
+        final CellValue cellValue3 = CellValue.newInstance("42");
+        final CellValue cellValue4 = cellValue3.mapOriginalValue(mappingFunction1);
+        assertSame(cellValue3, cellValue4);
+        // endregion
+
+        // region throws in function
+        final Function<Object, Object> mappingFunction2 = (Object v) -> {
+            throw new UnsupportedOperationException();
+        };
+        assertThrows(CellValueCastException.class, () -> cellValue1.mapOriginalValue(mappingFunction2));
+        // endregion
+
+        // region throws after return
+        final Function<Object, Object> mappingFunction3 = (Object v) -> new UnsupportedOperationException();
+        assertThrows(CellValueCastException.class, () -> cellValue1.mapOriginalValue(mappingFunction3));
+        // endregion
+    }
+
+    @Test
+    void trim() {
+        final CellValue cellValue1 = CellValue.newInstance(" 1 ");
+        assertEquals("1", cellValue1.trim().originalValue());
+
+        final CellValue cellValue2 = CellValue.newInstance(null);
+        assertSame(cellValue2, cellValue2.trim());
+
+        final CellValue cellValue3 = CellValue.newInstance("1");
+        assertEquals("1", cellValue3.trim().originalValue());
+    }
+
     @Test
     void equalsAndHashCode() {
         // ide generated code, test for coverage
@@ -413,7 +463,8 @@ class CellValueTest {
         assertNotSame(c, CellValue.newInstance(null));
     }
 
-    private CellValue newCellValue(Object originalValue) {
+    @NotNull
+    private CellValue newCellValue(@Nullable Object originalValue) {
         try {
             final Constructor<CellValue> constructor = CellValue.class.getDeclaredConstructor(Object.class);
             constructor.setAccessible(true);
