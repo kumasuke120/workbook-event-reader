@@ -10,17 +10,17 @@
 ## 受支持的文档
 - *.xlsx
 - *.xls
-- *.csv (UTF-8 by default)
+- *.csv (默认编码 UTF-8)
 
 ## 环境需求
 本项目依赖的外部库如下所示：
 
-| 分支                    	| 内置   	| 最低             	|
-|-----------------------	|---------	|------------------	|
-| Java 版本              	| 无      	| 11 或以上版本    	|
-| Apache POI 版本         	| 4.0.0   	| 3.17 或以上版本  	|
-| Apache Xerces 版本        	| 2.12.0  	| 2.0.0 或以上版本 	|
-| Apache Commons CSV 版本 	| 1.0     	| 1.0 或以上版本  	|
+| 依赖                    	| 内置   	| 最低		|
+|-----------------------	|---------	|---------	|
+| Java 版本              	| 无      	| 11   	    |
+| Apache POI 版本         	| 4.0.0   	| 3.17 	    |
+| Apache Xerces 版本        	| 2.12.0  	| 2.0.0     |
+| Apache Commons CSV 版本 	| 1.8     	| 1.0       |
 
 _点击[这里](https://bz.apache.org/bugzilla/show_bug.cgi?id=61034)查看需要 Apache POI 3.17 或以上版本的原因_
 
@@ -39,7 +39,7 @@ $ mvn clean install -DskipTests
 <dependency>
     <groupId>com.github.kumasuke120</groupId>
     <artifactId>workbook-event-reader</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 </dependency>
 ```
 
