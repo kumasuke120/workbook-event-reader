@@ -7,14 +7,20 @@ An event-based workbook reader which re-encapsulates [Apache POI](https://poi.ap
 Excel workbooks, making it easy for reading SpreadsheetML(.xlsx) and legacy Excel documents(.xls) with a same unified interface.
 All values read from an Excel document could be converted to sensible corresponding Java types.
 
+## Supported Documents
+- *.xlsx
+- *.xls
+- *.csv (UTF-8 by default)
+
 ## Requirements
 Requirements for this project are as follows:
 
-| Branch             	| Bundled 	| Minimum       	|
-|--------------------	|---------	|------------------	|
-| Java Ver.          	| None     	| 8 onwards      	|
-| Apache POI Ver.    	| 4.0.0   	| 3.17 onwards  	|
-| Apache Xerces Ver. 	| 2.12.0  	| 2.0.0 onwards 	|
+| Branch                	| Bundled 	| Minimum       	|
+|-----------------------	|---------	|------------------	|
+| Java Ver.             	| None     	| 8 onwards      	|
+| Apache POI Ver.       	| 4.0.0   	| 3.17 onwards  	|
+| Apache Xerces Ver.    	| 2.12.0  	| 2.0.0 onwards 	|
+| Apache Commons CSV Ver. 	| 1.8     	| 1.0 onwards   	|
 
 _Click [here](https://bz.apache.org/bugzilla/show_bug.cgi?id=61034) to take a look at the reason 
 for the requirement of Apache POI 3.17 onwards_
