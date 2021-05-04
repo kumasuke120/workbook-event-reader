@@ -1,7 +1,7 @@
 # WorkbookEventReader
 See in other languages: English | [中文](README_CN.md)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Build Status](https://api.travis-ci.org/kumasuke120/workbook-event-reader.svg?branch=java8-release)](https://travis-ci.org/kumasuke120/workbook-event-reader) [![codecov](https://codecov.io/gh/kumasuke120/workbook-event-reader/branch/java8-release/graph/badge.svg)](https://codecov.io/gh/kumasuke120/workbook-event-reader)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Build Status](https://api.travis-ci.org/kumasuke120/workbook-event-reader.svg?branch=master)](https://travis-ci.org/kumasuke120/workbook-event-reader) [![codecov](https://codecov.io/gh/kumasuke120/workbook-event-reader/branch/master/graph/badge.svg)](https://codecov.io/gh/kumasuke120/workbook-event-reader)
 
 An event-based workbook reader which re-encapsulates [Apache POI](https://poi.apache.org/) Event APIs for processing 
 Excel workbooks, making it easy for reading SpreadsheetML(.xlsx) and legacy Excel documents(.xls) with a same unified interface.
