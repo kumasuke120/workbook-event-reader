@@ -243,6 +243,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         // attribute values for ATTRIBUTE_CELL_REFERENCE
         private static final String CELL_TYPE_SHARED_STRING = "s";
         private static final String CELL_TYPE_INLINE_STRING = "inlineStr";
+        private static final String CELL_TYPE_STRING = "str";
         private static final String CELL_TYPE_BOOLEAN = "b";
         private static final String CELL_TYPE_ERROR = "e";
 
@@ -476,7 +477,8 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
         private boolean isCurrentCellString() {
             return CELL_TYPE_INLINE_STRING.equals(currentCellType) ||
-                    CELL_TYPE_SHARED_STRING.equals(currentCellType);
+                    CELL_TYPE_SHARED_STRING.equals(currentCellType) ||
+                    CELL_TYPE_STRING.equals(currentCellType);
         }
 
         @Override
