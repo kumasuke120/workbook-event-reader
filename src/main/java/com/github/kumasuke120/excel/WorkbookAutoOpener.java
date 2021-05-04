@@ -270,11 +270,8 @@ class WorkbookAutoOpener {
 
         private WorkbookIOException translateException(InvocationTargetException e) {
             final Throwable t = e.getTargetException();
-            if (t instanceof WorkbookIOException) {
-                return (WorkbookIOException) t;
-            } else {
-                return new WorkbookIOException(t);
-            }
+            assert t instanceof WorkbookIOException;
+            return (WorkbookIOException) t;
         }
     }
 

@@ -2,11 +2,16 @@ package com.github.kumasuke120.excel;
 
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class WorkbookDateTimeFormattersTest {
 
@@ -53,6 +58,28 @@ class WorkbookDateTimeFormattersTest {
         final LocalTime time2 = WorkbookDateTimeFormatters.EN_TIME_AM_PM
                 .parse("8:00 PM", LocalTime::from);
         assertEquals(LocalTime.of(20, 0, 0), time2);
+    }
+
+    @Test
+    void parseTemporalAccessor() { // only tests the null case
+        final List<DateTimeFormatter> formatters = new ArrayList<>();
+        formatters.add(DateTimeFormatter.ISO_DATE);
+        formatters.add(null);
+        assertThrows(CellValueCastException.class,
+                     () -> WorkbookDateTimeFormatters.parseTemporalAccessor("09:21", formatters));
+    }
+
+    @Test
+    void newInstance() {
+        try {
+            final Constructor<WorkbookDateTimeFormatters> constructor = WorkbookDateTimeFormatters.class.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            constructor.newInstance();
+        } catch (InvocationTargetException e) {
+            assertTrue(e.getTargetException() instanceof UnsupportedOperationException);
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
     }
 
 }
