@@ -1,6 +1,7 @@
 package com.github.kumasuke120.excel;
 
 import com.github.kumasuke120.util.ResourceUtil;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
@@ -26,12 +27,12 @@ class XSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWo
         try (final WorkbookEventReader reader = pathConstructor().newInstance(filePath)) {
             reader.read(new WorkbookEventReader.EventHandler() {
                 @Override
-                public void onStartSheet(int sheetIndex, String sheetName) {
+                public void onStartSheet(int sheetIndex, @NotNull String sheetName) {
                     assertEquals("result 1", sheetName);
                 }
 
                 @Override
-                public void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
+                public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
                     if (rowNum == 0 && columnNum == 0) {
                         assertEquals("ENGINE", cellValue.stringValue());
                     }
@@ -56,7 +57,7 @@ class XSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWo
                 }
 
                 @Override
-                public void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
+                public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
                     throw new AssertionError();
                 }
 
@@ -87,7 +88,7 @@ class XSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWo
                 assert reader instanceof XSSFWorkbookEventReader;
                 reader.read(new WorkbookEventReader.EventHandler() {
                     @Override
-                    public void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
+                    public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
                         if (sheetIndex == 0 && (rowNum == 3 || rowNum == 4) && columnNum == 1) {
                             if (!cellValue.isNull()) {
                                 assertEquals(2022, cellValue.localDateValue().getYear());

@@ -2,6 +2,10 @@ package com.github.kumasuke120.excel;
 
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.DateUtil;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.*;
 import java.util.Collections;
@@ -14,6 +18,7 @@ import java.util.regex.Pattern;
 /**
  * An utility class that contains various methods for dealing with workbook
  */
+@ApiStatus.Internal
 class Util {
 
     private static final double MAX_EXCEL_DATE_EXCLUSIVE = 2958466;
@@ -39,7 +44,8 @@ class Util {
      * @param value <code>String</code> value to be tested
      * @return <code>true</code> if the given value is a whole number, otherwise <code>false</code>
      */
-    static boolean isAWholeNumber(String value) {
+    @Contract("null -> false")
+    static boolean isAWholeNumber(@Nullable String value) {
         if (value == null) return false;
 
         try {
@@ -56,7 +62,8 @@ class Util {
      * @param value <code>String</code> value to be tested
      * @return <code>true</code> if the given value is a decimal fraction, otherwise <code>false</code>
      */
-    static boolean isADecimalFraction(String value) {
+    @Contract("null -> false")
+    static boolean isADecimalFraction(@Nullable String value) {
         if (value == null) return false;
 
         try {
@@ -74,8 +81,8 @@ class Util {
      * @param value the <code>String</code> value to be parsed
      * @return parsed <code>int</code> value if parse succeeds, otherwise the <code>defaultValue</code>
      */
-    @SuppressWarnings("SameParameterValue")
-    static int toInt(String value, int defaultValue) {
+    @Contract("null, _ -> param 2")
+    static int toInt(@Nullable String value, int defaultValue) {
         if (value == null) return defaultValue;
 
         try {
@@ -105,6 +112,7 @@ class Util {
      *                         or <code>false</code> if using 1900 date windowing.
      * @return converted @{@link LocalTime}, {@link LocalDateTime} or {@link LocalDate}
      */
+    @Nullable
     static Object toJsr310DateOrTime(double excelDateValue, boolean use1904Windowing) {
         if (isValidExcelDate(excelDateValue)) {
             final Date date = DateUtil.getJavaDate(excelDateValue, use1904Windowing,
@@ -123,7 +131,8 @@ class Util {
         }
     }
 
-    private static LocalDateTime toLocalDateTimeOffsetByUTC(Date date) {
+    @NotNull
+    private static LocalDateTime toLocalDateTimeOffsetByUTC(@NotNull Date date) {
         final Instant instant = date.toInstant();
         return LocalDateTime.ofInstant(instant, ZoneId.of("UTC"));
     }
@@ -136,7 +145,8 @@ class Util {
      * @param value value to be converted
      * @return value converted accordingly
      */
-    static Object toRelativeType(Object value) {
+    @Nullable
+    static Object toRelativeType(@Nullable Object value) {
         if (value instanceof Double) {
             final double doubleValue = (double) value;
             if (Util.isAWholeNumber(doubleValue)) {
@@ -164,8 +174,9 @@ class Util {
      * @param cellReference excel cell reference
      * @return row number and column number, both starts with 0 or <code>null</code>
      */
-    static Map.Entry<Integer, Integer> cellReferenceToRowAndColumn(String cellReference) {
-        assert cellReference != null;
+    @Nullable
+    static Map.Entry<Integer, Integer> cellReferenceToRowAndColumn(@NotNull String cellReference) {
+        // assert cellReference != null;
 
         final Matcher cellRefMatcher = cellReferencePattern.matcher(cellReference);
         if (cellRefMatcher.matches()) {
@@ -185,7 +196,7 @@ class Util {
     }
 
     // converts 'A' to 0, 'B' to 1, ..., 'AA' to 26, and etc.
-    private static int columnNameToInt(String columnName) {
+    private static int columnNameToInt(@NotNull String columnName) {
         int index = 0;
 
         for (int i = 0; i < columnName.length(); i++) {
@@ -207,7 +218,7 @@ class Util {
      * @param formatString format string
      * @return <code>true</code> if the given arguments stand for a text format, otherwise <code>false</code>
      */
-    static boolean isATextFormat(int formatIndex, String formatString) {
+    static boolean isATextFormat(int formatIndex, @Nullable String formatString) {
         return formatIndex == 0x31 ||
                 (formatString != null && BuiltinFormats.getBuiltinFormat(formatString) == 0x31);
     }

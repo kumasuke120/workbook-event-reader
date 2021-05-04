@@ -1,6 +1,10 @@
 package com.github.kumasuke120.excel;
 
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,7 +22,6 @@ import static com.github.kumasuke120.excel.WorkbookDateTimeFormatters.parseTempo
  * A value class which encapsulates all possible values that the {@link WorkbookEventReader} may return and which
  * provides convenient ways to convert between them
  */
-@SuppressWarnings("WeakerAccess")
 public final class CellValue {
 
     /**
@@ -28,7 +31,7 @@ public final class CellValue {
 
     private final Object originalValue;
 
-    private CellValue(Object originalValue) {
+    private CellValue(@Nullable Object originalValue) {
         assert isTypeAllowed(originalValue);
 
         this.originalValue = originalValue;
@@ -41,7 +44,9 @@ public final class CellValue {
      * @param originalValue the given value
      * @return an instance of <code>CellValue</code>
      */
-    static CellValue newInstance(Object originalValue) {
+    @NotNull
+    @Contract("!null -> new")
+    static CellValue newInstance(@Nullable Object originalValue) {
         if (originalValue == null) {
             return NULL;
         } else {
@@ -49,7 +54,7 @@ public final class CellValue {
         }
     }
 
-    private boolean isTypeAllowed(Object originalValue) {
+    private boolean isTypeAllowed(@Nullable Object originalValue) {
         return originalValue == null ||
                 originalValue instanceof Boolean ||
                 originalValue instanceof Integer ||
@@ -78,6 +83,7 @@ public final class CellValue {
      *
      * @return original value
      */
+    @Nullable
     public Object originalValue() {
         return originalValue;
     }
@@ -88,6 +94,7 @@ public final class CellValue {
      * @return the type of the original value if possible, otherwise a {@link NullPointerException} will be thrown
      * @throws NullPointerException the original value is null
      */
+    @NotNull
     public Class<?> originalType() {
         return Objects.requireNonNull(originalValue).getClass();
     }
@@ -218,6 +225,7 @@ public final class CellValue {
      * @return {@link String} version of the original value
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      */
+    @NotNull
     public String stringValue() {
         if (originalValue != null) {
             return String.valueOf(originalValue);
@@ -237,6 +245,7 @@ public final class CellValue {
      * @return {@link LocalTime} version of the original value
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      */
+    @NotNull
     public LocalTime localTimeValue() {
         return localTimeValue(DEFAULT_DATE_TIME_FORMATTERS);
     }
@@ -252,7 +261,8 @@ public final class CellValue {
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      * @throws NullPointerException   the given formatter is <code>null</code>
      */
-    public LocalTime localTimeValue(DateTimeFormatter formatter) {
+    @NotNull
+    public LocalTime localTimeValue(@NotNull(exception = NullPointerException.class) DateTimeFormatter formatter) {
         Objects.requireNonNull(formatter);
         return localTimeValue(Collections.singleton(formatter));
     }
@@ -268,7 +278,9 @@ public final class CellValue {
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      * @throws NullPointerException   the given formatters is <code>null</code>
      */
-    public LocalTime localTimeValue(Iterable<DateTimeFormatter> formatters) {
+    @NotNull
+    public LocalTime localTimeValue(@NotNull(exception = NullPointerException.class)
+                                            Iterable<DateTimeFormatter> formatters) {
         Objects.requireNonNull(formatters);
 
         if (originalValue instanceof LocalTime) {
@@ -305,6 +317,7 @@ public final class CellValue {
      * @return {@link LocalDate} version of the original value
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      */
+    @NotNull
     public LocalDate localDateValue() {
         return localDateValue(DEFAULT_DATE_TIME_FORMATTERS);
     }
@@ -320,7 +333,9 @@ public final class CellValue {
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      * @throws NullPointerException   the given formatter is <code>null</code>
      */
-    public LocalDate localDateValue(DateTimeFormatter formatter) {
+    @NotNull
+    public LocalDate localDateValue(@NotNull(exception = NullPointerException.class)
+                                            DateTimeFormatter formatter) {
         Objects.requireNonNull(formatter);
         return localDateValue(Collections.singleton(formatter));
     }
@@ -336,7 +351,9 @@ public final class CellValue {
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      * @throws NullPointerException   the given formatters is <code>null</code>
      */
-    public LocalDate localDateValue(Iterable<DateTimeFormatter> formatters) {
+    @NotNull
+    public LocalDate localDateValue(@NotNull(exception = NullPointerException.class)
+                                            Iterable<DateTimeFormatter> formatters) {
         Objects.requireNonNull(formatters);
 
         if (originalValue instanceof LocalDate) {
@@ -364,6 +381,7 @@ public final class CellValue {
      * @return {@link LocalDateTime} version of the original value
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      */
+    @NotNull
     public LocalDateTime localDateTimeValue() {
         return localDateTimeValue(DEFAULT_DATE_TIME_FORMATTERS);
     }
@@ -379,7 +397,9 @@ public final class CellValue {
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      * @throws NullPointerException   the given formatter is <code>null</code>
      */
-    public LocalDateTime localDateTimeValue(DateTimeFormatter formatter) {
+    @NotNull
+    public LocalDateTime localDateTimeValue(@NotNull(exception = NullPointerException.class)
+                                                    DateTimeFormatter formatter) {
         Objects.requireNonNull(formatter);
         return localDateTimeValue(Collections.singleton(formatter));
     }
@@ -395,7 +415,9 @@ public final class CellValue {
      * @throws CellValueCastException cannot convert the original value to {@link String} type
      * @throws NullPointerException   the given formatters is <code>null</code>
      */
-    public LocalDateTime localDateTimeValue(Iterable<DateTimeFormatter> formatters) {
+    @NotNull
+    public LocalDateTime localDateTimeValue(@NotNull(exception = NullPointerException.class)
+                                                    Iterable<DateTimeFormatter> formatters) {
         Objects.requireNonNull(formatters);
 
         if (originalValue instanceof LocalDateTime) {
@@ -432,7 +454,10 @@ public final class CellValue {
      * @return {@link CellValue} based on the mapped value
      * @throws CellValueCastException cannot perform mapping or the mapped value is not in the allow type
      */
-    public CellValue mapOriginalValue(Function<Object, Object> mappingFunction) {
+    @NotNull
+    @Contract(pure = true)
+    public CellValue mapOriginalValue(@NotNull(exception = NullPointerException.class)
+                                              Function<Object, Object> mappingFunction) {
         Objects.requireNonNull(mappingFunction);
 
         final Object newOriginalValue;
@@ -460,12 +485,14 @@ public final class CellValue {
      *
      * @return {@link CellValue} based on the trimmed value
      */
+    @NotNull
+    @Contract(pure = true)
     public CellValue trim() {
         return mapOriginalValue(v -> v instanceof String ? ((String) v).trim() : v);
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o) return true;
         if (!(o instanceof CellValue)) return false;
         CellValue cellValue = (CellValue) o;
@@ -494,6 +521,7 @@ public final class CellValue {
      * @return a string representation of the <code>CellValue</code>
      */
     @Override
+    @NotNull
     public String toString() {
         return getClass().getName() +
                 "{" +

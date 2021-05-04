@@ -1,6 +1,7 @@
 package com.github.kumasuke120.util;
 
 import nu.xom.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.*;
@@ -11,7 +12,7 @@ public class XmlUtil {
         throw new UnsupportedOperationException();
     }
 
-    public static boolean isSameXml(String aXml, String bXml) {
+    public static boolean isSameXml(@NotNull String aXml, @NotNull String bXml) {
         if (Objects.equals(aXml, bXml)) {
             return true;
         } else {
@@ -25,7 +26,7 @@ public class XmlUtil {
         }
     }
 
-    private static boolean isSameElement(Element aElement, Element bElement) {
+    private static boolean isSameElement(@NotNull Element aElement, @NotNull Element bElement) {
         final String aQN = aElement.getQualifiedName();
         final String bQN = bElement.getQualifiedName();
 
@@ -114,7 +115,8 @@ public class XmlUtil {
         }
     }
 
-    private static Map<String, String> extractAttributes(Element element) {
+    @NotNull
+    private static Map<String, String> extractAttributes(@NotNull Element element) {
         final Map<String, String> result = new HashMap<>();
 
         for (int i = 0; i < element.getAttributeCount(); i++) {
@@ -125,7 +127,8 @@ public class XmlUtil {
         return result;
     }
 
-    private static Map<String, List<Element>> extractChildElements(Element element) {
+    @NotNull
+    private static Map<String, List<Element>> extractChildElements(@NotNull Element element) {
         final Map<String, List<Element>> result = new HashMap<>();
 
         final Elements childElements = element.getChildElements();
@@ -139,7 +142,8 @@ public class XmlUtil {
         return result;
     }
 
-    private static Document buildSilently(String xml) {
+    @NotNull
+    private static Document buildSilently(@NotNull String xml) {
         final Builder builder = new Builder();
         try {
             return builder.build(xml, null);
@@ -148,11 +152,13 @@ public class XmlUtil {
         }
     }
 
-    private static String repeat80Times(String s) {
+    @NotNull
+    private static String repeat80Times(@NotNull String s) {
         final StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 80; i++) {
             sb.append(s);
         }
         return sb.toString();
     }
+
 }

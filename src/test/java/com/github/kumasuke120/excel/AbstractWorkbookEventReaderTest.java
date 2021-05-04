@@ -4,6 +4,8 @@ import com.github.kumasuke120.util.LightWeightConstructor;
 import com.github.kumasuke120.util.ResourceUtil;
 import com.github.kumasuke120.util.XmlUtil;
 import org.apache.poi.EncryptedDocumentException;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
 
 import java.io.IOException;
@@ -23,26 +25,26 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
     private String sampleReadFileName = "sample-output.xml";
     private String sampleCancelFileName = "sample-output-2.xml";
 
-    AbstractWorkbookEventReaderTest(String normalFileName,
-                                    String encryptedFileName,
-                                    Class<R> readerClass) {
+    AbstractWorkbookEventReaderTest(@NotNull String normalFileName,
+                                    @Nullable String encryptedFileName,
+                                    @NotNull Class<R> readerClass) {
         this.normalFileName = normalFileName;
         this.encryptedFileName = encryptedFileName;
         this.readerClass = readerClass;
     }
 
     @SuppressWarnings("SameParameterValue")
-    void setSampleReadFileName(String sampleReadFileName) {
+    void setSampleReadFileName(@NotNull String sampleReadFileName) {
         this.sampleReadFileName = sampleReadFileName;
     }
 
     @SuppressWarnings("SameParameterValue")
-    void setSampleCancelFileName(String sampleCancelFileName) {
+    void setSampleCancelFileName(@NotNull String sampleCancelFileName) {
         this.sampleCancelFileName = sampleCancelFileName;
     }
 
     @SuppressWarnings("EmptyTryBlock")
-    final void dealWithReader(Consumer<WorkbookEventReader> consumer) {
+    final void dealWithReader(@NotNull Consumer<WorkbookEventReader> consumer) {
         // region constructor(Path)
         final Path filePath = ResourceUtil.getPathOfClasspathResource(normalFileName);
         try (final WorkbookEventReader reader = pathConstructor().newInstance(filePath)) {
@@ -116,18 +118,22 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         // endregion
     }
 
+    @NotNull
     LightWeightConstructor<R> pathConstructor() {
         return new LightWeightConstructor<>(readerClass, Path.class);
     }
 
+    @NotNull
     private LightWeightConstructor<R> pathAndPasswordConstructor() {
         return new LightWeightConstructor<>(readerClass, Path.class, String.class);
     }
 
+    @NotNull
     private LightWeightConstructor<R> inputStreamConstructor() {
         return new LightWeightConstructor<>(readerClass, InputStream.class);
     }
 
+    @NotNull
     private LightWeightConstructor<R> inputStreamAndPasswordConstructor() {
         return new LightWeightConstructor<>(readerClass, InputStream.class, String.class);
     }
@@ -152,7 +158,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         dealWithReader(reader -> {
             final WorkbookEventReader.EventHandler handler = new WorkbookEventReader.EventHandler() {
                 @Override
-                public void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
+                public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
                     if (Integer.class.equals(cellValue.originalType())) {
                         // triggers an CellValueCastException
                         cellValue.localDateValue();
@@ -268,7 +274,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         }
 
         @Override
-        public void onStartSheet(int sheetIndex, String sheetName) {
+        public void onStartSheet(int sheetIndex, @NotNull String sheetName) {
             xml.append("<sheet index=\"")
                     .append(sheetIndex)
                     .append("\" name=\"")
@@ -278,7 +284,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
             sheetStack.push(sheetIndex);
 
             if (sheetIndex == 0) {
-                assertTrue("Sheet1".equals(sheetName) || sheetName != null);
+                assertTrue("Sheet1".equals(sheetName) || "".equals(sheetName));
             } else if (sheetIndex == 1) {
                 assertEquals("Sheet2", sheetName);
             } else {
@@ -318,7 +324,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         }
 
         @Override
-        public void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
+        public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
             // run for coverage
             WorkbookEventReader.EventHandler.super.onHandleCell(sheetIndex, rowNum, columnNum, cellValue);
 

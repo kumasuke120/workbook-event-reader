@@ -1,16 +1,14 @@
 package com.github.kumasuke120.excel;
 
-import org.apache.poi.ss.usermodel.BuiltinFormats;
-import org.apache.poi.ss.usermodel.DateUtil;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.time.*;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Objects;
 
 /**
  * The base class for {@link WorkbookEventReader}, containing common methods and utilities
@@ -31,7 +29,8 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * @throws NullPointerException <code>filePath</code> is <code>null</code>
      * @throws WorkbookIOException  errors happened when opening
      */
-    AbstractWorkbookEventReader(InputStream in, String password) {
+    AbstractWorkbookEventReader(@NotNull(exception = NullPointerException.class) InputStream in,
+                                @Nullable String password) {
         Objects.requireNonNull(in);
 
         doOnStartOpen();
@@ -53,7 +52,8 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * @throws NullPointerException <code>filePath</code> is <code>null</code>
      * @throws WorkbookIOException  errors happened when opening
      */
-    AbstractWorkbookEventReader(Path filePath, String password) {
+    AbstractWorkbookEventReader(@NotNull(exception = NullPointerException.class) Path filePath,
+                                @Nullable String password) {
         Objects.requireNonNull(filePath);
 
         doOnStartOpen();
@@ -75,7 +75,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * @param caught    previous caught {@link Exception}
      * @throws Exception previous caught {@link Exception} or {@link Exception} thrown when closing
      */
-    static void suppressClose(Closeable closeable, Exception caught) throws Exception {
+    static void suppressClose(@Nullable Closeable closeable, @Nullable Exception caught) throws Exception {
         Exception thrown = caught;
         try {
             if (closeable != null) {
@@ -110,7 +110,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * @param password password to open the file, and it might be <code>null</code>
      * @throws Exception any exception occurred during opening process
      */
-    abstract void doOpen(InputStream in, String password) throws Exception;
+    abstract void doOpen(@NotNull InputStream in, @Nullable String password) throws Exception;
 
     /**
      * Opens the specified file with this {@link AbstractWorkbookEventReader}.<br>
@@ -122,7 +122,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * @param password password to open the file, and it might be <code>null</code>
      * @throws Exception any exception occurred during opening process
      */
-    abstract void doOpen(Path filePath, String password) throws Exception;
+    abstract void doOpen(@NotNull Path filePath, @Nullable String password) throws Exception;
 
     /**
      * Creates a resource-cleaning action to close all resources this {@link WorkbookEventReader}
@@ -133,6 +133,8 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      *
      * @return a non-anonymous instance of {@link ReaderCleanAction}
      */
+    @NotNull
+    @Contract("-> new")
     abstract ReaderCleanAction createCleanAction();
 
     @Override
@@ -148,7 +150,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * {@inheritDoc}
      */
     @Override
-    public final void read(EventHandler handler) {
+    public final void read(@NotNull(exception = NullPointerException.class) EventHandler handler) {
         assertNotClosed();
         assertNotBeingRead();
 
@@ -180,7 +182,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * @param handler an non-<code>null</code> {@link EventHandler} that handles read events as reading process going
      * @throws Exception any exception occurred during reading process
      */
-    abstract void doRead(EventHandler handler) throws Exception;
+    abstract void doRead(@NotNull EventHandler handler) throws Exception;
 
     /**
      * {@inheritDoc}

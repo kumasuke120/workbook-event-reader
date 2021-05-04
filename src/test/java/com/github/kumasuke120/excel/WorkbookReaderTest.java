@@ -31,6 +31,7 @@ class WorkbookReaderTest {
         return result;
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Test
     void nullCheck() {
         assertThrows(NullPointerException.class, () -> {
@@ -107,6 +108,7 @@ class WorkbookReaderTest {
         });
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Test
     void openWithStream() throws IOException {
         try (final InputStream in = ClassLoader.getSystemResourceAsStream("workbook.xls")) {
@@ -142,6 +144,7 @@ class WorkbookReaderTest {
         }
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Test
     void openWithStreamAndPassword() throws IOException {
         try (final InputStream in = ClassLoader.getSystemResourceAsStream("workbook-encrypted.xls")) {

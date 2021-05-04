@@ -72,7 +72,8 @@ class WorkbookDateTimeFormattersTest {
     @Test
     void newInstance() {
         try {
-            final Constructor<WorkbookDateTimeFormatters> constructor = WorkbookDateTimeFormatters.class.getDeclaredConstructor();
+            final Constructor<WorkbookDateTimeFormatters> constructor =
+                    WorkbookDateTimeFormatters.class.getDeclaredConstructor();
             constructor.setAccessible(true);
             constructor.newInstance();
         } catch (InvocationTargetException e) {

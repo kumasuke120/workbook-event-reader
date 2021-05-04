@@ -2,6 +2,7 @@ package com.github.kumasuke120.excel;
 
 import com.github.kumasuke120.util.ResourceUtil;
 import org.apache.commons.csv.CSVFormat;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -47,7 +48,7 @@ class CSVWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<CSVWork
             try (final WorkbookEventReader reader = pathConstructor().newInstance(filePath)) {
                 reader.read(new WorkbookEventReader.EventHandler() {
                     @Override
-                    public void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
+                    public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
                         if (rowNum == 0 && columnNum == 0) {
                             assertEquals("中文", cellValue.originalValue());
                         } else if (rowNum == 0 && columnNum == 1) {

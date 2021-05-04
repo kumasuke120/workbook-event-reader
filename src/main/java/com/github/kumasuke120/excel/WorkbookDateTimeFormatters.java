@@ -1,5 +1,9 @@
 package com.github.kumasuke120.excel;
 
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.time.format.DateTimeFormatter;
@@ -10,6 +14,11 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
+/**
+ * A collection of all {@link DateTimeFormatter} could be used during reading the workbook, providing
+ * a set of methods to manipulate them
+ */
+@ApiStatus.Internal
 class WorkbookDateTimeFormatters {
 
     // region predefined workbook formatters
@@ -36,7 +45,9 @@ class WorkbookDateTimeFormatters {
         throw new UnsupportedOperationException();
     }
 
-    static TemporalAccessor parseTemporalAccessor(String value, Iterable<DateTimeFormatter> formatters) {
+    @NotNull
+    static TemporalAccessor parseTemporalAccessor(@NotNull String value,
+                                                  @NotNull Iterable<DateTimeFormatter> formatters) {
         RuntimeException previousEx = null;
 
         for (DateTimeFormatter formatter : formatters) {
@@ -63,6 +74,8 @@ class WorkbookDateTimeFormatters {
         throw new CellValueCastException(previousEx);
     }
 
+    @Unmodifiable
+    @NotNull
     static Set<DateTimeFormatter> getPredefinedDateTimeFormatters() {
         final Set<DateTimeFormatter> jdkFormatters = getPredefinedDateTimeFormatters(DateTimeFormatter.class);
         final Set<DateTimeFormatter> result = new HashSet<>(jdkFormatters);
@@ -74,7 +87,8 @@ class WorkbookDateTimeFormatters {
         return Collections.unmodifiableSet(result);
     }
 
-    private static Set<DateTimeFormatter> getPredefinedDateTimeFormatters(Class<?> clazz) {
+    @NotNull
+    private static Set<DateTimeFormatter> getPredefinedDateTimeFormatters(@NotNull Class<?> clazz) {
         final Set<DateTimeFormatter> formatters = new HashSet<>();
         final Field[] fields = clazz.getFields();
         for (Field field : fields) {

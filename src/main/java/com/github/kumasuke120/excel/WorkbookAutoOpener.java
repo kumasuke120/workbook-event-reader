@@ -3,6 +3,9 @@ package com.github.kumasuke120.excel;
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.poifs.filesystem.FileMagic;
 import org.apache.poi.util.IOUtils;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -17,6 +20,7 @@ import java.util.function.Supplier;
 /**
  * A {@link WorkbookAutoOpener} which creates a {@link WorkbookEventReader} based on the given parameters
  */
+@ApiStatus.Internal
 class WorkbookAutoOpener {
 
     private static final ReaderConstructor hssfConstructor = new ReaderConstructor(HSSFWorkbookEventReader.class);
@@ -33,22 +37,22 @@ class WorkbookAutoOpener {
      * @param filePath {@link Path} of the workbook to be opened
      * @param password password to open the file
      */
-    WorkbookAutoOpener(Path filePath, String password) {
+    WorkbookAutoOpener(@NotNull Path filePath, @Nullable String password) {
         this(filePath, null, password);
     }
 
     /**
-     * Creates a new {@link WorkbookAutoOpener} based on thegiven workbook {@link InputStream}
+     * Creates a new {@link WorkbookAutoOpener} based on the given workbook {@link InputStream}
      * and the given password if possible.
      *
      * @param in       {@link InputStream} of the workbook to be read
      * @param password password to open the file
      */
-    WorkbookAutoOpener(InputStream in, String password) {
+    WorkbookAutoOpener(@NotNull InputStream in, @Nullable String password) {
         this(null, in, password);
     }
 
-    private WorkbookAutoOpener(Path filePath, InputStream in, String password) {
+    private WorkbookAutoOpener(@Nullable Path filePath, @Nullable InputStream in, @Nullable String password) {
         this.in = in;
         this.filePath = filePath;
         this.password = password;
@@ -61,6 +65,7 @@ class WorkbookAutoOpener {
      * @throws NullPointerException one of the required parameters is <code>null</code>
      * @throws WorkbookIOException  errors happened when opening
      */
+    @NotNull
     WorkbookEventReader open() {
         if (in == null && filePath != null) {
             return openByPath();
@@ -73,6 +78,7 @@ class WorkbookAutoOpener {
         }
     }
 
+    @NotNull
     private WorkbookEventReader openByInputStream() {
         assert in != null;
 
@@ -88,6 +94,7 @@ class WorkbookAutoOpener {
         return tryConstruct(constructors, inSupplier);
     }
 
+    @NotNull
     private FileMagic checkFileMagic(byte[] bytes) {
         try (final ByteArrayInputStream in = new ByteArrayInputStream(bytes);
              final InputStream stream = FileMagic.prepareToCheckMagic(in)) {
@@ -97,6 +104,7 @@ class WorkbookAutoOpener {
         }
     }
 
+    @NotNull
     private List<ReaderConstructor> buildConstructorsByMagic(byte[] bytes) {
         final List<ReaderConstructor> constructors = new ArrayList<>();
         final FileMagic magic = checkFileMagic(bytes);
@@ -115,6 +123,7 @@ class WorkbookAutoOpener {
         return constructors;
     }
 
+    @NotNull
     private WorkbookEventReader openByPath() {
         assert filePath != null;
 
@@ -123,6 +132,7 @@ class WorkbookAutoOpener {
         return tryConstruct(constructors, filePath);
     }
 
+    @NotNull
     private String getExtension() {
         assert filePath != null;
 
@@ -136,7 +146,8 @@ class WorkbookAutoOpener {
         return extPos == -1 ? "" : fileNameStr.substring(extPos + 1);
     }
 
-    private List<ReaderConstructor> buildConstructorsByExtension(String ext) {
+    @NotNull
+    private List<ReaderConstructor> buildConstructorsByExtension(@NotNull String ext) {
         final List<ReaderConstructor> constructors = new ArrayList<>();
         switch (ext) {
             case "xlsx":
@@ -159,7 +170,9 @@ class WorkbookAutoOpener {
         return constructors;
     }
 
-    private WorkbookEventReader tryConstruct(List<ReaderConstructor> constructors, Supplier<InputStream> inSupplier) {
+    @NotNull
+    private WorkbookEventReader tryConstruct(@NotNull List<ReaderConstructor> constructors,
+                                             @NotNull Supplier<InputStream> inSupplier) {
         assert !constructors.isEmpty();
 
         WorkbookIOException thrown = null;
@@ -177,7 +190,9 @@ class WorkbookAutoOpener {
         throw thrown;
     }
 
-    private WorkbookEventReader tryConstruct(List<ReaderConstructor> constructors, Path filePath) {
+    @NotNull
+    private WorkbookEventReader tryConstruct(@NotNull List<ReaderConstructor> constructors,
+                                             @NotNull Path filePath) {
         assert !constructors.isEmpty();
 
         WorkbookIOException thrown = null;
@@ -193,7 +208,9 @@ class WorkbookAutoOpener {
         throw thrown;
     }
 
-    private WorkbookIOException updateTryConstructException(WorkbookIOException thrown, WorkbookIOException e) {
+    @NotNull
+    private WorkbookIOException updateTryConstructException(@Nullable WorkbookIOException thrown,
+                                                            @NotNull WorkbookIOException e) {
         // EncryptedDocumentException means password incorrect, it should be thrown directly
         if (e.getCause() instanceof EncryptedDocumentException) {
             throw e;
@@ -211,13 +228,14 @@ class WorkbookAutoOpener {
         private final Constructor<? extends WorkbookEventReader> inputStreamConstructor;
         private final Constructor<? extends WorkbookEventReader> pathConstructor;
 
-        ReaderConstructor(Class<? extends WorkbookEventReader> readerClass) {
+        ReaderConstructor(@NotNull Class<? extends WorkbookEventReader> readerClass) {
             this.readerClass = readerClass;
             this.inputStreamConstructor = findConstructor(InputStream.class);
             this.pathConstructor = findConstructor(Path.class);
         }
 
-        private Constructor<? extends WorkbookEventReader> findConstructor(Class<?> firstParameterType) {
+        @NotNull
+        private Constructor<? extends WorkbookEventReader> findConstructor(@NotNull Class<?> firstParameterType) {
             try {
                 return readerClass.getConstructor(firstParameterType, String.class);
             } catch (NoSuchMethodException e1) {
@@ -237,6 +255,7 @@ class WorkbookAutoOpener {
          * @throws NullPointerException <code>filePath</code> is <code>null</code>
          * @throws WorkbookIOException  errors happened when opening
          */
+        @NotNull
         WorkbookEventReader newInstance(Path filePath, String password) {
             return newInstance(pathConstructor, filePath, password);
         }
@@ -250,12 +269,15 @@ class WorkbookAutoOpener {
          * @throws NullPointerException <code>filePath</code> is <code>null</code>
          * @throws WorkbookIOException  errors happened when opening
          */
+        @NotNull
         WorkbookEventReader newInstance(InputStream in, String password) {
             return newInstance(inputStreamConstructor, in, password);
         }
 
-        private WorkbookEventReader newInstance(Constructor<? extends WorkbookEventReader> constructor,
-                                                Object firstParameter, String password) {
+        @NotNull
+        private WorkbookEventReader newInstance(@NotNull Constructor<? extends WorkbookEventReader> constructor,
+                                                @NotNull Object firstParameter,
+                                                @Nullable String password) {
             final int parameterCount = constructor.getParameterCount();
             final Object[] parameters = parameterCount == 1 ? new Object[]{firstParameter} :
                     new Object[]{firstParameter, password};
@@ -268,7 +290,8 @@ class WorkbookAutoOpener {
             }
         }
 
-        private WorkbookIOException translateException(InvocationTargetException e) {
+        @NotNull
+        private WorkbookIOException translateException(@NotNull InvocationTargetException e) {
             final Throwable t = e.getTargetException();
             assert t instanceof WorkbookIOException;
             return (WorkbookIOException) t;

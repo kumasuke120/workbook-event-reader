@@ -7,6 +7,8 @@ import org.apache.poi.poifs.filesystem.DocumentInputStream;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +22,7 @@ import java.util.Map;
  * A {@link WorkbookEventReader} reads a legacy workbook (Excel 97 - 2003) whose file extension
  * usually is <code>xls</code>
  */
-@SuppressWarnings({"WeakerAccess", "unused"})
+@SuppressWarnings("unused")
 public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     private static final short USER_CODE_CONTINUE = 0;
@@ -34,7 +36,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
      *
      * @param filePath the file path of the workbook
      */
-    public HSSFWorkbookEventReader(Path filePath) {
+    public HSSFWorkbookEventReader(@NotNull(exception = NullPointerException.class) Path filePath) {
         this(filePath, null);
     }
 
@@ -43,7 +45,8 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
      *
      * @param filePath the file path of the workbook
      */
-    public HSSFWorkbookEventReader(Path filePath, String password) {
+    public HSSFWorkbookEventReader(@NotNull(exception = NullPointerException.class) Path filePath,
+                                   @Nullable String password) {
         super(filePath, password);
     }
 
@@ -52,7 +55,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
      *
      * @param in {@link InputStream} of the workbook to be read
      */
-    public HSSFWorkbookEventReader(InputStream in) {
+    public HSSFWorkbookEventReader(@NotNull(exception = NullPointerException.class) InputStream in) {
         this(in, null);
     }
 
@@ -63,12 +66,13 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
      * @param in       {@link InputStream} of the workbook to be read
      * @param password password to open the file
      */
-    public HSSFWorkbookEventReader(InputStream in, String password) {
+    public HSSFWorkbookEventReader(@NotNull(exception = NullPointerException.class) InputStream in,
+                                   @Nullable String password) {
         super(in, password);
     }
 
     @Override
-    void doOpen(InputStream in, String password) throws Exception {
+    void doOpen(@NotNull InputStream in, @Nullable String password) throws Exception {
         Exception thrown = null;
         try {
             fileSystem = new POIFSFileSystem(in); // consumes all stream data to memory
@@ -82,14 +86,14 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
     }
 
     @Override
-    void doOpen(Path filePath, String password) throws Exception {
+    void doOpen(@NotNull Path filePath, @Nullable String password) throws Exception {
         final FileChannel channel = FileChannel.open(filePath, StandardOpenOption.READ);
         fileSystem = new POIFSFileSystem(channel, true);
 
         setWorkbookPassword(password);
     }
 
-    private void setWorkbookPassword(String password) throws IOException {
+    private void setWorkbookPassword(@Nullable String password) throws IOException {
         this.password = password; // records for later use
         checkWorkbookPassword(); // all documents should be checked
     }
@@ -102,12 +106,13 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
     }
 
     @Override
+    @NotNull
     ReaderCleanAction createCleanAction() {
         return new HSSFReaderCleanAction(this);
     }
 
     @Override
-    void doRead(EventHandler handler) throws Exception {
+    void doRead(@NotNull EventHandler handler) throws Exception {
         handler.onStartDocument();
 
         final HSSFRequest request = new HSSFRequest();
@@ -124,7 +129,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         }
     }
 
-    private short processRequest(HSSFRequest request) throws IOException {
+    private short processRequest(@NotNull HSSFRequest request) throws IOException {
         short userCode;
         try (final DocumentInputStream documentIs = fileSystem.createDocumentInputStream("Workbook")) {
             boolean passwordSet = false;
@@ -155,7 +160,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
     private static class HSSFReaderCleanAction extends ReaderCleanAction {
         private final POIFSFileSystem poifsFileSystem;
 
-        HSSFReaderCleanAction(HSSFWorkbookEventReader reader) {
+        HSSFReaderCleanAction(@NotNull HSSFWorkbookEventReader reader) {
             poifsFileSystem = reader.fileSystem;
         }
 
@@ -169,7 +174,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     private static class InstantAbortHSSFListener extends AbortableHSSFListener {
         @Override
-        public short abortableProcessRecord(Record record) {
+        public short abortableProcessRecord(@NotNull Record record) {
             return USER_CODE_ABORT;
         }
     }
@@ -197,13 +202,13 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         private int tSheetIndex = -1;
         private int tRowNum = -1;
 
-        private ReaderHSSFListener(EventHandler handler) {
+        private ReaderHSSFListener(@NotNull EventHandler handler) {
             this.handler = handler;
             this.formatTracker = new FormatTrackingHSSFListener(null);
         }
 
         @Override
-        public short abortableProcessRecord(Record record) {
+        public short abortableProcessRecord(@NotNull Record record) {
             formatTracker.processRecordInternally(record); // records formats and styles
 
             final short currentSid = record.getSid();
@@ -361,7 +366,8 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             previousSheetEndHandled = false;
         }
 
-        private Object formatNumberDateCell(CellValueRecordInterface cellRecord) {
+        @Nullable
+        private Object formatNumberDateCell(@NotNull CellValueRecordInterface cellRecord) {
             final double value;
             if (cellRecord instanceof NumberRecord) {
                 value = ((NumberRecord) cellRecord).getValue();
@@ -399,7 +405,8 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             return value;
         }
 
-        private String formatString(String value) {
+        @Nullable
+        private String formatString(@Nullable String value) {
             return "".equals(value) ? null : value;
         }
 
@@ -412,7 +419,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             previousSheetEndHandled = true;
         }
 
-        private void handleCell(int rowNum, int columnNum, Object cellValue) {
+        private void handleCell(int rowNum, int columnNum, @Nullable Object cellValue) {
             previousRowNumber = currentRowNumber;
             currentRowNumber = rowNum;
 

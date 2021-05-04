@@ -1,5 +1,7 @@
 package com.github.kumasuke120.excel;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -374,6 +376,7 @@ class CellValueTest {
         assertEquals(theDateTimeValue, cellValue2.localDateTimeValue());
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void mapOriginalValue() {
         // region square
@@ -460,7 +463,8 @@ class CellValueTest {
         assertNotSame(c, CellValue.newInstance(null));
     }
 
-    private CellValue newCellValue(Object originalValue) {
+    @NotNull
+    private CellValue newCellValue(@Nullable Object originalValue) {
         try {
             final Constructor<CellValue> constructor = CellValue.class.getDeclaredConstructor(Object.class);
             constructor.setAccessible(true);

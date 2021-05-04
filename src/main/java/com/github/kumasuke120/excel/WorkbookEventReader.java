@@ -1,5 +1,8 @@
 package com.github.kumasuke120.excel;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.Closeable;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -20,7 +23,8 @@ public interface WorkbookEventReader extends Closeable {
      * @throws NullPointerException <code>filePath</code> is <code>null</code>
      * @throws WorkbookIOException  errors happened when opening
      */
-    static WorkbookEventReader open(Path filePath) {
+    @NotNull
+    static WorkbookEventReader open(@NotNull(exception = NullPointerException.class) Path filePath) {
         return open(filePath, null);
     }
 
@@ -34,7 +38,9 @@ public interface WorkbookEventReader extends Closeable {
      * @throws NullPointerException <code>filePath</code> is <code>null</code>
      * @throws WorkbookIOException  errors happened when opening
      */
-    static WorkbookEventReader open(Path filePath, String password) {
+    @NotNull
+    static WorkbookEventReader open(@NotNull(exception = NullPointerException.class) Path filePath,
+                                    @Nullable String password) {
         return new WorkbookAutoOpener(filePath, password).open();
     }
 
@@ -46,7 +52,8 @@ public interface WorkbookEventReader extends Closeable {
      * @throws NullPointerException <code>in</code> is <code>null</code>
      * @throws WorkbookIOException  errors happened when opening
      */
-    static WorkbookEventReader open(InputStream in) {
+    @NotNull
+    static WorkbookEventReader open(@NotNull(exception = NullPointerException.class) InputStream in) {
         return open(in, null);
     }
 
@@ -60,7 +67,9 @@ public interface WorkbookEventReader extends Closeable {
      * @throws NullPointerException <code>in</code> is <code>null</code>
      * @throws WorkbookIOException  errors happened when opening
      */
-    static WorkbookEventReader open(InputStream in, String password) {
+    @NotNull
+    static WorkbookEventReader open(@NotNull(exception = NullPointerException.class) InputStream in,
+                                    @Nullable String password) {
         return new WorkbookAutoOpener(in, password).open();
     }
 
@@ -75,7 +84,7 @@ public interface WorkbookEventReader extends Closeable {
      * @throws IllegalReaderStateException this {@link WorkbookEventReader} has been closed;
      *                                     called during reading process
      */
-    void read(EventHandler handler);
+    void read(@NotNull(exception = NullPointerException.class) EventHandler handler);
 
     /**
      * Cancels reading process that is currently performing as soon as possible.
@@ -120,7 +129,7 @@ public interface WorkbookEventReader extends Closeable {
          * @param sheetIndex the index of the sheet, starts with 0
          * @param sheetName  the name of the sheet
          */
-        default void onStartSheet(int sheetIndex, String sheetName) {
+        default void onStartSheet(int sheetIndex, @NotNull String sheetName) {
             // no-op
         }
 
@@ -212,7 +221,7 @@ public interface WorkbookEventReader extends Closeable {
          * @param columnNum  the index of the cell, starts with 0
          * @param cellValue  the value read and converted from the corresponding cell, it won't be <code>null</code>
          */
-        default void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
+        default void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
             // no-op
         }
 
