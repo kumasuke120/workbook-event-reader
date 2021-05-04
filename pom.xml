@@ -33,7 +33,7 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- Apache POI -->
+        <!-- region Apache POI -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
@@ -49,19 +49,25 @@
             <artifactId>xercesImpl</artifactId>
             <version>${apache.xerces.version}</version>
         </dependency>
+        <!-- endregion -->
+
         <!-- Commons CSV -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
             <version>${apache.csv.version}</version>
         </dependency>
+
+        <!-- region dev -->
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <version>20.1.0</version>
             <scope>provided</scope>
         </dependency>
-        <!-- JUnit -->
+        <!-- endregion -->
+
+        <!-- region test -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -73,6 +79,7 @@
             <version>1.2.10</version>
             <scope>test</scope>
         </dependency>
+        <!-- endregion -->
     </dependencies>
 
     <build>
