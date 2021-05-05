@@ -242,7 +242,7 @@ class WorkbookAutoOpener {
                 try {
                     return readerClass.getConstructor(firstParameterType);
                 } catch (NoSuchMethodException e2) {
-                    throw new AssertionError("This shouldn't happen", e2);
+                    throw new AssertionError("Shouldn't happen", e2);
                 }
             }
         }
@@ -286,7 +286,7 @@ class WorkbookAutoOpener {
             } catch (InvocationTargetException e) {
                 throw translateException(e);
             } catch (ReflectiveOperationException e) {
-                throw new AssertionError("This shouldn't happen", e);
+                throw new AssertionError("Shouldn't happen", e);
             }
         }
 

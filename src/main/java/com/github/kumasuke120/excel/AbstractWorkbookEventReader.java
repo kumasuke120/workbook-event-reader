@@ -213,7 +213,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      *
      * @return <code>true</code> if the reader is in reading state, otherwise <code>false</code>
      */
-    boolean isReading() {
+    final boolean isReading() {
         return reading;
     }
 
@@ -222,7 +222,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      *
      * @throws IllegalReaderStateException the reader has been closed
      */
-    void assertNotClosed() {
+    private void assertNotClosed() {
         if (closed) {
             throw new IllegalReaderStateException("This '" + getClass().getSimpleName() + "' has been closed");
         }
@@ -233,7 +233,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      *
      * @throws IllegalReaderStateException the reader is being read
      */
-    void assertNotBeingRead() {
+    private void assertNotBeingRead() {
         if (reading) {
             throw new IllegalReaderStateException("This '" + getClass().getSimpleName() + "' is being read");
         }
