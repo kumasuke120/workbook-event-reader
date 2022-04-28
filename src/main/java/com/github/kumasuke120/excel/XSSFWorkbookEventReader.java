@@ -3,6 +3,7 @@ package com.github.kumasuke120.excel;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.openxml4j.opc.PackageAccess;
 import org.apache.poi.poifs.filesystem.DocumentFactoryHelper;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
@@ -143,7 +144,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 doOpen(stream, null);
             }
         } else {
-            opcPackage = OPCPackage.open(file);
+            opcPackage = OPCPackage.open(file, PackageAccess.READ);
             initFromOpcPackage();
         }
     }
