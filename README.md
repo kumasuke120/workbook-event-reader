@@ -15,12 +15,12 @@ All values read from an Excel document could be converted to sensible correspond
 ## Requirements
 Requirements for this project are as follows:
 
-| Dependency               	| Bundled 	| Minimum  	|
-|-----------------------	|---------	|-----------|
-| Java Ver.             	| None     	| 8      	|
-| Apache POI Ver.       	| 4.0.0   	| 3.17  	|
-| Apache Xerces Ver.    	| 2.12.0  	| 2.0.0 	|
-| Apache Commons CSV Ver. 	| 1.8     	| 1.0   	|
+| Dependency               	 | Bundled 	  | Minimum  	 |
+|----------------------------|------------|------------|
+| Java Ver.             	    | None     	 | 8      	   |
+| Apache POI Ver.       	    | 4.0.0   	  | 3.17  	    |
+| Apache Xerces Ver.    	    | 2.12.2  	  | 2.0.0 	    |
+| Apache Commons CSV Ver. 	  | 1.8     	  | 1.0   	    |
 
 _Click [here](https://bz.apache.org/bugzilla/show_bug.cgi?id=61034) to take a look at the reason 
 for the requirement of Apache POI 3.17 onwards_
