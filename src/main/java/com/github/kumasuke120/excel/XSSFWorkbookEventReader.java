@@ -12,6 +12,7 @@ import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.model.SharedStringsTable;
 import org.apache.poi.xssf.model.StylesTable;
+import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTXf;
@@ -426,8 +427,14 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                         null, e);
             }
 
-            final RichTextString sharedString = sharedStringsTable.getItemAt(sharedStringIndex);
+            final RichTextString sharedString = getItemAt(sharedStringsTable, sharedStringIndex);
             return sharedString.getString();
+        }
+
+        @SuppressWarnings("deprecation")
+        @NotNull
+        private RichTextString getItemAt(@NotNull SharedStringsTable table, int idx) {
+            return new XSSFRichTextString(table.getEntryAt(idx));
         }
 
         @Nullable
