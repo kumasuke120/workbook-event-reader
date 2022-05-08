@@ -341,7 +341,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 if (currentCellType == null) {
                     currentCellType = CELL_TYPE_INLINE_STRING;
                 }
-            } else if (isCellValueRelated(localName)) {
+            } else if (isCellValueElement(localName)) {
                 isCurrentCellValue = true; // indicates cell value starts
                 currentCellValueBuilder.setLength(0);
             }
@@ -359,18 +359,18 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 handler.onHandleCell(currentSheetIndex, currentRowNum, currentColumnNum,
                                      CellValue.newInstance(cellValue));
 
-                // clear its content after processing
+                // clears its content after processing
                 currentCellValueBuilder.setLength(0);
                 currentCellType = null;
             } else if (TAG_ROW.equals(localName)) {
                 currentColumnNum = -1;
                 handler.onEndRow(currentSheetIndex, currentRowNum);
-            } else if (isCellValueRelated(localName)) {
+            } else if (isCellValueElement(localName)) {
                 isCurrentCellValue = false; // indicates cell value ends
             }
         }
 
-        private boolean isCellValueRelated(@NotNull String localName) {
+        private boolean isCellValueElement(@NotNull String localName) {
             return TAG_CELL_VALUE.equals(localName) ||
                     (CELL_TYPE_INLINE_STRING.equals(currentCellType) && TAG_INLINE_CELL_VALUE.equals(localName));
         }
