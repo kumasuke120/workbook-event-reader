@@ -13,9 +13,12 @@ import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.model.SharedStringsTable;
 import org.apache.poi.xssf.model.StylesTable;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
+import org.apache.xmlbeans.XmlException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTWorkbookPr;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTXf;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.WorkbookDocument;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -38,7 +41,7 @@ import java.util.Map;
 @SuppressWarnings("unused")
 public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
-    private static final ThreadLocal<Boolean> use1904WindowingLocal = ThreadLocal.withInitial(() -> false);
+    private static final ThreadLocal<Boolean> use1904WindowingLocal = new ThreadLocal<>();
 
     private OPCPackage opcPackage;
     private XSSFReader xssfReader;
@@ -98,18 +101,18 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
     }
 
     /**
-     * Sets all following-opened instances of {@link XSSFWorkbookEventReader} on the current thread using
-     * 1904 windowing for parsing date cells whether or not.<br>
+     * Sets all following-opened instances of {@link XSSFWorkbookEventReader} on the current thread whether using
+     * 1904 windowing for parsing date cells.<br>
+     * The default value is <code>null</code>, which parses the workbook to find the 1904 windowing mark.<br>
      *
-     * @param use1904Windowing whether use 1904 date windowing or not
+     * @param use1904Windowing whether you use 1904 date windowing or not; set <code>null</code> to use the default
      */
-    public static void setUse1904Windowing(boolean use1904Windowing) {
-        use1904WindowingLocal.set(use1904Windowing);
-    }
-
-    @Override
-    void doOnStartOpen() {
-        use1904Windowing = use1904WindowingLocal.get();
+    public static void setUse1904Windowing(@Nullable Boolean use1904Windowing) {
+        if (use1904Windowing == null) {
+            use1904WindowingLocal.remove();
+        } else {
+            use1904WindowingLocal.set(use1904Windowing);
+        }
     }
 
     @Override
@@ -150,10 +153,28 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         }
     }
 
-    private void initFromOpcPackage() throws IOException, OpenXML4JException {
+    private void initFromOpcPackage() throws IOException, OpenXML4JException, XmlException {
         xssfReader = new XSSFReader(opcPackage);
         sharedStringsTable = xssfReader.getSharedStringsTable();
         stylesTable = xssfReader.getStylesTable();
+
+        initUse1904Windowing();
+    }
+
+    private void initUse1904Windowing() throws IOException, OpenXML4JException, XmlException {
+        // uses the user-set value if available
+        if (use1904WindowingLocal.get() != null) {
+            use1904Windowing = use1904WindowingLocal.get();
+            return;
+        }
+
+        assert xssfReader != null;
+
+        // reads xl/workbook.xml
+        final InputStream workbookIn = xssfReader.getWorkbookData();
+        final WorkbookDocument doc = WorkbookDocument.Factory.parse(workbookIn);
+        final CTWorkbookPr prefix = doc.getWorkbook().getWorkbookPr();
+        use1904Windowing = prefix.getDate1904();
     }
 
     @Override

@@ -9,12 +9,12 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class XSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWorkbookEventReader> {
+class XSSF1904WorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWorkbookEventReader> {
 
-    private static final String NORMAL_FILE_NAME = "workbook.xlsx";
-    private static final String ENCRYPTED_FILE_NAME = "workbook-encrypted.xlsx";
+    private static final String NORMAL_FILE_NAME = "workbook-1904.xlsx";
+    private static final String ENCRYPTED_FILE_NAME = "workbook-encrypted-1904.xlsx";
 
-    XSSFWorkbookEventReaderTest() {
+    XSSF1904WorkbookEventReaderTest() {
         super(NORMAL_FILE_NAME, ENCRYPTED_FILE_NAME, XSSFWorkbookEventReader.class);
     }
 
@@ -81,7 +81,7 @@ class XSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWo
 
     @Test
     void setUse1904Windowing() {
-        XSSFWorkbookEventReader.setUse1904Windowing(true);
+        XSSFWorkbookEventReader.setUse1904Windowing(false);
 
         try {
             dealWithReader(reader -> {
@@ -91,7 +91,7 @@ class XSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWo
                     public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
                         if (sheetIndex == 0 && (rowNum == 3 || rowNum == 4) && columnNum == 1) {
                             if (!cellValue.isNull()) {
-                                assertEquals(2022, cellValue.localDateValue().getYear());
+                                assertEquals(2014, cellValue.localDateValue().getYear());
                             }
                         }
                     }
