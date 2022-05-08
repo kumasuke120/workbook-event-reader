@@ -10,6 +10,7 @@ import org.apache.poi.ss.usermodel.DateUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.FileChannel;
@@ -87,8 +88,8 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     @Override
     void doOpen(@NotNull Path filePath, @Nullable String password) throws Exception {
-        final FileChannel channel = FileChannel.open(filePath, StandardOpenOption.READ);
-        fileSystem = new POIFSFileSystem(channel, true);
+        final File file = filePath.toFile();
+        fileSystem = new POIFSFileSystem(file, true);
 
         setWorkbookPassword(password);
     }
