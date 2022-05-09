@@ -41,8 +41,6 @@ import java.util.Map;
 @SuppressWarnings("unused")
 public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
-    private static final ThreadLocal<Boolean> use1904WindowingLocal = new ThreadLocal<>();
-
     private OPCPackage opcPackage;
     private XSSFReader xssfReader;
     private SharedStringsTable sharedStringsTable;
@@ -100,21 +98,6 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         super(in, password);
     }
 
-    /**
-     * Sets all following-opened instances of {@link XSSFWorkbookEventReader} on the current thread whether using
-     * 1904 windowing for parsing date cells.<br>
-     * The default value is <code>null</code>, which parses the workbook to find the 1904 windowing mark.<br>
-     *
-     * @param use1904Windowing whether you use 1904 date windowing or not; set <code>null</code> to use the default
-     */
-    public static void setUse1904Windowing(@Nullable Boolean use1904Windowing) {
-        if (use1904Windowing == null) {
-            use1904WindowingLocal.remove();
-        } else {
-            use1904WindowingLocal.set(use1904Windowing);
-        }
-    }
-
     @Override
     void doOpen(@NotNull InputStream in, @Nullable String password) throws Exception {
         Exception thrown = null;
@@ -162,12 +145,6 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
     }
 
     private void initUse1904Windowing() throws IOException, OpenXML4JException, XmlException {
-        // uses the user-set value if available
-        if (use1904WindowingLocal.get() != null) {
-            use1904Windowing = use1904WindowingLocal.get();
-            return;
-        }
-
         assert xssfReader != null;
 
         // reads xl/workbook.xml

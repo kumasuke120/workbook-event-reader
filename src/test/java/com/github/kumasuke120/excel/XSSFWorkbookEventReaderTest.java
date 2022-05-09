@@ -79,29 +79,4 @@ class XSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWo
         super.close();
     }
 
-    @Test
-    void setUse1904Windowing() {
-        XSSFWorkbookEventReader.setUse1904Windowing(true);
-
-        try {
-            dealWithReader(reader -> {
-                assert reader instanceof XSSFWorkbookEventReader;
-                reader.read(new WorkbookEventReader.EventHandler() {
-                    @Override
-                    public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
-                        if (sheetIndex == 0 && (rowNum == 3 || rowNum == 4) && columnNum == 1) {
-                            if (!cellValue.isNull()) {
-                                assertEquals(2022, cellValue.localDateValue().getYear());
-                            }
-                        }
-                    }
-                });
-
-                reader.close();
-            });
-        } finally {
-            XSSFWorkbookEventReader.setUse1904Windowing(null);
-        }
-    }
-
 }
