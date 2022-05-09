@@ -159,6 +159,8 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
         reading = true;
         try {
             doRead(handler);
+        } catch (CancelReadingException ignored) {
+            // stops parsing and cancels reading
         } catch (Exception e) {
             if (e instanceof WorkbookEventReaderException) {
                 throw (WorkbookEventReaderException) e;
@@ -278,6 +280,105 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
          * @throws Exception any exception occurred during closing process
          */
         abstract void doClean() throws Exception;
+    }
+
+    /**
+     * A <code>RuntimeException</code> that stops EventHandler, not an actual exception
+     */
+    static class CancelReadingException extends RuntimeException {
+    }
+
+    /**
+     * An <code>EventHandler</code> that checks reading state before any event is triggered
+     */
+    class CancelFastEventHandler implements EventHandler {
+        private final EventHandler handler;
+        private volatile boolean cancelled;
+
+        CancelFastEventHandler(@NotNull EventHandler handler) {
+            this.handler = handler;
+            this.cancelled = false;
+        }
+
+        @Override
+        public void onStartDocument() {
+            if (isReading()) {
+                handler.onStartDocument();
+            } else {
+                doOnCancelled();
+            }
+        }
+
+        @Override
+        public void onEndDocument() {
+            if (isReading()) {
+                handler.onEndDocument();
+            } else {
+                doOnCancelled();
+            }
+        }
+
+        @Override
+        public void onStartSheet(int sheetIndex, @NotNull String sheetName) {
+            if (isReading()) {
+                handler.onStartSheet(sheetIndex, sheetName);
+            } else {
+                doOnCancelled();
+            }
+        }
+
+        @Override
+        public void onEndSheet(int sheetIndex) {
+            if (isReading()) {
+                handler.onEndSheet(sheetIndex);
+            } else {
+                doOnCancelled();
+            }
+        }
+
+        @Override
+        public void onStartRow(int sheetIndex, int rowNum) {
+            if (isReading()) {
+                handler.onStartRow(sheetIndex, rowNum);
+            } else {
+                doOnCancelled();
+            }
+        }
+
+        @Override
+        public void onEndRow(int sheetIndex, int rowNum) {
+            if (isReading()) {
+                handler.onEndRow(sheetIndex, rowNum);
+            } else {
+                doOnCancelled();
+            }
+        }
+
+        @Override
+        public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
+            if (isReading()) {
+                handler.onHandleCell(sheetIndex, rowNum, columnNum, cellValue);
+            } else {
+                doOnCancelled();
+            }
+        }
+
+        @Override
+        public void onReadCancelled() {
+            if (!cancelled) {
+                cancelled = true;
+                handler.onReadCancelled();
+            }
+        }
+
+        private void doOnCancelled() {
+            // triggers when the reading process was cancelled
+            onReadCancelled();
+
+            // throws an exception to abort processing
+            throw new CancelReadingException();
+        }
+
     }
 
 }

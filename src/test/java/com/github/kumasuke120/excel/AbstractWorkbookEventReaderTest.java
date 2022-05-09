@@ -213,6 +213,30 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
             // reader is not being read
             assertThrows(IllegalReaderStateException.class, reader::cancel);
         });
+
+        dealWithReader(reader -> {
+            final boolean[] cancelledRef = {false};
+            final WorkbookEventReader.EventHandler handler = new WorkbookEventReader.EventHandler() {
+                @Override
+                public void onStartRow(int sheetIndex, int rowNum) {
+                    reader.cancel();
+                }
+
+                @Override
+                public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
+                    throw new AssertionError();
+                }
+
+                @Override
+                public void onReadCancelled() {
+                    cancelledRef[0] = true;
+                }
+            };
+
+            reader.read(handler);
+
+            assertTrue(cancelledRef[0]);
+        });
     }
 
     void close() {

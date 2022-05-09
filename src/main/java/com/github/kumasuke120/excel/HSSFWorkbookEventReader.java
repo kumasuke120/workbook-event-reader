@@ -13,9 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.channels.FileChannel;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -114,24 +112,21 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     @Override
     void doRead(@NotNull EventHandler handler) throws Exception {
-        handler.onStartDocument();
+        final EventHandler delegate = new CancelFastEventHandler(handler);
+
+        delegate.onStartDocument();
 
         final HSSFRequest request = new HSSFRequest();
-        final ReaderHSSFListener readerListener = new ReaderHSSFListener(handler);
+        final ReaderHSSFListener readerListener = new ReaderHSSFListener(delegate);
         request.addListenerForAllRecords(readerListener);
 
-        short userCode;
-        userCode = processRequest(request);
+        // processes the document
+        processRequest(request);
 
-        if (userCode != USER_CODE_CONTINUE) { // triggers when the reading process was cancelled
-            handler.onReadCancelled();
-        } else if (isReading()) { // triggers when the reading process continues
-            handler.onEndDocument();
-        }
+        delegate.onEndDocument();
     }
 
-    private short processRequest(@NotNull HSSFRequest request) throws IOException {
-        short userCode;
+    private void processRequest(@NotNull HSSFRequest request) throws IOException {
         try (final DocumentInputStream documentIs = fileSystem.createDocumentInputStream("Workbook")) {
             boolean passwordSet = false;
             String oldStoredUserPassword = null;
@@ -144,18 +139,17 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
                 // processes the document
                 final HSSFEventFactory factory = new HSSFEventFactory();
-                userCode = factory.abortableProcessEvents(request, documentIs);
+                factory.abortableProcessEvents(request, documentIs);
             } catch (HSSFUserException hue) {
                 // cancelled by user-thrown exception, ReaderHSSFListener does not throw any
-                // HSSFUserException or its sub-classes
-                userCode = USER_CODE_ABORT;
+                // HSSFUserException or its subclasses
+                // this exception won't trigger #onReadCancelled() event
             } finally {
                 if (passwordSet) {
                     Biff8EncryptionKey.setCurrentUserPassword(oldStoredUserPassword);
                 }
             }
         }
-        return userCode;
     }
 
     private static class HSSFReaderCleanAction extends ReaderCleanAction {
@@ -173,6 +167,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         }
     }
 
+    // aborts reading at the first record
     private static class InstantAbortHSSFListener extends AbortableHSSFListener {
         @Override
         public short abortableProcessRecord(@NotNull Record record) {
@@ -180,7 +175,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         }
     }
 
-    private class ReaderHSSFListener extends AbortableHSSFListener {
+    private static class ReaderHSSFListener extends AbortableHSSFListener {
         private final EventHandler handler;
         private final FormatTrackingHSSFListener formatTracker;
 
@@ -210,7 +205,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
         @Override
         public short abortableProcessRecord(@NotNull Record record) {
-            formatTracker.processRecordInternally(record); // records formats and styles
+            formatTracker.processRecordInternally(record); // records the formats and styles
 
             final short currentSid = record.getSid();
             switch (currentSid) {
@@ -345,7 +340,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
             previousRecord = record;
 
-            return isReading() ? USER_CODE_CONTINUE : USER_CODE_ABORT;
+            return USER_CODE_CONTINUE;
         }
 
         private void handleStartSheet() {

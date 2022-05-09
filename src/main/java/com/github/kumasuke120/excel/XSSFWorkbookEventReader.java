@@ -162,40 +162,28 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     @Override
     void doRead(@NotNull EventHandler handler) throws Exception {
-        int currentSheetIndex = -1;
+        final EventHandler delegate = new CancelFastEventHandler(handler);
 
-        handler.onStartDocument();
+        delegate.onStartDocument();
 
         final SAXParser saxParser = createSAXParser();
-        final ReaderSheetHandler saxHandler = new ReaderSheetHandler(handler);
+        final ReaderSheetHandler saxHandler = new ReaderSheetHandler(delegate);
 
+        int currentSheetIndex = -1;
         final XSSFReader.SheetIterator sheetIt = getSheetIterator();
         while (sheetIt.hasNext()) {
-            if (!isReading()) {
-                handler.onReadCancelled(); // has next sheet but reading is false
-                break;
-            }
-
             try (final InputStream sheetIs = sheetIt.next()) {
                 String sheetName = sheetIt.getSheetName();
-                handler.onStartSheet(++currentSheetIndex, sheetName);
+                delegate.onStartSheet(++currentSheetIndex, sheetName);
 
                 saxHandler.initializeForNewSheet(currentSheetIndex);
-                try {
-                    saxParser.parse(sheetIs, saxHandler);
-                } catch (CancelReadingException e) {
-                    handler.onReadCancelled();
-                    // stops parsing and cancels reading
-                    break;
-                }
+                saxParser.parse(sheetIs, saxHandler);
 
-                handler.onEndSheet(currentSheetIndex);
+                delegate.onEndSheet(currentSheetIndex);
             }
         }
 
-        if (isReading()) { // only triggers the event when the reading process wasn't cancelled
-            handler.onEndDocument();
-        }
+        delegate.onEndDocument();
     }
 
     @NotNull
@@ -210,10 +198,6 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         final SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setNamespaceAware(true);
         return factory.newSAXParser();
-    }
-
-    // stops EventHandler, not an actual exception
-    private static class CancelReadingException extends SAXException {
     }
 
     private static class XSSFReaderCleanAction extends ReaderCleanAction {
@@ -284,8 +268,6 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         @Override
         public final void startElement(@NotNull String uri, @NotNull String localName,
                                        @NotNull String qName, @NotNull Attributes attributes) throws SAXException {
-            cancelReadingWhenNecessary();
-
             currentElementQName = qName;
 
             if (TAG_CELL.equals(localName)) {
@@ -348,8 +330,6 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         @Override
         public final void endElement(@NotNull String uri, @NotNull String localName,
                                      @NotNull String qName) throws SAXException {
-            cancelReadingWhenNecessary();
-
             currentElementQName = qName;
 
             if (TAG_CELL.equals(localName)) {
@@ -502,17 +482,9 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         }
 
         @Override
-        public void characters(char[] ch, int start, int length) throws SAXException {
-            cancelReadingWhenNecessary();
-
+        public void characters(char[] ch, int start, int length) {
             if (isCurrentCellValue) { // only records when cell value starts
                 currentCellValueBuilder.append(ch, start, length);
-            }
-        }
-
-        private void cancelReadingWhenNecessary() throws SAXException {
-            if (!isReading()) {
-                throw new CancelReadingException();
             }
         }
     }

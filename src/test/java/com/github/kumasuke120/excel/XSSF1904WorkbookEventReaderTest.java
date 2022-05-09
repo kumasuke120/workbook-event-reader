@@ -45,32 +45,6 @@ class XSSF1904WorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XS
     @Override
     void cancel() {
         super.cancel();
-
-        dealWithReader(reader -> {
-            assert reader instanceof XSSFWorkbookEventReader;
-
-            final boolean[] cancelledRef = {false};
-            final WorkbookEventReader.EventHandler handler = new WorkbookEventReader.EventHandler() {
-                @Override
-                public void onStartRow(int sheetIndex, int rowNum) {
-                    reader.cancel();
-                }
-
-                @Override
-                public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
-                    throw new AssertionError();
-                }
-
-                @Override
-                public void onReadCancelled() {
-                    cancelledRef[0] = true;
-                }
-            };
-
-            reader.read(handler);
-
-            assertTrue(cancelledRef[0]);
-        });
     }
 
     @Test
