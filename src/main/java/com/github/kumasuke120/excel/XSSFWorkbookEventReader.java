@@ -162,28 +162,26 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     @Override
     void doRead(@NotNull EventHandler handler) throws Exception {
-        final EventHandler delegate = new CancelFastEventHandler(handler);
-
-        delegate.onStartDocument();
+        handler.onStartDocument();
 
         final SAXParser saxParser = createSAXParser();
-        final ReaderSheetHandler saxHandler = new ReaderSheetHandler(delegate);
+        final ReaderSheetHandler saxHandler = new ReaderSheetHandler(handler);
 
         int currentSheetIndex = -1;
         final XSSFReader.SheetIterator sheetIt = getSheetIterator();
         while (sheetIt.hasNext()) {
             try (final InputStream sheetIs = sheetIt.next()) {
                 String sheetName = sheetIt.getSheetName();
-                delegate.onStartSheet(++currentSheetIndex, sheetName);
+                handler.onStartSheet(++currentSheetIndex, sheetName);
 
                 saxHandler.initializeForNewSheet(currentSheetIndex);
                 saxParser.parse(sheetIs, saxHandler);
 
-                delegate.onEndSheet(currentSheetIndex);
+                handler.onEndSheet(currentSheetIndex);
             }
         }
 
-        delegate.onEndDocument();
+        handler.onEndDocument();
     }
 
     @NotNull

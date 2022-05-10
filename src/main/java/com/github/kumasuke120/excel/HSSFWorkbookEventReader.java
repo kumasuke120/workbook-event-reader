@@ -112,18 +112,16 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     @Override
     void doRead(@NotNull EventHandler handler) throws Exception {
-        final EventHandler delegate = new CancelFastEventHandler(handler);
-
-        delegate.onStartDocument();
+        handler.onStartDocument();
 
         final HSSFRequest request = new HSSFRequest();
-        final ReaderHSSFListener readerListener = new ReaderHSSFListener(delegate);
+        final ReaderHSSFListener readerListener = new ReaderHSSFListener(handler);
         request.addListenerForAllRecords(readerListener);
 
         // processes the document
         processRequest(request);
 
-        delegate.onEndDocument();
+        handler.onEndDocument();
     }
 
     private void processRequest(@NotNull HSSFRequest request) throws IOException {

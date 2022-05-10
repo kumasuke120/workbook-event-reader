@@ -102,33 +102,31 @@ public class CSVWorkbookEventReader extends AbstractWorkbookEventReader {
 
     @Override
     void doRead(@NotNull EventHandler handler) {
-        final EventHandler delegate = new CancelFastEventHandler(handler);
-
         /*
          * csv files don't have sheets, we trigger sheet-related events for compatibility;
          * treats the sheet-related event identical to document-related events
          */
 
         // handles onStartDocument
-        delegate.onStartDocument();
-        delegate.onStartSheet(0, "");
+        handler.onStartDocument();
+        handler.onStartSheet(0, "");
 
         int currentRowNumber = -1;
         for (final CSVRecord record : parser) {
-            delegate.onStartRow(0, ++currentRowNumber);
+            handler.onStartRow(0, ++currentRowNumber);
 
             // handles cells
             for (int currentColumnNum = 0; currentColumnNum < record.size(); currentColumnNum++) {
                 final CellValue cellValue = getRecordCellValue(record, currentColumnNum);
-                delegate.onHandleCell(0, currentRowNumber, currentColumnNum, cellValue);
+                handler.onHandleCell(0, currentRowNumber, currentColumnNum, cellValue);
             }
 
-            delegate.onEndRow(0, currentRowNumber);
+            handler.onEndRow(0, currentRowNumber);
         }
 
         // handles onEndDocument
-        delegate.onEndSheet(0);
-        delegate.onEndDocument();
+        handler.onEndSheet(0);
+        handler.onEndDocument();
     }
 
     @NotNull
