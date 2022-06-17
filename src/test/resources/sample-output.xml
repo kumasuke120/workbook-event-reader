@@ -20,6 +20,7 @@
             <cell index="0" javaType="java.lang.String">LocalTime</cell>
             <cell index="1" javaType="java.time.LocalTime">10:30</cell>
             <cell index="2" javaType="java.time.LocalTime">21:30:01</cell>
+            <cell index="3" javaType="java.time.LocalTime">00:00</cell>
         </row>
         <row index="3">
             <cell index="0" javaType="java.lang.String">LocalDate</cell>
