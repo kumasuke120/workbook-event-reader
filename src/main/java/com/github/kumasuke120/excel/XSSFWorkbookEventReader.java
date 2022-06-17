@@ -269,29 +269,8 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             currentElementQName = qName;
 
             if (TAG_CELL.equals(localName)) {
-                final String currentCellReference = attributes.getValue(ATTRIBUTE_CELL_REFERENCE);
-                if (currentCellReference == null) { // cell reference can be left out
-                    // treats as a continuation to previous column
-                    if (currentColumnNum == -1) {
-                        currentColumnNum = 0;
-                    } else {
-                        currentColumnNum += 1;
-                    }
-                } else {
-                    final Map.Entry<Integer, Integer> rowAndColumn =
-                            Util.cellReferenceToRowAndColumn(currentCellReference);
-
-                    if (rowAndColumn == null) {
-                        throw new SAXParseException(
-                                "Cannot parse row number or column number in tag '" + qName + "'", null);
-                    }
-
-                    final int rowNum = rowAndColumn.getKey();
-                    final int columnNum = rowAndColumn.getValue();
-
-                    assert rowNum == currentRowNum;
-                    currentColumnNum = columnNum;
-                }
+                // extracts currentRowNum and currentColumnNum
+                extractCellReference(qName, attributes);
 
                 // saves styles of current cell
                 currentCellXfIndex = Util.toInt(attributes.getValue(ATTRIBUTE_CELL_STYLE), -1);
@@ -322,6 +301,33 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             } else if (isCellValueElement(localName)) {
                 isCurrentCellValue = true; // indicates cell value starts
                 currentCellValueBuilder.setLength(0);
+            }
+        }
+
+        private void extractCellReference(@NotNull String qName,
+                                          @NotNull Attributes attributes) throws SAXParseException {
+            final String currentCellReference = attributes.getValue(ATTRIBUTE_CELL_REFERENCE);
+            if (currentCellReference == null) { // cell reference can be left out
+                // treats as a continuation to previous column
+                if (currentColumnNum == -1) {
+                    currentColumnNum = 0;
+                } else {
+                    currentColumnNum += 1;
+                }
+            } else {
+                final Map.Entry<Integer, Integer> rowAndColumn =
+                        Util.cellReferenceToRowAndColumn(currentCellReference);
+
+                if (rowAndColumn == null) {
+                    throw new SAXParseException(
+                            "Cannot parse row number or column number in tag '" + qName + "'", null);
+                }
+
+                final int rowNum = rowAndColumn.getKey();
+                final int columnNum = rowAndColumn.getValue();
+
+                assert rowNum == currentRowNum;
+                currentColumnNum = columnNum;
             }
         }
 
