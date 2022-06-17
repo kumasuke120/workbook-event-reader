@@ -18,6 +18,7 @@ jobs:
           java-version: '8'
           distribution: 'temurin'
       - name: Publish to GitHub Packages Apache Maven
-        run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
+        run: mvn deploy -s $GITHUB_WORKSPACE/.github/workflows/maven-settings.xml
         env:
+          USER_NAME: ${{ secrets.USER_NAME }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
