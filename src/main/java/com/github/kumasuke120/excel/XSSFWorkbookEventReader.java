@@ -13,9 +13,12 @@ import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.model.SharedStringsTable;
 import org.apache.poi.xssf.model.StylesTable;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
+import org.apache.xmlbeans.XmlException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTWorkbookPr;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTXf;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.WorkbookDocument;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -37,8 +40,6 @@ import java.util.Map;
  */
 @SuppressWarnings("unused")
 public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
-
-    private static final ThreadLocal<Boolean> use1904WindowingLocal = ThreadLocal.withInitial(() -> false);
 
     private OPCPackage opcPackage;
     private XSSFReader xssfReader;
@@ -97,21 +98,6 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         super(in, password);
     }
 
-    /**
-     * Sets all following-opened instances of {@link XSSFWorkbookEventReader} on the current thread using
-     * 1904 windowing for parsing date cells whether or not.<br>
-     *
-     * @param use1904Windowing whether use 1904 date windowing or not
-     */
-    public static void setUse1904Windowing(boolean use1904Windowing) {
-        use1904WindowingLocal.set(use1904Windowing);
-    }
-
-    @Override
-    void doOnStartOpen() {
-        use1904Windowing = use1904WindowingLocal.get();
-    }
-
     @Override
     void doOpen(@NotNull InputStream in, @Nullable String password) throws Exception {
         Exception thrown = null;
@@ -150,10 +136,22 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         }
     }
 
-    private void initFromOpcPackage() throws IOException, OpenXML4JException {
+    private void initFromOpcPackage() throws IOException, OpenXML4JException, XmlException {
         xssfReader = new XSSFReader(opcPackage);
         sharedStringsTable = xssfReader.getSharedStringsTable();
         stylesTable = xssfReader.getStylesTable();
+
+        initUse1904Windowing();
+    }
+
+    private void initUse1904Windowing() throws IOException, OpenXML4JException, XmlException {
+        assert xssfReader != null;
+
+        // reads xl/workbook.xml
+        final InputStream workbookIn = xssfReader.getWorkbookData();
+        final WorkbookDocument doc = WorkbookDocument.Factory.parse(workbookIn);
+        final CTWorkbookPr prefix = doc.getWorkbook().getWorkbookPr();
+        use1904Windowing = prefix.getDate1904();
     }
 
     @Override
@@ -164,40 +162,26 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     @Override
     void doRead(@NotNull EventHandler handler) throws Exception {
-        int currentSheetIndex = -1;
-
         handler.onStartDocument();
 
         final SAXParser saxParser = createSAXParser();
         final ReaderSheetHandler saxHandler = new ReaderSheetHandler(handler);
 
+        int currentSheetIndex = -1;
         final XSSFReader.SheetIterator sheetIt = getSheetIterator();
         while (sheetIt.hasNext()) {
-            if (!isReading()) {
-                handler.onReadCancelled(); // has next sheet but reading is false
-                break;
-            }
-
             try (final InputStream sheetIs = sheetIt.next()) {
                 String sheetName = sheetIt.getSheetName();
                 handler.onStartSheet(++currentSheetIndex, sheetName);
 
                 saxHandler.initializeForNewSheet(currentSheetIndex);
-                try {
-                    saxParser.parse(sheetIs, saxHandler);
-                } catch (CancelReadingException e) {
-                    handler.onReadCancelled();
-                    // stops parsing and cancels reading
-                    break;
-                }
+                saxParser.parse(sheetIs, saxHandler);
 
                 handler.onEndSheet(currentSheetIndex);
             }
         }
 
-        if (isReading()) { // only triggers the event when the reading process wasn't cancelled
-            handler.onEndDocument();
-        }
+        handler.onEndDocument();
     }
 
     @NotNull
@@ -212,10 +196,6 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         final SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setNamespaceAware(true);
         return factory.newSAXParser();
-    }
-
-    // stops EventHandler, not an actual exception
-    private static class CancelReadingException extends SAXException {
     }
 
     private static class XSSFReaderCleanAction extends ReaderCleanAction {
@@ -286,34 +266,11 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         @Override
         public final void startElement(@NotNull String uri, @NotNull String localName,
                                        @NotNull String qName, @NotNull Attributes attributes) throws SAXException {
-            cancelReadingWhenNecessary();
-
             currentElementQName = qName;
 
             if (TAG_CELL.equals(localName)) {
-                final String currentCellReference = attributes.getValue(ATTRIBUTE_CELL_REFERENCE);
-                if (currentCellReference == null) { // cell reference can be left out
-                    // treats as a continuation to previous column
-                    if (currentColumnNum == -1) {
-                        currentColumnNum = 0;
-                    } else {
-                        currentColumnNum += 1;
-                    }
-                } else {
-                    final Map.Entry<Integer, Integer> rowAndColumn =
-                            Util.cellReferenceToRowAndColumn(currentCellReference);
-
-                    if (rowAndColumn == null) {
-                        throw new SAXParseException(
-                                "Cannot parse row number or column number in tag '" + qName + "'", null);
-                    }
-
-                    final int rowNum = rowAndColumn.getKey();
-                    final int columnNum = rowAndColumn.getValue();
-
-                    assert rowNum == currentRowNum;
-                    currentColumnNum = columnNum;
-                }
+                // extracts currentRowNum and currentColumnNum
+                extractCellReference(qName, attributes);
 
                 // saves styles of current cell
                 currentCellXfIndex = Util.toInt(attributes.getValue(ATTRIBUTE_CELL_STYLE), -1);
@@ -341,17 +298,42 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 if (currentCellType == null) {
                     currentCellType = CELL_TYPE_INLINE_STRING;
                 }
-            } else if (isCellValueRelated(localName)) {
+            } else if (isCellValueElement(localName)) {
                 isCurrentCellValue = true; // indicates cell value starts
                 currentCellValueBuilder.setLength(0);
+            }
+        }
+
+        private void extractCellReference(@NotNull String qName,
+                                          @NotNull Attributes attributes) throws SAXParseException {
+            final String currentCellReference = attributes.getValue(ATTRIBUTE_CELL_REFERENCE);
+            if (currentCellReference == null) { // cell reference can be left out
+                // treats as a continuation to previous column
+                if (currentColumnNum == -1) {
+                    currentColumnNum = 0;
+                } else {
+                    currentColumnNum += 1;
+                }
+            } else {
+                final Map.Entry<Integer, Integer> rowAndColumn =
+                        Util.cellReferenceToRowAndColumn(currentCellReference);
+
+                if (rowAndColumn == null) {
+                    throw new SAXParseException(
+                            "Cannot parse row number or column number in tag '" + qName + "'", null);
+                }
+
+                final int rowNum = rowAndColumn.getKey();
+                final int columnNum = rowAndColumn.getValue();
+
+                assert rowNum == currentRowNum;
+                currentColumnNum = columnNum;
             }
         }
 
         @Override
         public final void endElement(@NotNull String uri, @NotNull String localName,
                                      @NotNull String qName) throws SAXException {
-            cancelReadingWhenNecessary();
-
             currentElementQName = qName;
 
             if (TAG_CELL.equals(localName)) {
@@ -359,18 +341,18 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 handler.onHandleCell(currentSheetIndex, currentRowNum, currentColumnNum,
                                      CellValue.newInstance(cellValue));
 
-                // clear its content after processing
+                // clears its content after processing
                 currentCellValueBuilder.setLength(0);
                 currentCellType = null;
             } else if (TAG_ROW.equals(localName)) {
                 currentColumnNum = -1;
                 handler.onEndRow(currentSheetIndex, currentRowNum);
-            } else if (isCellValueRelated(localName)) {
+            } else if (isCellValueElement(localName)) {
                 isCurrentCellValue = false; // indicates cell value ends
             }
         }
 
-        private boolean isCellValueRelated(@NotNull String localName) {
+        private boolean isCellValueElement(@NotNull String localName) {
             return TAG_CELL_VALUE.equals(localName) ||
                     (CELL_TYPE_INLINE_STRING.equals(currentCellType) && TAG_INLINE_CELL_VALUE.equals(localName));
         }
@@ -504,17 +486,9 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         }
 
         @Override
-        public void characters(char[] ch, int start, int length) throws SAXException {
-            cancelReadingWhenNecessary();
-
+        public void characters(char[] ch, int start, int length) {
             if (isCurrentCellValue) { // only records when cell value starts
                 currentCellValueBuilder.append(ch, start, length);
-            }
-        }
-
-        private void cancelReadingWhenNecessary() throws SAXException {
-            if (!isReading()) {
-                throw new CancelReadingException();
             }
         }
     }

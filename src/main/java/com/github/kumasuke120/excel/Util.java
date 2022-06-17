@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 @ApiStatus.Internal
 class Util {
 
+    private static final double DATE_VALUE_EPSILON = 1e-6;
     private static final double MAX_EXCEL_DATE_EXCLUSIVE = 2958466;
     private static final Pattern cellReferencePattern = Pattern.compile("([A-Z]+)(\\d+)");
 
@@ -100,7 +101,8 @@ class Util {
      */
     static boolean isValidExcelDate(double excelDateValue) {
         return DateUtil.isValidExcelDate(excelDateValue) &&
-                excelDateValue > 0 && excelDateValue < MAX_EXCEL_DATE_EXCLUSIVE;
+                (Math.abs(excelDateValue) < DATE_VALUE_EPSILON || excelDateValue > 0) &&
+                excelDateValue < MAX_EXCEL_DATE_EXCLUSIVE;
     }
 
     /**
@@ -119,10 +121,10 @@ class Util {
                                                    TimeZone.getTimeZone("UTC"));
             final LocalDateTime localDateTime = toLocalDateTimeOffsetByUTC(date);
 
-            if (Util.isAWholeNumber(excelDateValue)) { // date only
-                return localDateTime.toLocalDate();
-            } else if (excelDateValue < 1) { // time only
+            if (excelDateValue < 1) { // time only
                 return localDateTime.toLocalTime();
+            } else if (Util.isAWholeNumber(excelDateValue)) { // date only
+                return localDateTime.toLocalDate();
             } else { // date with time
                 return localDateTime;
             }

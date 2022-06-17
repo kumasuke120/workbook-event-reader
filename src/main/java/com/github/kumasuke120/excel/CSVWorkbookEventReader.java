@@ -102,37 +102,31 @@ public class CSVWorkbookEventReader extends AbstractWorkbookEventReader {
 
     @Override
     void doRead(@NotNull EventHandler handler) {
-        final EventHandler delegate = new CancelFastEventHandler(handler);
-
         /*
-         * csv files don't have sheets, we triggers sheet-related events for compatibility;
+         * csv files don't have sheets, we trigger sheet-related events for compatibility;
          * treats the sheet-related event identical to document-related events
          */
 
-        try {
-            // handles onStartDocument
-            delegate.onStartDocument();
-            delegate.onStartSheet(0, "");
+        // handles onStartDocument
+        handler.onStartDocument();
+        handler.onStartSheet(0, "");
 
-            int currentRowNumber = -1;
-            for (final CSVRecord record : parser) {
-                delegate.onStartRow(0, ++currentRowNumber);
+        int currentRowNumber = -1;
+        for (final CSVRecord record : parser) {
+            handler.onStartRow(0, ++currentRowNumber);
 
-                // handles cells
-                for (int currentColumnNum = 0; currentColumnNum < record.size(); currentColumnNum++) {
-                    final CellValue cellValue = getRecordCellValue(record, currentColumnNum);
-                    delegate.onHandleCell(0, currentRowNumber, currentColumnNum, cellValue);
-                }
-
-                delegate.onEndRow(0, currentRowNumber);
+            // handles cells
+            for (int currentColumnNum = 0; currentColumnNum < record.size(); currentColumnNum++) {
+                final CellValue cellValue = getRecordCellValue(record, currentColumnNum);
+                handler.onHandleCell(0, currentRowNumber, currentColumnNum, cellValue);
             }
 
-            // handles onEndDocument
-            delegate.onEndSheet(0);
-            delegate.onEndDocument();
-        } catch (CancelReadingException e) {
-            handler.onReadCancelled();
+            handler.onEndRow(0, currentRowNumber);
         }
+
+        // handles onEndDocument
+        handler.onEndSheet(0);
+        handler.onEndDocument();
     }
 
     @NotNull
@@ -160,87 +154,6 @@ public class CSVWorkbookEventReader extends AbstractWorkbookEventReader {
             if (parser != null) {
                 parser.close();
             }
-        }
-    }
-
-    // stops EventHandler, not an actual exception
-    private static class CancelReadingException extends RuntimeException {
-    }
-
-    // checks reading state before any event is triggered
-    private class CancelFastEventHandler implements EventHandler {
-        private final EventHandler handler;
-
-        CancelFastEventHandler(@NotNull EventHandler handler) {
-            this.handler = handler;
-        }
-
-        @Override
-        public void onStartDocument() {
-            if (isReading()) {
-                handler.onStartDocument();
-            } else {
-                throw new CancelReadingException();
-            }
-        }
-
-        @Override
-        public void onEndDocument() {
-            if (isReading()) {
-                handler.onEndDocument();
-            } else {
-                throw new CancelReadingException();
-            }
-        }
-
-        @Override
-        public void onStartSheet(int sheetIndex, @NotNull String sheetName) {
-            if (isReading()) {
-                handler.onStartSheet(sheetIndex, sheetName);
-            } else {
-                throw new CancelReadingException();
-            }
-        }
-
-        @Override
-        public void onEndSheet(int sheetIndex) {
-            if (isReading()) {
-                handler.onEndSheet(sheetIndex);
-            } else {
-                throw new CancelReadingException();
-            }
-        }
-
-        @Override
-        public void onStartRow(int sheetIndex, int rowNum) {
-            if (isReading()) {
-                handler.onStartRow(sheetIndex, rowNum);
-            } else {
-                throw new CancelReadingException();
-            }
-        }
-
-        @Override
-        public void onEndRow(int sheetIndex, int rowNum) {
-            if (isReading()) {
-                handler.onEndRow(sheetIndex, rowNum);
-            } else {
-                throw new CancelReadingException();
-            }
-        }
-
-        @Override
-        public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
-            if (isReading()) {
-                handler.onHandleCell(sheetIndex, rowNum, columnNum, cellValue);
-            } else {
-                throw new CancelReadingException();
-            }
-        }
-
-        @Override
-        public void onReadCancelled() {
-            throw new UnsupportedOperationException();
         }
     }
 

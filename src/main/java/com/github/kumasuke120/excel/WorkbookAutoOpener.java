@@ -74,7 +74,7 @@ class WorkbookAutoOpener {
         } else if (filePath == null) {
             return openByInputStream();
         } else {
-            throw new AssertionError("This shouldn't happen");
+            throw new AssertionError("Shouldn't happen");
         }
     }
 

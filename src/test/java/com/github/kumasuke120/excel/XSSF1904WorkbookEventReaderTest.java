@@ -9,12 +9,12 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class XSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWorkbookEventReader> {
+class XSSF1904WorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XSSFWorkbookEventReader> {
 
-    private static final String NORMAL_FILE_NAME = "workbook.xlsx";
-    private static final String ENCRYPTED_FILE_NAME = "workbook-encrypted.xlsx";
+    private static final String NORMAL_FILE_NAME = "workbook-1904.xlsx";
+    private static final String ENCRYPTED_FILE_NAME = "workbook-encrypted-1904.xlsx";
 
-    XSSFWorkbookEventReaderTest() {
+    XSSF1904WorkbookEventReaderTest() {
         super(NORMAL_FILE_NAME, ENCRYPTED_FILE_NAME, XSSFWorkbookEventReader.class);
     }
 
