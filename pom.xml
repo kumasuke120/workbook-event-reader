@@ -14,7 +14,7 @@
         <java.version>8</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <apache.poi.version>4.0.0</apache.poi.version>
+        <apache.poi.version>4.1.1</apache.poi.version>
         <apache.csv.version>1.8</apache.csv.version>
         <apache.xerces.version>2.12.2</apache.xerces.version>
         <junit.version>5.7.1</junit.version>
