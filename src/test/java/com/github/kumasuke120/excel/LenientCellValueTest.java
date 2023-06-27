@@ -15,12 +15,12 @@ import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class CellValueTest {
+class LenientCellValueTest {
 
     @Test
     @DisplayName("null()")
     void _null() {
-        final CellValue cellValue = newCellValue(null);
+        final LenientCellValue cellValue = newLenientCellValue(null);
 
         assertTrue(cellValue.isNull());
         assertNull(cellValue.originalValue());
@@ -38,7 +38,7 @@ class CellValueTest {
     @Test
     @DisplayName("boolean()")
     void _boolean() {
-        final CellValue cellValue = newCellValue(false);
+        final LenientCellValue cellValue = newLenientCellValue(false);
 
         assertFalse(cellValue.isNull());
         assertEquals(false, cellValue.originalValue());
@@ -58,7 +58,7 @@ class CellValueTest {
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
         assertThrows(CellValueCastException.class, cellValue::localDateTimeValue);
 
-        final CellValue cellValue2 = newCellValue(0);
+        final LenientCellValue cellValue2 = newLenientCellValue(0);
         assertFalse(cellValue2.isNull());
         assertDoesNotThrow(() -> {
             final boolean booleanValue = cellValue2.booleanValue();
@@ -69,7 +69,7 @@ class CellValueTest {
     @Test
     @DisplayName("int()")
     void _int() {
-        final CellValue cellValue = newCellValue(1);
+        final LenientCellValue cellValue = newLenientCellValue(1);
 
         assertFalse(cellValue.isNull());
         assertEquals(1, cellValue.originalValue());
@@ -99,14 +99,14 @@ class CellValueTest {
         assertThrows(CellValueCastException.class, cellValue::localDateTimeValue);
 
 
-        final CellValue cellValue2 = newCellValue("1");
+        final LenientCellValue cellValue2 = newLenientCellValue("1");
         assertEquals(String.class, cellValue2.originalType());
         assertDoesNotThrow(() -> {
             final int intValue = cellValue2.intValue();
             assertEquals(1, intValue);
         });
 
-        final CellValue cellValue3 = newCellValue("1.20");
+        final LenientCellValue cellValue3 = newLenientCellValue("1.20");
         assertEquals(String.class, cellValue3.originalType());
         assertDoesNotThrow(() -> {
             final int intValue = cellValue3.intValue();
@@ -117,7 +117,7 @@ class CellValueTest {
     @Test
     @DisplayName("long()")
     void _long() {
-        final CellValue cellValue = newCellValue(1L);
+        final LenientCellValue cellValue = newLenientCellValue(1L);
 
         assertFalse(cellValue.isNull());
         assertEquals(1L, cellValue.originalValue());
@@ -146,14 +146,14 @@ class CellValueTest {
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
         assertThrows(CellValueCastException.class, cellValue::localDateTimeValue);
 
-        final CellValue cellValue2 = newCellValue(Long.toString(Long.MAX_VALUE));
+        final LenientCellValue cellValue2 = newLenientCellValue(Long.toString(Long.MAX_VALUE));
         assertEquals(String.class, cellValue2.originalType());
         assertDoesNotThrow(() -> {
             final long longValue = cellValue2.longValue();
             assertEquals(Long.MAX_VALUE, longValue);
         });
 
-        final CellValue cellValue3 = newCellValue("1.20");
+        final LenientCellValue cellValue3 = newLenientCellValue("1.20");
         assertEquals(String.class, cellValue3.originalType());
         assertDoesNotThrow(() -> {
             final long longValue = cellValue3.longValue();
@@ -164,7 +164,7 @@ class CellValueTest {
     @Test
     @DisplayName("double()")
     void _double() {
-        final CellValue cellValue = newCellValue(1D);
+        final LenientCellValue cellValue = newLenientCellValue(1D);
 
         assertFalse(cellValue.isNull());
         assertEquals(1D, cellValue.originalValue());
@@ -193,7 +193,7 @@ class CellValueTest {
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
         assertThrows(CellValueCastException.class, cellValue::localDateTimeValue);
 
-        final CellValue cellValue2 = newCellValue("1.20");
+        final LenientCellValue cellValue2 = newLenientCellValue("1.20");
         assertEquals(String.class, cellValue2.originalType());
         assertDoesNotThrow(() -> {
             final double doubleValue = cellValue2.doubleValue();
@@ -203,7 +203,7 @@ class CellValueTest {
 
     @Test
     void string() {
-        final CellValue cellValue = newCellValue("1");
+        final LenientCellValue cellValue = newLenientCellValue("1");
 
         assertFalse(cellValue.isNull());
         assertEquals("1", cellValue.originalValue());
@@ -232,7 +232,7 @@ class CellValueTest {
 
     @Test
     void localTime() {
-        final CellValue cellValue = newCellValue("12:34:56");
+        final LenientCellValue cellValue = newLenientCellValue("12:34:56");
 
         assertFalse(cellValue.isNull());
         assertEquals("12:34:56", cellValue.originalValue());
@@ -256,14 +256,14 @@ class CellValueTest {
         assertThrows(CellValueCastException.class, cellValue::localDateTimeValue);
 
         final LocalTime theTimeValue = LocalTime.now();
-        final CellValue cellValue2 = newCellValue(theTimeValue);
+        final LenientCellValue cellValue2 = newLenientCellValue(theTimeValue);
         assertEquals(theTimeValue, cellValue2.originalValue());
         assertEquals(LocalTime.class, cellValue2.originalType());
         assertEquals(theTimeValue, cellValue2.localTimeValue());
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
         assertThrows(CellValueCastException.class, cellValue::localDateTimeValue);
 
-        final CellValue cellValue3 = newCellValue("2020-01-20T12:34:56");
+        final LenientCellValue cellValue3 = newLenientCellValue("2020-01-20T12:34:56");
         assertFalse(cellValue3.isNull());
         assertEquals("2020-01-20T12:34:56", cellValue3.originalValue());
         assertEquals(String.class, cellValue3.originalType());
@@ -272,7 +272,7 @@ class CellValueTest {
 
     @Test
     void localDate() {
-        final CellValue cellValue = newCellValue("2018-11-11");
+        final LenientCellValue cellValue = newLenientCellValue("2018-11-11");
 
         assertFalse(cellValue.isNull());
         assertEquals("2018-11-11", cellValue.originalValue());
@@ -311,7 +311,7 @@ class CellValueTest {
         });
 
         final LocalDate theDateValue = LocalDate.now();
-        final CellValue cellValue2 = newCellValue(theDateValue);
+        final LenientCellValue cellValue2 = newLenientCellValue(theDateValue);
         assertEquals(theDateValue, cellValue2.originalValue());
         assertEquals(LocalDate.class, cellValue2.originalType());
         assertThrows(CellValueCastException.class, cellValue::localTimeValue);
@@ -321,7 +321,7 @@ class CellValueTest {
 
     @Test
     void localDateTime() {
-        final CellValue cellValue = newCellValue("2011-11-11T11:11:11");
+        final LenientCellValue cellValue = newLenientCellValue("2011-11-11T11:11:11");
 
         assertFalse(cellValue.isNull());
         assertEquals("2011-11-11T11:11:11", cellValue.originalValue());
@@ -368,7 +368,7 @@ class CellValueTest {
         });
 
         final LocalDateTime theDateTimeValue = LocalDateTime.now();
-        final CellValue cellValue2 = newCellValue(theDateTimeValue);
+        final LenientCellValue cellValue2 = newLenientCellValue(theDateTimeValue);
         assertEquals(theDateTimeValue, cellValue2.originalValue());
         assertEquals(LocalDateTime.class, cellValue2.originalType());
         assertEquals(theDateTimeValue.toLocalTime(), cellValue2.localTimeValue());
@@ -376,7 +376,6 @@ class CellValueTest {
         assertEquals(theDateTimeValue, cellValue2.localDateTimeValue());
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void mapOriginalValue() {
         // region square
@@ -389,12 +388,12 @@ class CellValueTest {
             }
         };
 
-        final CellValue cellValue1 = CellValue.newInstance(42);
-        final CellValue cellValue2 = cellValue1.mapOriginalValue(mappingFunction1);
+        final LenientCellValue cellValue1 = LenientCellValue.newInstance(42);
+        final LenientCellValue cellValue2 = (LenientCellValue) cellValue1.mapOriginalValue(mappingFunction1);
         assertEquals(42 * 42, cellValue2.originalValue());
 
-        final CellValue cellValue3 = CellValue.newInstance("42");
-        final CellValue cellValue4 = cellValue3.mapOriginalValue(mappingFunction1);
+        final LenientCellValue cellValue3 = LenientCellValue.newInstance("42");
+        final LenientCellValue cellValue4 = (LenientCellValue) cellValue3.mapOriginalValue(mappingFunction1);
         assertSame(cellValue3, cellValue4);
         // endregion
 
@@ -413,21 +412,21 @@ class CellValueTest {
 
     @Test
     void trim() {
-        final CellValue cellValue1 = CellValue.newInstance(" 1 ");
+        final LenientCellValue cellValue1 = LenientCellValue.newInstance(" 1 ");
         assertEquals("1", cellValue1.trim().originalValue());
 
-        final CellValue cellValue2 = CellValue.newInstance(null);
+        final LenientCellValue cellValue2 = LenientCellValue.newInstance(null);
         assertSame(cellValue2, cellValue2.trim());
 
-        final CellValue cellValue3 = CellValue.newInstance("1");
+        final LenientCellValue cellValue3 = LenientCellValue.newInstance("1");
         assertEquals("1", cellValue3.trim().originalValue());
     }
 
     @Test
     void equalsAndHashCode() {
         // ide generated code, test for coverage
-        final CellValue a = newCellValue(1);
-        final CellValue b = newCellValue(1);
+        final LenientCellValue a = newLenientCellValue(1);
+        final LenientCellValue b = newLenientCellValue(1);
 
         assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
@@ -436,37 +435,37 @@ class CellValueTest {
     @Test
     @DisplayName("toString()")
     void _toString() {
-        final CellValue a = newCellValue(1);
-        final CellValue b = newCellValue(null);
+        final LenientCellValue a = newLenientCellValue(1);
+        final LenientCellValue b = newLenientCellValue(null);
 
-        assertTrue(a.toString().matches("com\\.github\\.kumasuke120\\.excel\\.CellValue" +
+        assertTrue(a.toString().matches("com\\.github\\.kumasuke120\\.excel\\.LenientCellValue" +
                                                 "\\{type = java\\.lang\\.Integer, value = 1}" +
                                                 "@[a-z0-9]+"));
-        assertTrue(b.toString().matches("com\\.github\\.kumasuke120\\.excel\\.CellValue" +
+        assertTrue(b.toString().matches("com\\.github\\.kumasuke120\\.excel\\.LenientCellValue" +
                                                 "\\{value = null}" +
                                                 "@[a-z0-9]+"));
     }
 
     @Test
     void newInstance() {
-        final CellValue a = CellValue.newInstance(null);
-        final CellValue b = CellValue.newInstance(null);
-        final CellValue c = newCellValue(null);
+        final LenientCellValue a = LenientCellValue.newInstance(null);
+        final LenientCellValue b = LenientCellValue.newInstance(null);
+        final LenientCellValue c = newLenientCellValue(null);
 
         assertNotNull(a);
         assertNotNull(b);
         assertNotNull(c);
 
         assertSame(a, b);
-        assertSame(a, CellValue.newInstance(null));
+        assertSame(a, LenientCellValue.newInstance(null));
         assertNotSame(a, c);
-        assertNotSame(c, CellValue.newInstance(null));
+        assertNotSame(c, LenientCellValue.newInstance(null));
     }
 
     @NotNull
-    private CellValue newCellValue(@Nullable Object originalValue) {
+    private LenientCellValue newLenientCellValue(@Nullable Object originalValue) {
         try {
-            final Constructor<CellValue> constructor = CellValue.class.getDeclaredConstructor(Object.class);
+            final Constructor<LenientCellValue> constructor = LenientCellValue.class.getDeclaredConstructor(Object.class);
             constructor.setAccessible(true);
             return constructor.newInstance(originalValue);
         } catch (ReflectiveOperationException e) {
