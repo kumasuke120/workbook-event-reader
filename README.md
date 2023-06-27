@@ -4,7 +4,8 @@ See in other languages: English | [中文](README_CN.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Build Status](https://github.com/kumasuke120/workbook-event-reader/actions/workflows/build.yml/badge.svg)](https://github.com/kumasuke120/workbook-event-reader/actions/workflows/build.yml) [![codecov](https://codecov.io/gh/kumasuke120/workbook-event-reader/branch/master/graph/badge.svg)](https://codecov.io/gh/kumasuke120/workbook-event-reader)
 
 An event-based workbook reader which re-encapsulates [Apache POI](https://poi.apache.org/) Event APIs for processing 
-Excel workbooks, making it easy for reading SpreadsheetML(.xlsx) and legacy Excel documents(.xls) with a same unified interface.
+Excel workbooks, making it easy for reading SpreadsheetML(.xlsx), legacy Excel documents(.xls) and CSV Files(UTF-8 by default) 
+with a same unified interface.
 All values read from an Excel document could be converted to sensible corresponding Java types.
 
 ## Supported Documents
@@ -18,7 +19,7 @@ Requirements for this project are as follows:
 | Dependency               	 | Bundled 	  | Minimum  	 |
 |----------------------------|------------|------------|
 | Java Ver.             	    | None     	 | 8      	   |
-| Apache POI Ver.       	    | 4.0.0   	  | 3.17  	    |
+| Apache POI Ver.       	    | 4.1.2   	  | 3.17  	    |
 | Apache Xerces Ver.    	    | 2.12.2  	  | 2.0.0 	    |
 | Apache Commons CSV Ver. 	  | 1.8     	  | 1.0   	    |
 
