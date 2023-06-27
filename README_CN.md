@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Build Status](https://github.com/kumasuke120/workbook-event-reader/actions/workflows/build.yml/badge.svg)](https://github.com/kumasuke120/workbook-event-reader/actions/workflows/build.yml) [![codecov](https://codecov.io/gh/kumasuke120/workbook-event-reader/branch/master/graph/badge.svg)](https://codecov.io/gh/kumasuke120/workbook-event-reader)
 
 这是一款基于事件的工作簿阅读器。它封装了 [Apache POI](https://poi.apache.org/) Event API 来处理 Excel 工作簿文档。
-该阅读器提供了一套统一的接口来处理 SpreadsheetML(.xlsx) 和传统 Excel 文档(.xls)。
+该阅读器提供了一套统一的接口来处理 SpreadsheetML(.xlsx) 、传统 Excel 文档(.xls) 和 CSV 文件(默认编码 UTF-8)。
 所有从 Excel 文档中读取的值均可被转换为合理的 Java 类型。
 
 ## 受支持的文档
@@ -18,7 +18,7 @@
 | 依赖                    	   | 内置   	    | 最低		   |
 |---------------------------|-----------|--------|
 | Java 版本              	    | 无      	  | 11   	 |
-| Apache POI 版本         	   | 4.0.0   	 | 3.17 	 |
+| Apache POI 版本         	   | 4.1.2   	 | 3.17 	 |
 | Apache Xerces 版本        	 | 2.12.2  	 | 2.0.0  |
 | Apache Commons CSV 版本 	   | 1.8     	 | 1.0    |
 
@@ -39,7 +39,7 @@ $ mvn clean install -DskipTests
 <dependency>
     <groupId>com.github.kumasuke120</groupId>
     <artifactId>workbook-event-reader</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
 </dependency>
 ```
 
@@ -142,7 +142,7 @@ public class ToXmlPrinter {
         private String repeatFourSpaces(int times) {
             final StringBuilder sb = new StringBuilder();
             for (int i = 0; i < times; i++) {
-                sb.append(/* four spaces */"    ");
+                sb.append(/* 4 个空格 */"    ");
             }
             return sb.toString();
         }
