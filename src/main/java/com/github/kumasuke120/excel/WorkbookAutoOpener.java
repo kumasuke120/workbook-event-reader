@@ -223,7 +223,7 @@ class WorkbookAutoOpener {
         return thrown;
     }
 
-    private static class ReaderConstructor {
+    static class ReaderConstructor {
         private final Class<? extends WorkbookEventReader> readerClass;
         private final Constructor<? extends WorkbookEventReader> inputStreamConstructor;
         private final Constructor<? extends WorkbookEventReader> pathConstructor;
@@ -293,8 +293,16 @@ class WorkbookAutoOpener {
         @NotNull
         private WorkbookIOException translateException(@NotNull InvocationTargetException e) {
             final Throwable t = e.getTargetException();
-            assert t instanceof WorkbookIOException;
-            return (WorkbookIOException) t;
+
+            if (t instanceof Error) {
+                throw (Error) t;
+            }
+
+            if (t instanceof WorkbookIOException) {
+                return (WorkbookIOException) t;
+            } else {
+                return new WorkbookIOException("Cannot open workbook", t);
+            }
         }
     }
 
