@@ -254,6 +254,23 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
 
             assertTrue(cancelledRef[0]);
         });
+
+        dealWithReader(reader -> {
+            final WorkbookEventReader.EventHandler handler = new WorkbookEventReader.EventHandler() {
+                @Override
+                public void onStartRow(int sheetIndex, int rowNum) {
+                    reader.cancel();
+                }
+
+                @Override
+                public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
+                    throw new AssertionError();
+                }
+            };
+
+            reader.read(handler);
+
+        });
     }
 
     void close() {
