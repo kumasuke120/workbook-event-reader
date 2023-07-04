@@ -2,6 +2,7 @@ package com.github.kumasuke120.excel;
 
 import com.github.kumasuke120.util.LightWeightConstructor;
 import com.github.kumasuke120.util.ResourceUtil;
+import com.github.kumasuke120.util.WorkbookRowCounter;
 import com.github.kumasuke120.util.XmlUtil;
 import org.apache.poi.EncryptedDocumentException;
 import org.jetbrains.annotations.NotNull;
@@ -179,6 +180,22 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
             };
 
             assertThrows(IllegalReaderStateException.class, () -> reader.read(handler));
+        });
+
+        dealWithReader(reader -> {
+            final WorkbookRowCounter counter1 = new WorkbookRowCounter();
+            reader.read(counter1);
+
+            final WorkbookRowCounter counter2 = new WorkbookRowCounter();
+            reader.read(counter2);
+
+            assertEquals(counter1.getSheetCount(), counter2.getSheetCount());
+            for (int i = 0; i < counter1.getSheetCount(); i++) {
+                final int rowCount1 = counter1.getRowCount(i);
+                final int rowCount2 = counter2.getRowCount(i);
+
+                assertEquals(rowCount1, rowCount2, "sheetIndex = " + i);
+            }
         });
     }
 
