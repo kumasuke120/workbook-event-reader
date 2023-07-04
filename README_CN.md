@@ -17,7 +17,7 @@
 
 | 依赖                    	   | 内置   	    | 最低		   |
 |---------------------------|-----------|--------|
-| Java 版本              	    | 无      	  | 11   	 |
+| Java 版本             	     | 无      	  | 8   	  |
 | Apache POI 版本         	   | 4.1.2   	 | 3.17 	 |
 | Apache Xerces 版本        	 | 2.12.2  	 | 2.0.0  |
 | Apache Commons CSV 版本 	   | 1.8     	 | 1.0    |
@@ -39,7 +39,7 @@ $ mvn clean install -DskipTests
 <dependency>
     <groupId>com.github.kumasuke120</groupId>
     <artifactId>workbook-event-reader</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
 </dependency>
 ```
 
