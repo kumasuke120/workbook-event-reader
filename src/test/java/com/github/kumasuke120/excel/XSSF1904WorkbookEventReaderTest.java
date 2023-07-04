@@ -4,6 +4,7 @@ import com.github.kumasuke120.util.ResourceUtil;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,6 +17,12 @@ class XSSF1904WorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<XS
 
     XSSF1904WorkbookEventReaderTest() {
         super(NORMAL_FILE_NAME, ENCRYPTED_FILE_NAME, XSSFWorkbookEventReader.class);
+    }
+
+    @Test
+    @Override
+    void open() throws IOException {
+        super.open();
     }
 
     @Test

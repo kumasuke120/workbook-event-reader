@@ -16,6 +16,9 @@ import java.util.Stack;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.*;
 
 abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventReader> {
 
@@ -137,6 +140,39 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
     @NotNull
     private LightWeightConstructor<R> inputStreamAndPasswordConstructor() {
         return new LightWeightConstructor<>(readerClass, InputStream.class, String.class);
+    }
+
+    void open() throws IOException {
+        // only close() errs
+        final InputStream in = mock(InputStream.class);
+
+        when(in.read()).thenReturn(-1);
+        when(in.read(any())).thenReturn(-1);
+        when(in.read(any(), anyInt(), anyInt())).thenReturn(-1);
+        doThrow(IOException.class).when(in).close();
+
+        try {
+            inputStreamConstructor().newInstance(in);
+        } catch (WorkbookIOException e) {
+            assertNotNull(e);
+            assertTrue(e.getCause() instanceof IOException);
+        }
+
+        // both read() and close() err
+        final InputStream in2 = mock(InputStream.class);
+
+        when(in2.read()).thenThrow(IOException.class);
+        when(in2.read(any())).thenThrow(IOException.class);
+        when(in2.read(any(), anyInt(), anyInt())).thenThrow(IOException.class);
+        doThrow(IOException.class).when(in2).close();
+
+        try {
+            inputStreamConstructor().newInstance(in2);
+        } catch (WorkbookIOException e) {
+            assertNotNull(e);
+            assertTrue(e.getCause() instanceof IOException);
+            assertNotNull(e.getSuppressed());
+        }
     }
 
     void read() {

@@ -2,6 +2,8 @@ package com.github.kumasuke120.excel;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+
 class HSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<HSSFWorkbookEventReader> {
 
     private static final String NORMAL_FILE_NAME = "workbook.xls";
@@ -9,6 +11,12 @@ class HSSFWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<HSSFWo
 
     HSSFWorkbookEventReaderTest() {
         super(NORMAL_FILE_NAME, ENCRYPTED_FILE_NAME, HSSFWorkbookEventReader.class);
+    }
+
+    @Test
+    @Override
+    void open() throws IOException {
+        super.open();
     }
 
     @Test
