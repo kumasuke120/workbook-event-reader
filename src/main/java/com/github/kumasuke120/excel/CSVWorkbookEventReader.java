@@ -81,8 +81,15 @@ public class CSVWorkbookEventReader extends AbstractWorkbookEventReader {
 
     @Override
     void doOpen(@NotNull InputStream in, @Nullable String password) throws Exception {
-        final byte[] inBytes = IOUtils.toByteArray(in);
-        inCache = new ByteArrayInputStream(inBytes);
+        Exception thrown = null;
+        try {
+            final byte[] inBytes = IOUtils.toByteArray(in);
+            inCache = new ByteArrayInputStream(inBytes);
+        } catch (Exception e) {
+            thrown = e;
+        } finally {
+            suppressClose(in, thrown);
+        }
     }
 
     @Override
