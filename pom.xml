@@ -69,6 +69,19 @@
             <version>${apache.csv.version}</version>
         </dependency>
 
+        <!-- region encoding -->
+        <dependency>
+            <groupId>com.github.albfernandez</groupId>
+            <artifactId>juniversalchardet</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.icu</groupId>
+            <artifactId>icu4j</artifactId>
+            <version>73.2</version>
+        </dependency>
+        <!-- endregion -->
+
         <!-- region dev -->
         <dependency>
             <groupId>org.jetbrains</groupId>
@@ -94,6 +107,18 @@
             <groupId>xom</groupId>
             <artifactId>xom</artifactId>
             <version>1.3.9</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>5.13.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna-platform</artifactId>
+            <version>5.13.0</version>
             <scope>test</scope>
         </dependency>
         <!-- endregion -->
