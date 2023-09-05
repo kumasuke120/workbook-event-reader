@@ -162,7 +162,7 @@ public class CSVWorkbookEventReader extends AbstractWorkbookEventReader {
     private CellValue getRecordCellValue(@NotNull CSVRecord record, int i) {
         /* gets and cleans value */
         String value = record.get(i);
-        if (value == null || "".equals(value)) { // treats empty as null
+        if (value == null || value.isEmpty()) { // treats empty as null
             value = null;
         } else if (value.startsWith("\ufeff")) { // removes bom
             value = value.substring(1);
