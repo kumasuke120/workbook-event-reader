@@ -164,7 +164,7 @@ class ByteArrayCharsetDetector {
             int baseScore = match.getConfidence();
             final String lang = match.getLanguage();
             final long langCount = countByLang.getOrDefault(lang, 0L);
-            baseScore += (langCount - 1) * 5;
+            baseScore += (int) ((langCount - 1) * 5);
             baseScore = Math.min(100, baseScore);
             cc.score = baseScore;
 
@@ -718,13 +718,19 @@ class ByteArrayCharsetDetector {
             }
         }
 
+        @NotNull
         static Set<String> getByLocale(Locale locale) {
             Set<String> codePages;
 
             if (locale == null) {
                 codePages = localeDefaultCharsets.get("");
             } else {
-                codePages = localeDefaultCharsets.get(locale.toLanguageTag());
+                final String languageTag = locale.toLanguageTag();
+                if (localeDefaultCharsets.containsKey(languageTag)) {
+                    codePages = localeDefaultCharsets.get(languageTag);
+                } else {
+                    codePages = localeDefaultCharsets.get("");
+                }
             }
 
             return codePages;
