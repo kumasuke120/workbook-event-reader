@@ -7,7 +7,10 @@ import org.apache.poi.util.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -20,10 +23,10 @@ import java.nio.file.Path;
 @SuppressWarnings("unused")
 public class CSVWorkbookEventReader extends AbstractWorkbookEventReader {
 
-    private static final ThreadLocal<Charset> charsetLocal = ThreadLocal.withInitial(() -> StandardCharsets.UTF_8);
+    private static final ThreadLocal<Charset> charsetLocal = new ThreadLocal<>();
     private static final ThreadLocal<CSVFormat> formatLocal = ThreadLocal.withInitial(() -> CSVFormat.EXCEL);
 
-    private InputStream inCache;
+    private byte[] content;
     private Charset charset;
     private CSVFormat format;
 
@@ -83,8 +86,7 @@ public class CSVWorkbookEventReader extends AbstractWorkbookEventReader {
     void doOpen(@NotNull InputStream in, @Nullable String password) throws Exception {
         Exception thrown = null;
         try {
-            final byte[] inBytes = IOUtils.toByteArray(in);
-            inCache = new ByteArrayInputStream(inBytes);
+            content = IOUtils.toByteArray(in);
         } catch (Exception e) {
             thrown = e;
         } finally {
@@ -107,7 +109,7 @@ public class CSVWorkbookEventReader extends AbstractWorkbookEventReader {
     @Override
     void doRead(@NotNull EventHandler handler) throws Exception {
         // creates a new instance of Parser everytime to enable passes of readings
-        try (final CSVParser parser = initParser()) {
+        try (final CSVParser parser = createParser()) {
 
             /*
              * csv files don't have sheets, we trigger sheet-related events for compatibility;
@@ -134,22 +136,33 @@ public class CSVWorkbookEventReader extends AbstractWorkbookEventReader {
             // handles onEndDocument
             handler.onEndSheet(0);
             handler.onEndDocument();
-        } finally {
-            // resets to ensure the next reading process will start read from the scratch
-            inCache.reset();
         }
     }
 
-    private CSVParser initParser() throws IOException {
-        final InputStreamReader reader = new InputStreamReader(inCache, charset);
+    private CSVParser createParser() throws IOException {
+        final ByteArrayInputStream in = new ByteArrayInputStream(content);
+        final InputStreamReader reader = new InputStreamReader(in, getCharset());
         return new CSVParser(reader, format);
+    }
+
+    private Charset getCharset() {
+        if (charset == null) {
+            final ByteArrayCharsetDetector detector = new ByteArrayCharsetDetector(content);
+            charset = detector.detect();
+
+            if (charset == null) {
+                charset = StandardCharsets.UTF_8;
+            }
+        }
+
+        return charset;
     }
 
     @NotNull
     private CellValue getRecordCellValue(@NotNull CSVRecord record, int i) {
         /* gets and cleans value */
         String value = record.get(i);
-        if (value == null || "".equals(value)) { // treats empty as null
+        if (value == null || value.isEmpty()) { // treats empty as null
             value = null;
         } else if (value.startsWith("\ufeff")) { // removes bom
             value = value.substring(1);
@@ -159,17 +172,12 @@ public class CSVWorkbookEventReader extends AbstractWorkbookEventReader {
     }
 
     private static class CSVFReaderCleanAction extends ReaderCleanAction {
-        private final InputStream inCache;
-
         CSVFReaderCleanAction(@NotNull CSVWorkbookEventReader reader) {
-            inCache = reader.inCache;
         }
 
         @Override
-        void doClean() throws Exception {
-            if (inCache != null) {
-                inCache.close();
-            }
+        void doClean() {
+            // no-op
         }
     }
 
