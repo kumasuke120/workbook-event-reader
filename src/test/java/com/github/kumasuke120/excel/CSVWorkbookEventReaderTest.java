@@ -5,6 +5,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
@@ -18,6 +19,12 @@ class CSVWorkbookEventReaderTest extends AbstractWorkbookEventReaderTest<CSVWork
         super(NORMAL_FILE_NAME, "", CSVWorkbookEventReader.class);
         setSampleReadFileName("sample-output-csv.xml");
         setSampleCancelFileName("sample-output-csv.xml");
+    }
+
+    @Test
+    @Override
+    void open() throws IOException {
+        super.open();
     }
 
     @Test

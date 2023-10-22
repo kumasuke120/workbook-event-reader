@@ -3,10 +3,14 @@ package com.github.kumasuke120.excel;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.poi.util.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -19,10 +23,10 @@ import java.nio.file.Path;
 @SuppressWarnings("unused")
 public class CSVWorkbookEventReader extends AbstractWorkbookEventReader {
 
-    private static final ThreadLocal<Charset> charsetLocal = ThreadLocal.withInitial(() -> StandardCharsets.UTF_8);
+    private static final ThreadLocal<Charset> charsetLocal = new ThreadLocal<>();
     private static final ThreadLocal<CSVFormat> formatLocal = ThreadLocal.withInitial(() -> CSVFormat.EXCEL);
 
-    private CSVParser parser;
+    private byte[] content;
     private Charset charset;
     private CSVFormat format;
 
@@ -80,18 +84,20 @@ public class CSVWorkbookEventReader extends AbstractWorkbookEventReader {
 
     @Override
     void doOpen(@NotNull InputStream in, @Nullable String password) throws Exception {
-        final InputStreamReader reader = new InputStreamReader(in, charset);
-        doOpen(reader);
+        Exception thrown = null;
+        try {
+            content = IOUtils.toByteArray(in);
+        } catch (Exception e) {
+            thrown = e;
+        } finally {
+            suppressClose(in, thrown);
+        }
     }
 
     @Override
     void doOpen(@NotNull Path filePath, @Nullable String password) throws Exception {
-        final BufferedReader reader = Files.newBufferedReader(filePath, charset);
-        doOpen(reader);
-    }
-
-    private void doOpen(@NotNull Reader reader) throws IOException {
-        parser = new CSVParser(reader, format);
+        final InputStream in = Files.newInputStream(filePath);
+        doOpen(in, password);
     }
 
     @Override
@@ -101,39 +107,62 @@ public class CSVWorkbookEventReader extends AbstractWorkbookEventReader {
     }
 
     @Override
-    void doRead(@NotNull EventHandler handler) {
-        /*
-         * csv files don't have sheets, we trigger sheet-related events for compatibility;
-         * treats the sheet-related event identical to document-related events
-         */
+    void doRead(@NotNull EventHandler handler) throws Exception {
+        // creates a new instance of Parser everytime to enable passes of readings
+        try (final CSVParser parser = createParser()) {
 
-        // handles onStartDocument
-        handler.onStartDocument();
-        handler.onStartSheet(0, "");
+            /*
+             * csv files don't have sheets, we trigger sheet-related events for compatibility;
+             * treats the sheet-related event identical to document-related events
+             */
 
-        int currentRowNumber = -1;
-        for (final CSVRecord record : parser) {
-            handler.onStartRow(0, ++currentRowNumber);
+            // handles onStartDocument
+            handler.onStartDocument();
+            handler.onStartSheet(0, "");
 
-            // handles cells
-            for (int currentColumnNum = 0; currentColumnNum < record.size(); currentColumnNum++) {
-                final CellValue cellValue = getRecordCellValue(record, currentColumnNum);
-                handler.onHandleCell(0, currentRowNumber, currentColumnNum, cellValue);
+            int currentRowNumber = -1;
+            for (final CSVRecord record : parser) {
+                handler.onStartRow(0, ++currentRowNumber);
+
+                // handles cells
+                for (int currentColumnNum = 0; currentColumnNum < record.size(); currentColumnNum++) {
+                    final CellValue cellValue = getRecordCellValue(record, currentColumnNum);
+                    handler.onHandleCell(0, currentRowNumber, currentColumnNum, cellValue);
+                }
+
+                handler.onEndRow(0, currentRowNumber);
             }
 
-            handler.onEndRow(0, currentRowNumber);
+            // handles onEndDocument
+            handler.onEndSheet(0);
+            handler.onEndDocument();
+        }
+    }
+
+    private CSVParser createParser() throws IOException {
+        final ByteArrayInputStream in = new ByteArrayInputStream(content);
+        final InputStreamReader reader = new InputStreamReader(in, getCharset());
+        return new CSVParser(reader, format);
+    }
+
+    private Charset getCharset() {
+        if (charset == null) {
+            final ByteArrayCharsetDetector detector = new ByteArrayCharsetDetector(content);
+            charset = detector.detect();
+
+            if (charset == null) {
+                charset = StandardCharsets.UTF_8;
+            }
         }
 
-        // handles onEndDocument
-        handler.onEndSheet(0);
-        handler.onEndDocument();
+        return charset;
     }
 
     @NotNull
     private CellValue getRecordCellValue(@NotNull CSVRecord record, int i) {
         /* gets and cleans value */
         String value = record.get(i);
-        if (value == null || "".equals(value)) { // treats empty as null
+        if (value == null || value.isEmpty()) { // treats empty as null
             value = null;
         } else if (value.startsWith("\ufeff")) { // removes bom
             value = value.substring(1);
@@ -143,17 +172,12 @@ public class CSVWorkbookEventReader extends AbstractWorkbookEventReader {
     }
 
     private static class CSVFReaderCleanAction extends ReaderCleanAction {
-        private final CSVParser parser;
-
         CSVFReaderCleanAction(@NotNull CSVWorkbookEventReader reader) {
-            parser = reader.parser;
         }
 
         @Override
-        void doClean() throws Exception {
-            if (parser != null) {
-                parser.close();
-            }
+        void doClean() {
+            // no-op
         }
     }
 

@@ -2,6 +2,7 @@ package com.github.kumasuke120.excel;
 
 import com.github.kumasuke120.util.LightWeightConstructor;
 import com.github.kumasuke120.util.ResourceUtil;
+import com.github.kumasuke120.util.WorkbookRowCounter;
 import com.github.kumasuke120.util.XmlUtil;
 import org.apache.poi.EncryptedDocumentException;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +16,9 @@ import java.util.Stack;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.*;
 
 abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventReader> {
 
@@ -138,6 +142,39 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         return new LightWeightConstructor<>(readerClass, InputStream.class, String.class);
     }
 
+    void open() throws IOException {
+        // only close() errs
+        final InputStream in = mock(InputStream.class);
+
+        when(in.read()).thenReturn(-1);
+        when(in.read(any())).thenReturn(-1);
+        when(in.read(any(), anyInt(), anyInt())).thenReturn(-1);
+        doThrow(IOException.class).when(in).close();
+
+        try {
+            inputStreamConstructor().newInstance(in);
+        } catch (WorkbookIOException e) {
+            assertNotNull(e);
+            assertTrue(e.getCause() instanceof IOException);
+        }
+
+        // both read() and close() err
+        final InputStream in2 = mock(InputStream.class);
+
+        when(in2.read()).thenThrow(IOException.class);
+        when(in2.read(any())).thenThrow(IOException.class);
+        when(in2.read(any(), anyInt(), anyInt())).thenThrow(IOException.class);
+        doThrow(IOException.class).when(in2).close();
+
+        try {
+            inputStreamConstructor().newInstance(in2);
+        } catch (WorkbookIOException e) {
+            assertNotNull(e);
+            assertTrue(e.getCause() instanceof IOException);
+            assertNotNull(e.getSuppressed());
+        }
+    }
+
     void read() {
         dealWithReader(reader -> {
             final TestEventHandler handler = new TestEventHandler();
@@ -179,6 +216,22 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
             };
 
             assertThrows(IllegalReaderStateException.class, () -> reader.read(handler));
+        });
+
+        dealWithReader(reader -> {
+            final WorkbookRowCounter counter1 = new WorkbookRowCounter();
+            reader.read(counter1);
+
+            final WorkbookRowCounter counter2 = new WorkbookRowCounter();
+            reader.read(counter2);
+
+            assertEquals(counter1.getSheetCount(), counter2.getSheetCount());
+            for (int i = 0; i < counter1.getSheetCount(); i++) {
+                final int rowCount1 = counter1.getRowCount(i);
+                final int rowCount2 = counter2.getRowCount(i);
+
+                assertEquals(rowCount1, rowCount2, "sheetIndex = " + i);
+            }
         });
     }
 
@@ -236,6 +289,23 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
             reader.read(handler);
 
             assertTrue(cancelledRef[0]);
+        });
+
+        dealWithReader(reader -> {
+            final WorkbookEventReader.EventHandler handler = new WorkbookEventReader.EventHandler() {
+                @Override
+                public void onStartRow(int sheetIndex, int rowNum) {
+                    reader.cancel();
+                }
+
+                @Override
+                public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
+                    throw new AssertionError();
+                }
+            };
+
+            reader.read(handler);
+
         });
     }
 

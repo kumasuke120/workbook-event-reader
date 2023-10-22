@@ -3,15 +3,16 @@ See in other languages: English | [中文](README_CN.md)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Build Status](https://github.com/kumasuke120/workbook-event-reader/actions/workflows/build.yml/badge.svg)](https://github.com/kumasuke120/workbook-event-reader/actions/workflows/build.yml) [![codecov](https://codecov.io/gh/kumasuke120/workbook-event-reader/branch/master/graph/badge.svg)](https://codecov.io/gh/kumasuke120/workbook-event-reader)
 
-An event-based workbook reader which re-encapsulates [Apache POI](https://poi.apache.org/) Event APIs for processing 
-Excel workbooks, making it easy for reading SpreadsheetML(.xlsx), legacy Excel documents(.xls) and CSV files(UTF-8 by default) 
-with a same unified interface.
-All values read from an Excel document could be converted to sensible corresponding Java types.
+## Features
+- Event-based Workbook reader, with a low memory footprint
+- Unified interfaces for reading SpreadsheetML(.xlsx), legacy Excel documents(.xls) and CSV files
+- Able to read a file from scratch for multiple times
+- Easy to read the cell values, type-converting them at ease 
 
 ## Supported Documents
 - *.xlsx
 - *.xls
-- *.csv (UTF-8 by default)
+- *.csv (auto-detecting the file encoding by default)
 
 ## Requirements
 Requirements for this project are as follows:
@@ -41,7 +42,7 @@ The Maven dependency for this project is:
 <dependency>
     <groupId>com.github.kumasuke120</groupId>
     <artifactId>workbook-event-reader</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.3</version>
 </dependency>
 ```
 
