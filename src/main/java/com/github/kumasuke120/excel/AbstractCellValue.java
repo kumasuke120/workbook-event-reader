@@ -7,8 +7,12 @@ import org.jetbrains.annotations.Nullable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.function.Function;
+
+import static com.github.kumasuke120.excel.WorkbookDateTimeFormatters.DEFAULT_DATE_TIME_FORMATTERS;
 
 /**
  * The base class for {@link CellValue}, containing common methods and utilities
@@ -44,7 +48,7 @@ public abstract class AbstractCellValue implements CellValue {
      * @param originalValue the given original value
      * @return is the original value allowed
      */
-    boolean isTypeAllowed(@Nullable Object originalValue) {
+    final boolean isTypeAllowed(@Nullable Object originalValue) {
         return originalValue == null ||
                 originalValue instanceof Boolean ||
                 originalValue instanceof Integer ||
@@ -56,51 +60,64 @@ public abstract class AbstractCellValue implements CellValue {
                 originalValue instanceof LocalDateTime;
     }
 
-    /**
-     * Returns type of the original value. It will return <code>null</code> if the original value is <code>null</code>.
-     *
-     * @return the type of the original value if possible, otherwise a {@link NullPointerException} will be thrown
-     * @throws NullPointerException the original value is null
-     */
     @Override
     @NotNull
     public final Class<?> originalType() {
         return Objects.requireNonNull(originalValue).getClass();
     }
 
-
-    /**
-     * Returns the original value of this {@link CellValue}.
-     *
-     * @return original value
-     */
     @Override
     @Nullable
     public final Object originalValue() {
         return originalValue;
     }
 
-
-    /**
-     * Checks if the original value is <code>null</code>.
-     *
-     * @return <code>true</code> if the original value is <code>null</code>, otherwise <code>false</code>
-     */
     @Override
     public final boolean isNull() {
         return originalValue == null;
     }
 
-    /**
-     * Uses the given function to map the {@link #originalValue()} to a new value, and returns a new
-     * {@link CellValue} based on the new value.<br>
-     * The return value of <code>mappingFunction</code> must be one of the types listed on the javadoc of
-     * {@link #originalValue()}.
-     *
-     * @param mappingFunction value mapping function
-     * @return {@link CellValue} based on the mapped value
-     * @throws CellValueCastException cannot perform mapping or the mapped value is not in the allow type
-     */
+    @Override
+    @NotNull
+    public final LocalTime localTimeValue() {
+        return localTimeValue(DEFAULT_DATE_TIME_FORMATTERS);
+    }
+
+    @Override
+    @NotNull
+    public final LocalTime localTimeValue(@NotNull(exception = NullPointerException.class) DateTimeFormatter formatter) {
+        Objects.requireNonNull(formatter);
+        return localTimeValue(Collections.singleton(formatter));
+    }
+
+    @Override
+    @NotNull
+    public final LocalDate localDateValue() {
+        return localDateValue(DEFAULT_DATE_TIME_FORMATTERS);
+    }
+
+    @Override
+    @NotNull
+    public final LocalDate localDateValue(@NotNull(exception = NullPointerException.class)
+                                    DateTimeFormatter formatter) {
+        Objects.requireNonNull(formatter);
+        return localDateValue(Collections.singleton(formatter));
+    }
+
+    @Override
+    @NotNull
+    public final LocalDateTime localDateTimeValue() {
+        return localDateTimeValue(DEFAULT_DATE_TIME_FORMATTERS);
+    }
+
+    @Override
+    @NotNull
+    public final LocalDateTime localDateTimeValue(@NotNull(exception = NullPointerException.class)
+                                            DateTimeFormatter formatter) {
+        Objects.requireNonNull(formatter);
+        return localDateTimeValue(Collections.singleton(formatter));
+    }
+
     @Override
     @NotNull
     @Contract(pure = true)
@@ -126,13 +143,6 @@ public abstract class AbstractCellValue implements CellValue {
         }
     }
 
-    /**
-     * Trims the original value if its type is of {@link String}.<br>
-     * A new instance of {@link CellValue} will be created if there is any change to this
-     * {@link CellValue} instance.
-     *
-     * @return {@link CellValue} based on the trimmed value
-     */
     @Override
     @NotNull
     @Contract(pure = true)
