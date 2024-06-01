@@ -265,4 +265,24 @@ public interface CellValue {
     @Contract(pure = true)
     CellValue trim();
 
+    /**
+     * Returns a strict-typed <code>CellValue</code> based on the current original value.<br>
+     * Any type conversion performed by the returned <code>CellValue</code> will be relatively strict.<br>
+     * Such as the {@link #intValue()} method won't convert 0.5 to 0. Instead, it will throw a
+     * <code>CellValueCastException</code> in this case.
+     *
+     * @return an instance of <code>CellValue</code>
+     */
+    CellValue strict();
+
+    /**
+     * Returns a lenient-typed <code>CellValue</code> based on the current original value.
+     * Any type conversion performed by the returned <code>CellValue</code> will be relatively lenient.<br>
+     * Such as the {@link #intValue()} method will convert 0.5 to 0 instead of throwing a
+     * <code>CellValueCastException</code> in this case.
+     *
+     * @return an instance of <code>CellValue</code>
+     */
+    CellValue lenient();
+
 }

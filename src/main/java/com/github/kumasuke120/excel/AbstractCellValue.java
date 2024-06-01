@@ -99,7 +99,7 @@ public abstract class AbstractCellValue implements CellValue {
     @Override
     @NotNull
     public final LocalDate localDateValue(@NotNull(exception = NullPointerException.class)
-                                    DateTimeFormatter formatter) {
+                                          DateTimeFormatter formatter) {
         Objects.requireNonNull(formatter);
         return localDateValue(Collections.singleton(formatter));
     }
@@ -113,7 +113,7 @@ public abstract class AbstractCellValue implements CellValue {
     @Override
     @NotNull
     public final LocalDateTime localDateTimeValue(@NotNull(exception = NullPointerException.class)
-                                            DateTimeFormatter formatter) {
+                                                  DateTimeFormatter formatter) {
         Objects.requireNonNull(formatter);
         return localDateTimeValue(Collections.singleton(formatter));
     }
@@ -122,7 +122,7 @@ public abstract class AbstractCellValue implements CellValue {
     @NotNull
     @Contract(pure = true)
     public final CellValue mapOriginalValue(@NotNull(exception = NullPointerException.class)
-                                      Function<Object, Object> mappingFunction) {
+                                            Function<Object, Object> mappingFunction) {
         Objects.requireNonNull(mappingFunction);
 
         final Object newOriginalValue;
@@ -151,16 +151,38 @@ public abstract class AbstractCellValue implements CellValue {
     }
 
     @Override
+    public final CellValue strict() {
+        if (this instanceof StrictCellValue) {
+            return this;
+        } else {
+            return StrictCellValue.newInstance(originalValue);
+        }
+    }
+
+    @Override
+    public final CellValue lenient() {
+        if (this instanceof LenientCellValue) {
+            return this;
+        } else {
+            return LenientCellValue.newInstance(originalValue);
+        }
+    }
+
+    @Override
     public final boolean equals(@Nullable Object o) {
-        if (this == o) return true;
-        if (!(o instanceof AbstractCellValue)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         AbstractCellValue cellValue = (AbstractCellValue) o;
         return Objects.equals(originalValue, cellValue.originalValue);
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hashCode(originalValue);
+        return Objects.hash(getClass(), originalValue);
     }
 
     /**
