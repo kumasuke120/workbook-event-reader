@@ -1,6 +1,7 @@
 package com.github.kumasuke120.excel;
 
 
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,7 +20,8 @@ import static com.github.kumasuke120.excel.WorkbookDateTimeFormatters.parseTempo
  * A value class which encapsulates all possible values that the {@link WorkbookEventReader} may return and which
  * provides convenient and lenient ways to convert between them
  */
-public final class LenientCellValue extends AbstractCellValue {
+@ApiStatus.Internal
+final class LenientCellValue extends AbstractCellValue {
 
     /**
      * A <code>CellValue</code> singleton whose value is <code>null</code>

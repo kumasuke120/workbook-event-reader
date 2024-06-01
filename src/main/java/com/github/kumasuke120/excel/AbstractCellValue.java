@@ -1,5 +1,6 @@
 package com.github.kumasuke120.excel;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,7 +18,8 @@ import static com.github.kumasuke120.excel.WorkbookDateTimeFormatters.DEFAULT_DA
 /**
  * The base class for {@link CellValue}, containing common methods and utilities
  */
-public abstract class AbstractCellValue implements CellValue {
+@ApiStatus.Internal
+abstract class AbstractCellValue implements CellValue {
 
     final Object originalValue;
 
