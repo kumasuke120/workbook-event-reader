@@ -273,7 +273,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 extractCellReference(qName, attributes);
 
                 // saves styles of current cell
-                currentCellXfIndex = Util.toInt(attributes.getValue(ATTRIBUTE_CELL_STYLE), -1);
+                currentCellXfIndex = ReaderUtils.toInt(attributes.getValue(ATTRIBUTE_CELL_STYLE), -1);
                 currentCellType = attributes.getValue(ATTRIBUTE_CELL_TYPE);
             } else if (TAG_ROW.equals(localName)) {
                 final String rawValue = attributes.getValue(ATTRIBUTE_ROW_REFERENCE);
@@ -316,7 +316,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 }
             } else {
                 final Map.Entry<Integer, Integer> rowAndColumn =
-                        Util.cellReferenceToRowAndColumn(currentCellReference);
+                        ReaderUtils.cellReferenceToRowAndColumn(currentCellReference);
 
                 if (rowAndColumn == null) {
                     throw new SAXParseException(
@@ -369,7 +369,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 cellValue = formatNumberDateCellValue(stringCellValue);
             }
 
-            return Util.toRelativeType(cellValue);
+            return ReaderUtils.toRelativeType(cellValue);
         }
 
         @NotNull
@@ -430,14 +430,14 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             if (stringCellValue == null || stringCellValue.isEmpty()) {
                 cellValue = null;
             } else if (isCurrentCellString() ||
-                    Util.isATextFormat(formatIndex, formatString)) { // deals with cell marked as text
+                    ReaderUtils.isATextFormat(formatIndex, formatString)) { // deals with cell marked as text
                 cellValue = stringCellValue;
             } else if (DateUtil.isADateFormat(formatIndex, formatString)) { // deals with date format
                 Object theValue;
                 try {
                     double doubleValue = Double.parseDouble(stringCellValue);
-                    if (Util.isValidExcelDate(doubleValue)) {
-                        theValue = Util.toJsr310DateOrTime(doubleValue, use1904Windowing);
+                    if (ReaderUtils.isValidExcelDate(doubleValue)) {
+                        theValue = ReaderUtils.toJsr310DateOrTime(doubleValue, use1904Windowing);
                     } else {
                         // treats invalid value as text
                         theValue = stringCellValue;
@@ -447,10 +447,10 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                     theValue = stringCellValue;
                 }
                 cellValue = theValue;
-            } else if (Util.isAWholeNumber(stringCellValue)) { // deals with whole number
+            } else if (ReaderUtils.isAWholeNumber(stringCellValue)) { // deals with whole number
                 // will never throw NumberFormatException
                 cellValue = Long.parseLong(stringCellValue);
-            } else if (Util.isADecimalFraction(stringCellValue)) { // deals with decimal fraction
+            } else if (ReaderUtils.isADecimalFraction(stringCellValue)) { // deals with decimal fraction
                 // will never throw NumberFormatException
                 cellValue = Double.parseDouble(stringCellValue);
             } else {

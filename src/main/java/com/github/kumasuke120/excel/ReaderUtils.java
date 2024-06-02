@@ -16,16 +16,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * An utility class that contains various methods for dealing with workbook
+ * A utility class that contains various methods for dealing with workbook
  */
 @ApiStatus.Internal
-class Util {
+class ReaderUtils {
 
     private static final double DATE_VALUE_EPSILON = 1e-6;
     private static final double MAX_EXCEL_DATE_EXCLUSIVE = 2958466;
     private static final Pattern cellReferencePattern = Pattern.compile("([A-Z]+)(\\d+)");
 
-    private Util() {
+    private ReaderUtils() {
         throw new UnsupportedOperationException();
     }
 
@@ -123,7 +123,7 @@ class Util {
 
             if (excelDateValue < 1) { // time only
                 return localDateTime.toLocalTime();
-            } else if (Util.isAWholeNumber(excelDateValue)) { // date only
+            } else if (ReaderUtils.isAWholeNumber(excelDateValue)) { // date only
                 return localDateTime.toLocalDate();
             } else { // date with time
                 return localDateTime;
@@ -151,7 +151,7 @@ class Util {
     static Object toRelativeType(@Nullable Object value) {
         if (value instanceof Double) {
             final double doubleValue = (double) value;
-            if (Util.isAWholeNumber(doubleValue)) {
+            if (ReaderUtils.isAWholeNumber(doubleValue)) {
                 if (doubleValue > Integer.MAX_VALUE || doubleValue < Integer.MIN_VALUE) {
                     return (long) doubleValue;
                 } else {
