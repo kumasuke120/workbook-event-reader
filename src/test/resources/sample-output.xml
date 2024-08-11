@@ -11,10 +11,10 @@
         <row index="1">
             <cell index="0" javaType="java.lang.String">Double</cell>
             <cell index="1" javaType="java.lang.Double">9.9</cell>
-            <cell index="2" javaType="java.lang.Double">-0.5555555555555556</cell>
+            <cell index="2" javaType="java.lang.Double">-0.5555555556</cell>
             <cell index="3" javaType="java.lang.Integer">0</cell>
-            <cell index="4" javaType="java.lang.Double">1.23456789012345E-4</cell>
-            <cell index="5" javaType="java.lang.Double">222.222222222222</cell>
+            <cell index="4" javaType="java.math.BigDecimal">0.0001234568</cell>
+            <cell index="5" javaType="java.lang.Double">222.2222222</cell>
         </row>
         <row index="2">
             <cell index="0" javaType="java.lang.String">LocalTime</cell>

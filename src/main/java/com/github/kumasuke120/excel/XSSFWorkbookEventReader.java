@@ -7,6 +7,7 @@ import org.apache.poi.openxml4j.opc.PackageAccess;
 import org.apache.poi.poifs.filesystem.DocumentFactoryHelper;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
@@ -45,6 +46,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
     private XSSFReader xssfReader;
     private SharedStringsTable sharedStringsTable;
     private StylesTable stylesTable;
+    private DataFormatter dataFormatter;
 
     private boolean use1904Windowing;
 
@@ -140,6 +142,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         xssfReader = new XSSFReader(opcPackage);
         sharedStringsTable = xssfReader.getSharedStringsTable();
         stylesTable = xssfReader.getStylesTable();
+        dataFormatter = new DataFormatter();
 
         initUse1904Windowing();
     }
@@ -289,7 +292,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                         currentRowNum = Integer.parseInt(attributes.getValue(ATTRIBUTE_ROW_REFERENCE)) - 1;
                     } catch (NumberFormatException e) {
                         throw new SAXParseException("Cannot parse row number in tag '" + qName + "'",
-                                                    null, e);
+                                null, e);
                     }
                 }
 
@@ -339,7 +342,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             if (TAG_CELL.equals(localName)) {
                 final Object cellValue = getCurrentCellValue();
                 handler.onHandleCell(currentSheetIndex, currentRowNum, currentColumnNum,
-                                     CellValue.newInstance(cellValue));
+                        CellValue.newInstance(cellValue));
 
                 // clears its content after processing
                 currentCellValueBuilder.setLength(0);
@@ -381,8 +384,8 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 return Boolean.FALSE;
             } else {
                 throw new SAXParseException("Cannot parse boolean value in tag '" + currentElementQName + "', " +
-                                                    "which should be 'TRUE' or 'FALSE': " + currentCellValue,
-                                            null);
+                        "which should be 'TRUE' or 'FALSE': " + currentCellValue,
+                        null);
             }
         }
 
@@ -423,9 +426,8 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         private Object formatNumberDateCellValue(@Nullable String stringCellValue) {
             final Object cellValue;
 
-            // valid numFmtId is non-negative, -1 denotes there is no cell format for the cell
-            final short formatIndex = currentCellXfIndex == -1 ? -1 : getFormatIndex(currentCellXfIndex);
-            final String formatString = currentCellXfIndex == -1 ? null : getFormatString(formatIndex);
+            final short formatIndex = getFormatIndex();
+            final String formatString = getFormatString(formatIndex);
 
             if (stringCellValue == null || stringCellValue.isEmpty()) {
                 cellValue = null;
@@ -452,7 +454,10 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 cellValue = Long.parseLong(stringCellValue);
             } else if (ReaderUtils.isADecimalFraction(stringCellValue)) { // deals with decimal fraction
                 // will never throw NumberFormatException
-                cellValue = Double.parseDouble(stringCellValue);
+                final double doubleValue = Double.parseDouble(stringCellValue);
+                final String decimalStringValue = dataFormatter.formatRawCellContents(doubleValue,
+                        formatIndex, formatString);
+                cellValue = Util.decimalStringToDecimal(decimalStringValue);
             } else {
                 cellValue = stringCellValue;
             }
@@ -460,23 +465,30 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             return cellValue;
         }
 
-        private short getFormatIndex(int cellXfIndex) {
-            CTXf cellXf = stylesTable.getCellXfAt(cellXfIndex);
+        private short getFormatIndex() {
+            // valid numFmtId is non-negative, -1 denotes there is no cell format for the cell
+            if (currentCellXfIndex == -1) {
+                // returns the default format index
+                return 0;
+            }
+
+            CTXf cellXf = stylesTable.getCellXfAt(currentCellXfIndex);
             if (cellXf.isSetNumFmtId()) {
                 return (short) cellXf.getNumFmtId();
             } else {
-                // valid numFmtId is non-negative, -1 denotes invalid value
-                return -1;
+                // returns the default format index
+                return 0;
             }
         }
 
-        @NotNull
+        @Nullable
         private String getFormatString(short numFmtId) {
-            String numberFormat = stylesTable.getNumberFormatAt(numFmtId);
-            if (numberFormat == null) {
-                numberFormat = BuiltinFormats.getBuiltinFormat(numFmtId);
+            final String formatString = BuiltinFormats.getBuiltinFormat(numFmtId);
+            if (formatString != null) {
+                return formatString;
             }
-            return numberFormat;
+
+            return stylesTable.getNumberFormatAt(numFmtId);
         }
 
         private boolean isCurrentCellString() {

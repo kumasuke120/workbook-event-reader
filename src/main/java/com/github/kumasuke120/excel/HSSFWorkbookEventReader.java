@@ -6,6 +6,7 @@ import org.apache.poi.hssf.record.crypto.Biff8EncryptionKey;
 import org.apache.poi.poifs.filesystem.DocumentInputStream;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,6 +30,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     private POIFSFileSystem fileSystem;
     private String password;
+    private DataFormatter dataFormatter;
 
     /**
      * Creates a new {@link HSSFWorkbookEventReader} based on the given file path.
@@ -81,6 +83,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             suppressClose(in, thrown);
         }
 
+        init();
         setWorkbookPassword(password);
     }
 
@@ -89,7 +92,12 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         final File file = filePath.toFile();
         fileSystem = new POIFSFileSystem(file, true);
 
+        init();
         setWorkbookPassword(password);
+    }
+
+    private void init() {
+        dataFormatter = new DataFormatter();
     }
 
     private void setWorkbookPassword(@Nullable String password) throws IOException {
@@ -173,7 +181,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         }
     }
 
-    private static class ReaderHSSFListener extends AbortableHSSFListener {
+    private class ReaderHSSFListener extends AbortableHSSFListener {
         private final EventHandler handler;
         private final FormatTrackingHSSFListener formatTracker;
 
@@ -394,6 +402,9 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                         return Double.toString(value);
                     }
                 }
+
+                final String decimalStringValue = dataFormatter.formatRawCellContents(value, formatIndex, formatString);
+                return Util.decimalStringToDecimal(decimalStringValue);
             }
 
             return value;
@@ -423,7 +434,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
             cellValue = ReaderUtils.toRelativeType(cellValue);
             handler.onHandleCell(currentSheetIndex, rowNum, columnNum,
-                                 CellValue.newInstance(cellValue));
+                    CellValue.newInstance(cellValue));
 
             if (currentRowEndColumnNum == columnNum) {
                 handleEndRow(currentRowNumber);

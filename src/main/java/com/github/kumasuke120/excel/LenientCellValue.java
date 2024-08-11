@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.math.BigDecimal;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -50,7 +51,8 @@ final class LenientCellValue extends AbstractCellValue {
     }
 
     @Override
-    @NotNull CellValue valueOf(@Nullable Object originalValue) {
+    @NotNull
+    CellValue valueOf(@Nullable Object originalValue) {
         return newInstance(originalValue);
     }
 
@@ -126,6 +128,23 @@ final class LenientCellValue extends AbstractCellValue {
         } else if (originalValue instanceof String) {
             try {
                 return Double.parseDouble((String) originalValue);
+            } catch (NumberFormatException e) {
+                throw new CellValueCastException(e);
+            }
+        } else {
+            throw new CellValueCastException();
+        }
+    }
+
+    @Override
+    public BigDecimal bigDecimalValue() {
+        if (originalValue instanceof BigDecimal) {
+            return (BigDecimal) originalValue;
+        } else if (originalValue instanceof Number) {
+            return new BigDecimal(originalValue.toString());
+        } else if (originalValue instanceof String) {
+            try {
+                return new BigDecimal((String) originalValue);
             } catch (NumberFormatException e) {
                 throw new CellValueCastException(e);
             }
