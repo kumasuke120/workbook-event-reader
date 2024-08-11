@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -56,6 +57,7 @@ abstract class AbstractCellValue implements CellValue {
                 originalValue instanceof Integer ||
                 originalValue instanceof Long ||
                 originalValue instanceof Double ||
+                originalValue instanceof BigDecimal ||
                 originalValue instanceof String ||
                 originalValue instanceof LocalTime ||
                 originalValue instanceof LocalDate ||

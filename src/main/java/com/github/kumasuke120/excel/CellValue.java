@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -45,6 +46,7 @@ public interface CellValue {
      * <li>{@link Integer}</li>
      * <li>{@link Long}</li>
      * <li>{@link Double}</li>
+     * <li>{@link BigDecimal}</li>
      * <li>{@link String}</li>
      * <li>{@link LocalTime}</li>
      * <li>{@link LocalDate}</li>
@@ -102,6 +104,16 @@ public interface CellValue {
      * @throws CellValueCastException cannot convert the original value to <code>double</code> type
      */
     double doubleValue();
+
+    /**
+     * Converts the original value to its <code>BigDecimal</code> counterpart.<br>
+     * The conversion only happens when it's possible. If the original value is of type <code>BigDecimal</code>, it
+     * will be returned directly.
+     *
+     * @return <code>long</code> version of the original value
+     * @throws CellValueCastException cannot convert the original value to <code>long</code> type
+     */
+    BigDecimal bigDecimalValue();
 
     /**
      * Converts the original value to its {@link String} counterpart.<br>

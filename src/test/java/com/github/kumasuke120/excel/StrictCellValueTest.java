@@ -29,6 +29,7 @@ class StrictCellValueTest {
         assertThrows(CellValueCastException.class, cellValue::intValue);
         assertThrows(CellValueCastException.class, cellValue::longValue);
         assertThrows(CellValueCastException.class, cellValue::doubleValue);
+        assertThrows(CellValueCastException.class, cellValue::bigDecimalValue);
         assertThrows(CellValueCastException.class, cellValue::stringValue);
         assertThrows(CellValueCastException.class, cellValue::localTimeValue);
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
@@ -50,6 +51,7 @@ class StrictCellValueTest {
         assertThrows(CellValueCastException.class, cellValue::intValue);
         assertThrows(CellValueCastException.class, cellValue::longValue);
         assertThrows(CellValueCastException.class, cellValue::doubleValue);
+        assertThrows(CellValueCastException.class, cellValue::bigDecimalValue);
         assertThrows(CellValueCastException.class, cellValue::stringValue);
         assertThrows(CellValueCastException.class, cellValue::localTimeValue);
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
@@ -78,6 +80,7 @@ class StrictCellValueTest {
         });
         assertThrows(CellValueCastException.class, cellValue::longValue);
         assertThrows(CellValueCastException.class, cellValue::doubleValue);
+        assertThrows(CellValueCastException.class, cellValue::bigDecimalValue);
         assertThrows(CellValueCastException.class, cellValue::stringValue);
         assertThrows(CellValueCastException.class, cellValue::localTimeValue);
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
@@ -111,6 +114,7 @@ class StrictCellValueTest {
             assertEquals(1L, longValue);
         });
         assertThrows(CellValueCastException.class, cellValue::doubleValue);
+        assertThrows(CellValueCastException.class, cellValue::bigDecimalValue);
         assertThrows(CellValueCastException.class, cellValue::stringValue);
         assertThrows(CellValueCastException.class, cellValue::localTimeValue);
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
@@ -143,6 +147,7 @@ class StrictCellValueTest {
             final double doubleValue = cellValue.doubleValue();
             assertEquals(1D, doubleValue);
         });
+        assertThrows(CellValueCastException.class, cellValue::bigDecimalValue);
         assertThrows(CellValueCastException.class, cellValue::stringValue);
         assertThrows(CellValueCastException.class, cellValue::localTimeValue);
         assertThrows(CellValueCastException.class, cellValue::localDateValue);

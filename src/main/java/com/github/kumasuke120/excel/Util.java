@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.math.BigDecimal;
 import java.time.*;
 import java.util.Collections;
 import java.util.Date;
@@ -16,7 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * An utility class that contains various methods for dealing with workbook
+ * A utility class that contains various methods for dealing with workbook
  */
 @ApiStatus.Internal
 class Util {
@@ -76,6 +77,36 @@ class Util {
     }
 
     /**
+     * Converts a possible decimal <code>String</code> to its corespondent decimal type.
+     *
+     * @param value <code>String</code> value to be converted
+     * @return a <code>double</code> or <code>BigDecimal</code> value
+     */
+    static Object decimalStringToDecimal(@Nullable String value) {
+        if (value == null) {
+            return null;
+        }
+
+        if (isAWholeNumber(value)) {
+            return Long.parseLong(value);
+        }
+
+        BigDecimal decimalValue;
+        try {
+            decimalValue = new BigDecimal(value);
+        } catch (NumberFormatException e) {
+            return value;
+        }
+
+        double doubleValue = decimalValue.doubleValue();
+        if (Double.toString(doubleValue).equals(decimalValue.toString())) {
+            return doubleValue;
+        } else {
+            return decimalValue;
+        }
+    }
+
+    /**
      * Parses the <code>String</code> value to <code>int</code> silently.<br>
      * It will return <code>defaultValue</code> if the <code>String</code> value could not be parsed.
      *
@@ -118,7 +149,7 @@ class Util {
     static Object toJsr310DateOrTime(double excelDateValue, boolean use1904Windowing) {
         if (isValidExcelDate(excelDateValue)) {
             final Date date = DateUtil.getJavaDate(excelDateValue, use1904Windowing,
-                                                   TimeZone.getTimeZone("UTC"));
+                    TimeZone.getTimeZone("UTC"));
             final LocalDateTime localDateTime = toLocalDateTimeOffsetByUTC(date);
 
             if (excelDateValue < 1) { // time only
