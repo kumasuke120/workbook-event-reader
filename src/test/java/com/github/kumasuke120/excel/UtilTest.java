@@ -26,6 +26,9 @@ class UtilTest {
     void decimalStringToDecimal() {
         assertNull(Util.decimalStringToDecimal(null));
         assertEquals("null", Util.decimalStringToDecimal("null"));
+        assertEquals(1234L, Util.decimalStringToDecimal("1234"));
+        assertEquals(1234L, Util.decimalStringToDecimal("1,234"));
+        assertEquals(1234.56, Util.decimalStringToDecimal("1,234.56"));
     }
 
     @Test
