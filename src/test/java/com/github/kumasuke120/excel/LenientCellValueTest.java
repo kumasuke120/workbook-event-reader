@@ -217,6 +217,50 @@ class LenientCellValueTest {
         });
     }
 
+    @SuppressWarnings("SimplifiableAssertion")
+    @Test
+    void bigDecimal() {
+        final LenientCellValue cellValue = newLenientCellValue(BigDecimal.ONE);
+
+        assertFalse(cellValue.isNull());
+        assertEquals(BigDecimal.ONE, cellValue.originalValue());
+        assertEquals(BigDecimal.class, cellValue.originalType());
+        assertDoesNotThrow(() -> {
+            final boolean booleanValue = cellValue.booleanValue();
+            assertTrue(booleanValue);
+        });
+        assertDoesNotThrow(() -> {
+            final int intValue = cellValue.intValue();
+            assertEquals(1, intValue);
+        });
+        assertDoesNotThrow(() -> {
+            final long longValue = cellValue.longValue();
+            assertEquals(1L, longValue);
+        });
+        assertDoesNotThrow(() -> {
+            final double doubleValue = cellValue.doubleValue();
+            assertEquals(1D, doubleValue);
+        });
+        assertDoesNotThrow(() -> {
+            final BigDecimal bigDecimalValue = cellValue.bigDecimalValue();
+            assertTrue(BigDecimal.ONE.compareTo(bigDecimalValue) == 0);
+        });
+        assertDoesNotThrow(() -> {
+            final String stringValue = cellValue.stringValue();
+            assertEquals("1", stringValue);
+        });
+        assertThrows(CellValueCastException.class, cellValue::localTimeValue);
+        assertThrows(CellValueCastException.class, cellValue::localDateValue);
+        assertThrows(CellValueCastException.class, cellValue::localDateTimeValue);
+
+        final LenientCellValue cellValue2 = newLenientCellValue("1.20");
+        assertEquals(String.class, cellValue2.originalType());
+        assertDoesNotThrow(() -> {
+            final BigDecimal decimalValue = cellValue2.bigDecimalValue();
+            assertEquals(new BigDecimal("1.20"), decimalValue);
+        });
+    }
+
     @Test
     void string() {
         final LenientCellValue cellValue = newLenientCellValue("1");
