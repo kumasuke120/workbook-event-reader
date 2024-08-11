@@ -23,6 +23,12 @@ class UtilTest {
     }
 
     @Test
+    void decimalStringToDecimal() {
+        assertNull(Util.decimalStringToDecimal(null));
+        assertEquals("null", Util.decimalStringToDecimal("null"));
+    }
+
+    @Test
     void toInt() {
         assertEquals(0, Util.toInt(null, 0));
         assertEquals(0, Util.toInt("null", 0));
@@ -31,8 +37,10 @@ class UtilTest {
     @Test
     void isValidExcelDate() {
         assertFalse(Util.isValidExcelDate(Double.NaN));
+        assertFalse(Util.isValidExcelDate(-1));
         assertFalse(Util.isValidExcelDate(2958466));
         assertTrue(Util.isValidExcelDate(2));
+        assertTrue(Util.isValidExcelDate(0));
     }
 
     @Test
@@ -65,6 +73,13 @@ class UtilTest {
         } catch (ReflectiveOperationException e) {
             throw new AssertionError(e);
         }
+    }
+
+    @Test
+    void toRelativeType() {
+        assertEquals(Integer.MAX_VALUE + 1L, Util.toRelativeType(Integer.MAX_VALUE + 1d));
+        assertEquals(Integer.MIN_VALUE - 1L, Util.toRelativeType(Integer.MIN_VALUE - 1d));
+        assertEquals(1, Util.toRelativeType(1d));
     }
 
 }
