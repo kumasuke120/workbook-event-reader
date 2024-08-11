@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.math.BigDecimal;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -104,6 +105,21 @@ final class StrictCellValue extends AbstractCellValue {
         } else if (originalValue instanceof String) {
             try {
                 return Double.parseDouble((String) originalValue);
+            } catch (NumberFormatException e) {
+                throw new CellValueCastException(e);
+            }
+        } else {
+            throw new CellValueCastException();
+        }
+    }
+
+    @Override
+    public BigDecimal bigDecimalValue() {
+        if (originalValue instanceof BigDecimal) {
+            return (BigDecimal) originalValue;
+        } else if (originalValue instanceof String) {
+            try {
+                return new BigDecimal((String) originalValue);
             } catch (NumberFormatException e) {
                 throw new CellValueCastException(e);
             }

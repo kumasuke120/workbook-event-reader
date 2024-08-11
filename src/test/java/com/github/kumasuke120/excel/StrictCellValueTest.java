@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -29,6 +30,7 @@ class StrictCellValueTest {
         assertThrows(CellValueCastException.class, cellValue::intValue);
         assertThrows(CellValueCastException.class, cellValue::longValue);
         assertThrows(CellValueCastException.class, cellValue::doubleValue);
+        assertThrows(CellValueCastException.class, cellValue::bigDecimalValue);
         assertThrows(CellValueCastException.class, cellValue::stringValue);
         assertThrows(CellValueCastException.class, cellValue::localTimeValue);
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
@@ -50,6 +52,7 @@ class StrictCellValueTest {
         assertThrows(CellValueCastException.class, cellValue::intValue);
         assertThrows(CellValueCastException.class, cellValue::longValue);
         assertThrows(CellValueCastException.class, cellValue::doubleValue);
+        assertThrows(CellValueCastException.class, cellValue::bigDecimalValue);
         assertThrows(CellValueCastException.class, cellValue::stringValue);
         assertThrows(CellValueCastException.class, cellValue::localTimeValue);
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
@@ -78,6 +81,7 @@ class StrictCellValueTest {
         });
         assertThrows(CellValueCastException.class, cellValue::longValue);
         assertThrows(CellValueCastException.class, cellValue::doubleValue);
+        assertThrows(CellValueCastException.class, cellValue::bigDecimalValue);
         assertThrows(CellValueCastException.class, cellValue::stringValue);
         assertThrows(CellValueCastException.class, cellValue::localTimeValue);
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
@@ -111,6 +115,7 @@ class StrictCellValueTest {
             assertEquals(1L, longValue);
         });
         assertThrows(CellValueCastException.class, cellValue::doubleValue);
+        assertThrows(CellValueCastException.class, cellValue::bigDecimalValue);
         assertThrows(CellValueCastException.class, cellValue::stringValue);
         assertThrows(CellValueCastException.class, cellValue::localTimeValue);
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
@@ -143,6 +148,7 @@ class StrictCellValueTest {
             final double doubleValue = cellValue.doubleValue();
             assertEquals(1D, doubleValue);
         });
+        assertThrows(CellValueCastException.class, cellValue::bigDecimalValue);
         assertThrows(CellValueCastException.class, cellValue::stringValue);
         assertThrows(CellValueCastException.class, cellValue::localTimeValue);
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
@@ -154,6 +160,38 @@ class StrictCellValueTest {
             final double doubleValue = cellValue2.doubleValue();
             assertEquals(1.2, doubleValue);
         });
+    }
+
+    @Test
+    void bigDecimal() {
+        final StrictCellValue cellValue = newStrictCellValue(BigDecimal.ONE);
+
+        assertFalse(cellValue.isNull());
+        assertEquals(BigDecimal.ONE, cellValue.originalValue());
+        assertEquals(BigDecimal.class, cellValue.originalType());
+        assertThrows(CellValueCastException.class, cellValue::booleanValue);
+        assertThrows(CellValueCastException.class, cellValue::intValue);
+        assertThrows(CellValueCastException.class, cellValue::longValue);
+        assertThrows(CellValueCastException.class, cellValue::doubleValue);
+        assertDoesNotThrow(() -> {
+            final BigDecimal decimalValue = cellValue.bigDecimalValue();
+            assertEquals(BigDecimal.ONE, decimalValue);
+        });
+        assertThrows(CellValueCastException.class, cellValue::stringValue);
+        assertThrows(CellValueCastException.class, cellValue::localTimeValue);
+        assertThrows(CellValueCastException.class, cellValue::localDateValue);
+        assertThrows(CellValueCastException.class, cellValue::localDateTimeValue);
+
+        final StrictCellValue cellValue2 = newStrictCellValue("1.20");
+        assertEquals(String.class, cellValue2.originalType());
+        assertDoesNotThrow(() -> {
+            final BigDecimal decimalValue = cellValue2.bigDecimalValue();
+            assertEquals(new BigDecimal("1.20"), decimalValue);
+        });
+
+        final StrictCellValue cellValue3 = newStrictCellValue("ff");
+        assertEquals(String.class, cellValue3.originalType());
+        assertThrows(CellValueCastException.class, cellValue3::bigDecimalValue);
     }
 
     @Test
@@ -175,6 +213,10 @@ class StrictCellValueTest {
         assertDoesNotThrow(() -> {
             final double doubleValue = cellValue.doubleValue();
             assertEquals(1D, doubleValue);
+        });
+        assertDoesNotThrow(() -> {
+            final BigDecimal decimalValue = cellValue.bigDecimalValue();
+            assertEquals(BigDecimal.ONE, decimalValue);
         });
         assertDoesNotThrow(() -> {
             final String stringValue = cellValue.stringValue();
