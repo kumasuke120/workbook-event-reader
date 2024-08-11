@@ -404,7 +404,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 }
 
                 final String decimalStringValue = dataFormatter.formatRawCellContents(value, formatIndex, formatString);
-                return Util.decimalStringToDecimal(decimalStringValue);
+                return ReaderUtils.decimalStringToDecimal(decimalStringValue);
             }
 
             return value;

@@ -457,7 +457,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 final double doubleValue = Double.parseDouble(stringCellValue);
                 final String decimalStringValue = dataFormatter.formatRawCellContents(doubleValue,
                         formatIndex, formatString);
-                cellValue = Util.decimalStringToDecimal(decimalStringValue);
+                cellValue = ReaderUtils.decimalStringToDecimal(decimalStringValue);
             } else {
                 cellValue = stringCellValue;
             }
