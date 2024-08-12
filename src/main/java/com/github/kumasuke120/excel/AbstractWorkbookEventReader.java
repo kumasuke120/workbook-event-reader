@@ -68,7 +68,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
 
     /**
      * Closes the {@link Closeable}. Exception thrown during closing will be suppressed and
-     * add to the previous caught {@link Exception} if necessary. Otherwise the exception will
+     * add to the previous caught {@link Exception} if necessary. Otherwise, the exception will
      * be thrown.
      *
      * @param closeable object to be closed
@@ -214,7 +214,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
     }
 
     /**
-     * Asserts the reader is not being closed. Otherwise it throws {@link IllegalReaderStateException}.
+     * Asserts the reader is not being closed. Otherwise, it throws {@link IllegalReaderStateException}.
      *
      * @throws IllegalReaderStateException the reader has been closed
      */
@@ -225,7 +225,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
     }
 
     /**
-     * Asserts the reader is not being read. Otherwise it throws {@link IllegalReaderStateException}.
+     * Asserts the reader is not being read. Otherwise, it throws {@link IllegalReaderStateException}.
      *
      * @throws IllegalReaderStateException the reader is being read
      */
@@ -236,7 +236,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
     }
 
     /**
-     * Asserts the reader is being read. Otherwise it throws {@link IllegalReaderStateException}.
+     * Asserts the reader is being read. Otherwise, it throws {@link IllegalReaderStateException}.
      *
      * @throws IllegalReaderStateException the reader is not being read
      */
@@ -296,62 +296,42 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
 
         @Override
         public void onStartDocument() {
-            if (reading) {
-                handler.onStartDocument();
-            } else {
-                doOnCancelled();
-            }
+            onEvent(handler::onStartDocument);
         }
 
         @Override
         public void onEndDocument() {
-            if (reading) {
-                handler.onEndDocument();
-            } else {
-                doOnCancelled();
-            }
+            onEvent(handler::onEndDocument);
         }
 
         @Override
         public void onStartSheet(int sheetIndex, @NotNull String sheetName) {
-            if (reading) {
-                handler.onStartSheet(sheetIndex, sheetName);
-            } else {
-                doOnCancelled();
-            }
+            onEvent(() -> handler.onStartSheet(sheetIndex, sheetName));
         }
 
         @Override
         public void onEndSheet(int sheetIndex) {
-            if (reading) {
-                handler.onEndSheet(sheetIndex);
-            } else {
-                doOnCancelled();
-            }
+            onEvent(() -> handler.onEndSheet(sheetIndex));
         }
 
         @Override
         public void onStartRow(int sheetIndex, int rowNum) {
-            if (reading) {
-                handler.onStartRow(sheetIndex, rowNum);
-            } else {
-                doOnCancelled();
-            }
+            onEvent(() -> handler.onStartRow(sheetIndex, rowNum));
         }
 
         @Override
         public void onEndRow(int sheetIndex, int rowNum) {
-            if (reading) {
-                handler.onEndRow(sheetIndex, rowNum);
-            } else {
-                doOnCancelled();
-            }
+            onEvent(() -> handler.onEndRow(sheetIndex, rowNum));
         }
 
         @Override
         public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
+            onEvent(() -> handler.onHandleCell(sheetIndex, rowNum, columnNum, cellValue));
+        }
+
+        private void onEvent(Runnable runnable) {
             if (reading) {
-                handler.onHandleCell(sheetIndex, rowNum, columnNum, cellValue);
+                runnable.run();
             } else {
                 doOnCancelled();
             }
