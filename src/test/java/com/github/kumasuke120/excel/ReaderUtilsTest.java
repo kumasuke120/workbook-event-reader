@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,6 +24,16 @@ class ReaderUtilsTest {
     }
 
     @Test
+    void decimalStringToDecimal() {
+        assertNull(ReaderUtils.decimalStringToDecimal(null));
+        assertEquals("null", ReaderUtils.decimalStringToDecimal("null"));
+        assertEquals(1234L, ReaderUtils.decimalStringToDecimal("1234"));
+        assertEquals(1234L, ReaderUtils.decimalStringToDecimal("1,234"));
+        assertEquals(1234.56, ReaderUtils.decimalStringToDecimal("1,234.56"));
+        assertEquals(new BigDecimal("12345678.9"), ReaderUtils.decimalStringToDecimal("12,345,678.9"));
+    }
+
+    @Test
     void toInt() {
         assertEquals(0, ReaderUtils.toInt(null, 0));
         assertEquals(0, ReaderUtils.toInt("null", 0));
@@ -31,8 +42,10 @@ class ReaderUtilsTest {
     @Test
     void isValidExcelDate() {
         assertFalse(ReaderUtils.isValidExcelDate(Double.NaN));
+        assertFalse(ReaderUtils.isValidExcelDate(-1));
         assertFalse(ReaderUtils.isValidExcelDate(2958466));
         assertTrue(ReaderUtils.isValidExcelDate(2));
+        assertTrue(ReaderUtils.isValidExcelDate(0));
     }
 
     @Test
@@ -67,5 +80,11 @@ class ReaderUtilsTest {
         }
     }
 
+    @Test
+    void toRelativeType() {
+        assertEquals(Integer.MAX_VALUE + 1L, ReaderUtils.toRelativeType(Integer.MAX_VALUE + 1d));
+        assertEquals(Integer.MIN_VALUE - 1L, ReaderUtils.toRelativeType(Integer.MIN_VALUE - 1d));
+        assertEquals(1, ReaderUtils.toRelativeType(1d));
+    }
 
 }
