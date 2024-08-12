@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,6 +30,7 @@ class UtilTest {
         assertEquals(1234L, Util.decimalStringToDecimal("1234"));
         assertEquals(1234L, Util.decimalStringToDecimal("1,234"));
         assertEquals(1234.56, Util.decimalStringToDecimal("1,234.56"));
+        assertEquals(new BigDecimal("12345678.9"), Util.decimalStringToDecimal("12,345,678.9"));
     }
 
     @Test
