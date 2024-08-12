@@ -82,34 +82,33 @@ class WorkbookAutoOpener {
     private WorkbookEventReader openByInputStream() {
         assert in != null;
 
-        final byte[] bytes;
-        try {
-            bytes = IOUtils.toByteArray(in);
+        try (InputStream stream = FileMagic.prepareToCheckMagic(in)) {
+            final List<ReaderConstructor> constructors = buildConstructorsByMagic(stream);
+            if (constructors.size() > 1) {
+                return tryConstruct(constructors, createInSupplier(stream));
+            } else {
+                return tryConstruct(constructors, in);
+            }
         } catch (IOException e) {
             throw new WorkbookIOException("Cannot open and read workbook", e);
         }
+    }
 
-        final List<ReaderConstructor> constructors = buildConstructorsByMagic(bytes);
-        final Supplier<InputStream> inSupplier = () -> new ByteArrayInputStream(bytes);
-        return tryConstruct(constructors, inSupplier);
+    private Supplier<InputStream> createInSupplier(InputStream stream) throws IOException {
+        final byte[] bytes = IOUtils.toByteArray(stream);
+        return () -> new ByteArrayInputStream(bytes);
     }
 
     @NotNull
-    private FileMagic checkFileMagic(byte[] bytes) {
-        try (final ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-             final InputStream stream = FileMagic.prepareToCheckMagic(in)) {
-            return FileMagic.valueOf(stream);
-        } catch (IOException e) {
-            return FileMagic.UNKNOWN;
-        }
-    }
-
-    @NotNull
-    private List<ReaderConstructor> buildConstructorsByMagic(byte[] bytes) {
+    private List<ReaderConstructor> buildConstructorsByMagic(InputStream stream) throws IOException {
         final List<ReaderConstructor> constructors = new ArrayList<>();
-        final FileMagic magic = checkFileMagic(bytes);
+        final FileMagic magic = FileMagic.valueOf(stream);
         switch (magic) {
             case OOXML:
+                constructors.add(xssfConstructor);
+                break;
+            case OLE2:
+                constructors.add(hssfConstructor);
                 constructors.add(xssfConstructor);
                 break;
             case UNKNOWN:
@@ -172,6 +171,12 @@ class WorkbookAutoOpener {
 
     @NotNull
     private WorkbookEventReader tryConstruct(@NotNull List<ReaderConstructor> constructors,
+                                             @NotNull InputStream stream) {
+        return tryConstruct(constructors, () -> stream);
+    }
+
+    @NotNull
+    private WorkbookEventReader tryConstruct(@NotNull List<ReaderConstructor> constructors,
                                              @NotNull Supplier<InputStream> inSupplier) {
         assert !constructors.isEmpty();
 
@@ -181,7 +186,6 @@ class WorkbookAutoOpener {
             try {
                 return constructor.newInstance(in, password);
             } catch (WorkbookIOException e) {
-                // EncryptedDocumentException means password incorrect, it should be thrown directly
                 thrown = updateTryConstructException(thrown, e);
             }
         }

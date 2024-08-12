@@ -22,7 +22,6 @@ import java.util.regex.Pattern;
 @ApiStatus.Internal
 class ReaderUtils {
 
-    private static final double DATE_VALUE_EPSILON = 1e-6;
     private static final double MAX_EXCEL_DATE_EXCLUSIVE = 2958466;
     private static final Pattern cellReferencePattern = Pattern.compile("([A-Z]+)(\\d+)");
 
@@ -91,14 +90,23 @@ class ReaderUtils {
             return Long.parseLong(value);
         }
 
+        final String stripedValue = value.replace(",", "");
+        if (isAWholeNumber(stripedValue)) {
+            return Long.parseLong(stripedValue);
+        }
+
         BigDecimal decimalValue;
         try {
             decimalValue = new BigDecimal(value);
         } catch (NumberFormatException e) {
-            return value;
+            try {
+                decimalValue = new BigDecimal(stripedValue);
+            } catch (NumberFormatException e2) {
+                return value;
+            }
         }
 
-        double doubleValue = decimalValue.doubleValue();
+        final double doubleValue = decimalValue.doubleValue();
         if (Double.toString(doubleValue).equals(decimalValue.toString())) {
             return doubleValue;
         } else {
@@ -132,7 +140,6 @@ class ReaderUtils {
      */
     static boolean isValidExcelDate(double excelDateValue) {
         return DateUtil.isValidExcelDate(excelDateValue) &&
-                (Math.abs(excelDateValue) < DATE_VALUE_EPSILON || excelDateValue > 0) &&
                 excelDateValue < MAX_EXCEL_DATE_EXCLUSIVE;
     }
 
@@ -182,7 +189,7 @@ class ReaderUtils {
     static Object toRelativeType(@Nullable Object value) {
         if (value instanceof Double) {
             final double doubleValue = (double) value;
-            if (ReaderUtils.isAWholeNumber(doubleValue)) {
+            if (isAWholeNumber(doubleValue)) {
                 if (doubleValue > Integer.MAX_VALUE || doubleValue < Integer.MIN_VALUE) {
                     return (long) doubleValue;
                 } else {
