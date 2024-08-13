@@ -1,7 +1,6 @@
 package com.github.kumasuke120.excel;
 
 import com.github.kumasuke120.util.ResourceUtil;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -126,7 +125,7 @@ class WorkbookReaderTest {
         }
 
         try (final InputStream in = ClassLoader.getSystemResourceAsStream("workbook.xlsx")) {
-            final InputStream mockIn = mockNotSupportedInputStream(in);
+            final InputStream mockIn = markNotSupportedInputStream(in);
             try (final WorkbookEventReader reader = WorkbookEventReader.open(mockIn)) {
                 assertTrue(reader instanceof XSSFWorkbookEventReader);
             }
@@ -153,8 +152,8 @@ class WorkbookReaderTest {
         }
     }
 
-    private @NotNull InputStream mockNotSupportedInputStream(InputStream in) throws IOException {
-        InputStream mockIn = spy(in);
+    private InputStream markNotSupportedInputStream(InputStream in) throws IOException {
+        final InputStream mockIn = spy(in);
         when(mockIn.markSupported()).thenReturn(false);
         doNothing().when(mockIn).mark(anyInt());
         doNothing().when(mockIn).reset();
