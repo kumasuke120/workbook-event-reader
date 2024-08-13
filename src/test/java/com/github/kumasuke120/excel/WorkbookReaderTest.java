@@ -1,6 +1,7 @@
 package com.github.kumasuke120.excel;
 
 import com.github.kumasuke120.util.ResourceUtil;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
 
 @SuppressWarnings("EmptyTryBlock")
 class WorkbookReaderTest {
@@ -123,6 +125,13 @@ class WorkbookReaderTest {
             }
         }
 
+        try (final InputStream in = ClassLoader.getSystemResourceAsStream("workbook.xlsx")) {
+            final InputStream mockIn = mockNotSupportedInputStream(in);
+            try (final WorkbookEventReader reader = WorkbookEventReader.open(mockIn)) {
+                assertTrue(reader instanceof XSSFWorkbookEventReader);
+            }
+        }
+
         try (final InputStream in = ClassLoader.getSystemResourceAsStream("ENGINES.csv")) {
             try (final WorkbookEventReader reader = WorkbookEventReader.open(in)) {
                 assertTrue(reader instanceof CSVWorkbookEventReader);
@@ -142,6 +151,14 @@ class WorkbookReaderTest {
                 }
             });
         }
+    }
+
+    private @NotNull InputStream mockNotSupportedInputStream(InputStream in) throws IOException {
+        InputStream mockIn = spy(in);
+        when(mockIn.markSupported()).thenReturn(false);
+        doNothing().when(mockIn).mark(anyInt());
+        doNothing().when(mockIn).reset();
+        return mockIn;
     }
 
     @SuppressWarnings("ConstantConditions")
