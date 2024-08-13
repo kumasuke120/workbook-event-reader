@@ -87,7 +87,7 @@ class WorkbookAutoOpener {
             if (constructors.size() > 1) {
                 return tryConstruct(constructors, createInSupplier(stream));
             } else {
-                return tryConstruct(constructors, in);
+                return tryConstruct(constructors, stream);
             }
         } catch (IOException e) {
             throw new WorkbookIOException("Cannot open and read workbook", e);
