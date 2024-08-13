@@ -41,7 +41,7 @@ $ mvn clean install -DskipTests
 <dependency>
     <groupId>com.github.kumasuke120</groupId>
     <artifactId>workbook-event-reader</artifactId>
-    <version>1.5.1</version>
+    <version>1.5.2</version>
 </dependency>
 ```
 
