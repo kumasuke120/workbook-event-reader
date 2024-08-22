@@ -76,7 +76,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         });
         // endregion
 
-        if (encryptedFileName == null || "".equals(encryptedFileName)) { // skips encryption test
+        if (encryptedFileName == null || encryptedFileName.isEmpty()) { // skips encryption test
             return;
         }
 
@@ -378,7 +378,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
             sheetStack.push(sheetIndex);
 
             if (sheetIndex == 0) {
-                assertTrue("Sheet1".equals(sheetName) || "".equals(sheetName));
+                assertTrue("Sheet1".equals(sheetName) || sheetName.isEmpty());
             } else if (sheetIndex == 1) {
                 assertEquals("Sheet2", sheetName);
             } else {
