@@ -74,6 +74,16 @@ public interface WorkbookEventReader extends Closeable {
     }
 
     /**
+     * Returns the current reading context if there is any reading process.
+     *
+     * @return current reading context if any
+     * @throws IllegalReaderStateException there is no reading process
+     */
+    static ReadContext currentRead() {
+        return AbstractWorkbookEventReader.ReadContextImpl.current();
+    }
+
+    /**
      * Starts to read the workbook through event handling, triggering events on the {@link EventHandler}
      * in a reasonable and recursive order: Document, Sheet, Row and Cell.<br>
      * This method can be called multiple times as long as this {@link WorkbookEventReader} is not closed.
@@ -232,6 +242,20 @@ public interface WorkbookEventReader extends Closeable {
         default void onReadCancelled() {
             // no-op
         }
+    }
+
+    /**
+     * A context object encapsulates the reading process information of <code>WorkbookEventReader</code>
+     */
+    interface ReadContext {
+
+        /**
+         * Cancels the current reading process.
+         *
+         * @see WorkbookEventReader#cancel()
+         */
+        void cancel();
+
     }
 
 }

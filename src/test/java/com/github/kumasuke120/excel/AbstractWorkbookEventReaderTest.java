@@ -272,7 +272,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
             final WorkbookEventReader.EventHandler handler = new WorkbookEventReader.EventHandler() {
                 @Override
                 public void onStartRow(int sheetIndex, int rowNum) {
-                    reader.cancel();
+                    WorkbookEventReader.currentRead().cancel();
                 }
 
                 @Override
