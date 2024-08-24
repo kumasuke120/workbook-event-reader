@@ -4,10 +4,9 @@ See in other languages: English | [中文](README_CN.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Build Status](https://github.com/kumasuke120/workbook-event-reader/actions/workflows/build.yml/badge.svg)](https://github.com/kumasuke120/workbook-event-reader/actions/workflows/build.yml) [![codecov](https://codecov.io/gh/kumasuke120/workbook-event-reader/branch/master/graph/badge.svg)](https://codecov.io/gh/kumasuke120/workbook-event-reader)
 
 ## Features
-- Event-based Workbook reader, with a low memory footprint
-- Unified interfaces for reading SpreadsheetML(.xlsx), legacy Excel documents(.xls) and CSV files
-- Able to read a file from scratch for multiple times
-- Easy to read the cell values, type-converting them at ease 
+- Event-based workbook reader with unified interfaces for SpreadsheetML (.xlsx), legacy Excel (.xls), and CSV files
+- Efficiently processes large workbook files with a low memory footprint
+- Capable of reading files multiple times from scratch, offering convenient cell value retrieval and type conversions
 
 ## Supported Documents
 - *.xlsx
