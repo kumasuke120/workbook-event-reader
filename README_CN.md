@@ -4,10 +4,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Build Status](https://github.com/kumasuke120/workbook-event-reader/actions/workflows/build.yml/badge.svg)](https://github.com/kumasuke120/workbook-event-reader/actions/workflows/build.yml) [![codecov](https://codecov.io/gh/kumasuke120/workbook-event-reader/branch/master/graph/badge.svg)](https://codecov.io/gh/kumasuke120/workbook-event-reader)
 
 ## 特色
-- 事件流式的工作簿阅读器，内存占用小
-- 统一接口处理 SpreadsheetML(.xlsx) 、传统 Excel 文档(.xls) 和 CSV 文件
-- 同一文件可重复读取
-- 单元格值读取简单，可轻松类型转换
+- 事件流式的工作簿阅读器，提供统一接口处理 SpreadsheetML(.xlsx) 、传统 Excel 文档(.xls) 和 CSV 文件
+- 高效率读取大工作簿文件，内存占用低
+- 单文件可多次读取；单元格值读取简单，可轻松类型转换
 
 ## 支持文档格式
 - *.xlsx
@@ -41,7 +40,7 @@ $ mvn clean install -DskipTests
 <dependency>
     <groupId>com.github.kumasuke120</groupId>
     <artifactId>workbook-event-reader</artifactId>
-    <version>1.5.2</version>
+    <version>1.5.3</version>
 </dependency>
 ```
 

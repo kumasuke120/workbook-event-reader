@@ -74,7 +74,7 @@ class WorkbookAutoOpener {
         } else if (filePath == null) {
             return openByInputStream();
         } else {
-            throw new AssertionError("Shouldn't happen");
+            throw new NullPointerException();
         }
     }
 
@@ -109,7 +109,9 @@ class WorkbookAutoOpener {
                 break;
             case OLE2:
                 constructors.add(hssfConstructor);
-                constructors.add(xssfConstructor);
+                if (password != null) {
+                    constructors.add(xssfConstructor);
+                }
                 break;
             case UNKNOWN:
                 constructors.add(csvConstructor);
