@@ -15,6 +15,8 @@ import java.util.Objects;
  */
 abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
 
+    private static final ThreadLocal<WorkbookEventReader> currentReader = new ThreadLocal<>();
+
     private final ReaderCleanAction cleanAction;
 
     private volatile boolean closed = false;
@@ -159,6 +161,8 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
         final EventHandler delegate = new CancelFastEventHandler(handler);
 
         reading = true;
+        currentReader.set(this);
+
         try {
             doRead(delegate);
         } catch (CancelReadingException ignored) {
@@ -170,6 +174,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
                 throw new WorkbookProcessException(e);
             }
         } finally {
+            currentReader.remove();
             reading = false;
         }
     }
@@ -351,6 +356,39 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
 
             // throws an exception to abort processing
             throw new CancelReadingException();
+        }
+
+    }
+
+    static final class ReadContextImpl implements WorkbookEventReader.ReadContext {
+
+        private final WorkbookEventReader reader;
+
+        ReadContextImpl(@NotNull WorkbookEventReader reader) {
+            this.reader = reader;
+        }
+
+        /**
+         * Returns the current reading context based on current reader of the thread.
+         *
+         * @return current reading context if any
+         * @throws IllegalReaderStateException cannot get the current reader of the thread
+         */
+        static ReadContextImpl current() {
+            final WorkbookEventReader reader = currentReader.get();
+            if (reader == null) {
+                throw new IllegalReaderStateException("No WorkbookEventReader is being read");
+            }
+
+            return new ReadContextImpl(reader);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void cancel() {
+            reader.cancel();
         }
 
     }
