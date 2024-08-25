@@ -9,6 +9,8 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -26,8 +28,6 @@ class WorkbookRecordProperty<E> {
 
     private final int column;
 
-    private final String title;
-
     private final boolean strict;
 
     private final ValueMethod valueMethod;
@@ -36,7 +36,6 @@ class WorkbookRecordProperty<E> {
 
     WorkbookRecordProperty(@NotNull Class<E> recordClass,
                            int column,
-                           @NotNull String title,
                            boolean strict,
                            @NotNull CellValueType valueType,
                            @NotNull String valueMethodName,
@@ -44,7 +43,6 @@ class WorkbookRecordProperty<E> {
 
         this.recordClass = HandlerUtils.ensureWorkbookRecordClass(recordClass);
         this.column = column;
-        this.title = title;
         this.strict = strict;
         this.valueMethod = new ValueMethod(valueType, valueMethodName);
         this.field = field;
@@ -54,12 +52,8 @@ class WorkbookRecordProperty<E> {
         return column;
     }
 
-    String getTitle() {
-        return title;
-    }
-
     void set(@NotNull E record, @NotNull CellValue cellValue) {
-        Object value = valueMethod.getValue(record, cellValue);
+        final Object value = valueMethod.getValue(record, cellValue);
         if (!field.isAccessible()) {
             field.setAccessible(true);
         }
@@ -98,6 +92,8 @@ class WorkbookRecordProperty<E> {
         private final CellValueType valueType;
 
         private final String valueMethodName;
+
+        private CellValueType autoValueType;
 
         private Method valueMethod;
 
@@ -171,6 +167,9 @@ class WorkbookRecordProperty<E> {
                 case DOUBLE:
                     ret = myCellValue.doubleValue();
                     break;
+                case DECIMAL:
+                    ret = myCellValue.bigDecimalValue();
+                    break;
                 case STRING:
                     ret = myCellValue.trim().stringValue();
                     break;
@@ -211,6 +210,8 @@ class WorkbookRecordProperty<E> {
                     return HandlerUtils.asSqlTimestamp(ret);
                 } else if (fieldType == java.sql.Date.class) {
                     return HandlerUtils.asSqlDate(ret);
+                } else if (fieldType == BigInteger.class) {
+                    return HandlerUtils.asBigInteger(ret);
                 }
             }
 
@@ -223,42 +224,53 @@ class WorkbookRecordProperty<E> {
             if (CellValueType.AUTO != valueType) {
                 return valueType;
             }
+            if (autoValueType != null) {
+                return autoValueType;
+            }
 
             Class<?> type = field.getType();
             if (type == boolean.class || type == Boolean.class) {
-                return CellValueType.BOOLEAN;
+                autoValueType = CellValueType.BOOLEAN;
             } else if (type == int.class || type == Integer.class) {
-                return CellValueType.INTEGER;
+                autoValueType = CellValueType.INTEGER;
             } else if (type == long.class || type == Long.class) {
-                return CellValueType.LONG;
+                autoValueType = CellValueType.LONG;
             } else if (type == double.class || type == Double.class) {
-                return CellValueType.DOUBLE;
+                autoValueType = CellValueType.DOUBLE;
+            } else if (type == BigDecimal.class) {
+                autoValueType = CellValueType.DECIMAL;
             } else if (type == String.class) {
-                return CellValueType.STRING;
+                autoValueType = CellValueType.STRING;
             } else if (type == LocalDate.class) {
-                return CellValueType.DATE;
+                autoValueType = CellValueType.DATE;
             } else if (type == LocalTime.class) {
-                return CellValueType.TIME;
+                autoValueType = CellValueType.TIME;
             } else if (type == LocalDateTime.class) {
-                return CellValueType.DATETIME;
+                autoValueType = CellValueType.DATETIME;
             }
 
             if (!strict) {
                 if (type == byte.class || type == Byte.class) {
-                    return CellValueType.INTEGER;
+                    autoValueType = CellValueType.INTEGER;
                 } else if (type == short.class || type == Short.class) {
-                    return CellValueType.INTEGER;
+                    autoValueType = CellValueType.INTEGER;
                 } else if (type == float.class || type == Float.class) {
-                    return CellValueType.DOUBLE;
+                    autoValueType = CellValueType.DOUBLE;
                 } else if (type == Date.class) {
-                    return CellValueType.DATETIME;
+                    autoValueType = CellValueType.DATETIME;
                 } else if (type == Time.class) {
-                    return CellValueType.TIME;
+                    autoValueType = CellValueType.TIME;
                 } else if (type == Timestamp.class) {
-                    return CellValueType.DATETIME;
+                    autoValueType = CellValueType.DATETIME;
                 } else if (type == java.sql.Date.class) {
-                    return CellValueType.DATE;
+                    autoValueType = CellValueType.DATE;
+                } else if (type == BigInteger.class) {
+                    autoValueType = CellValueType.DECIMAL;
                 }
+            }
+
+            if (autoValueType != null) {
+                return autoValueType;
             }
 
             String msg = "cannot auto-determine CellValueType of field '" + field.getName() + "'";

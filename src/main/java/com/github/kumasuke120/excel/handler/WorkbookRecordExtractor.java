@@ -9,12 +9,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @ApiStatus.Experimental
 public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHandler {
-
-    private final WorkbookEventReader reader;
 
     private final Class<E> recordClass;
 
@@ -26,16 +23,14 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
 
     private E currentRecord;
 
-    public WorkbookRecordExtractor(@NotNull(exception = NullPointerException.class) WorkbookEventReader reader,
-                                   @NotNull(exception = NullPointerException.class) Class<E> recordClass) {
+    public WorkbookRecordExtractor(@NotNull(exception = NullPointerException.class) Class<E> recordClass) {
 
-        this.reader = Objects.requireNonNull(reader);
         this.recordClass = HandlerUtils.ensureWorkbookRecordClass(recordClass);
         this.recordBinder = new WorkbookRecordBinder<>(recordClass);
-        this.constructor = findConstructor();
+        this.constructor = findNoArgConstructor();
     }
 
-    private Constructor<E> findConstructor() {
+    private Constructor<E> findNoArgConstructor() {
         try {
             return recordClass.getConstructor();
         } catch (NoSuchMethodException e) {
@@ -43,10 +38,14 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
         }
     }
 
+    public static <T> List<T> extract(WorkbookEventReader reader, Class<T> recordClass) {
+        final WorkbookRecordExtractor<T> extractor = new WorkbookRecordExtractor<>(recordClass);
+        reader.read(extractor);
+        return extractor.getResult();
+    }
+
     public List<E> getResult() {
-        final List<E> ret = new ArrayList<>(result);
-        result = null;
-        return ret;
+        return new ArrayList<>(result);
     }
 
     @Override
@@ -56,16 +55,16 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
 
     @Override
     public void onStartSheet(int sheetIndex, @NotNull String sheetName) {
-/*        if (!recordBinder.withinRange(sheetIndex)) {
-            reader.cancel();
-        }*/
+        if (recordBinder.beyondRange(sheetIndex)) {
+            WorkbookEventReader.currentRead().cancel();
+        }
     }
 
     @Override
     public void onEndSheet(int sheetIndex) {
-/*        if (!recordBinder.withinRange(sheetIndex)) {
-            reader.cancel();
-        }*/
+        if (recordBinder.beyondRange(sheetIndex - 1)) {
+            WorkbookEventReader.currentRead().cancel();
+        }
     }
 
     @Override

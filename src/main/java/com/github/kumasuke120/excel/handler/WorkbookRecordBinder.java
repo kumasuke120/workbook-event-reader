@@ -24,6 +24,10 @@ class WorkbookRecordBinder<E> {
         this.properties = initProperties();
     }
 
+    boolean beyondRange(int sheetIndex) {
+        return sheetIndex >= recordAnnotation.endSheet();
+    }
+
     boolean withinRange(int sheetIndex) {
         return sheetIndex >= recordAnnotation.startSheet() && sheetIndex < recordAnnotation.endSheet();
     }
@@ -127,7 +131,6 @@ class WorkbookRecordBinder<E> {
         return new WorkbookRecordProperty<>(
                 recordClass,
                 WorkbookRecordProperty.COLUMN_NUM_SHEET_INDEX,
-                "",
                 true,
                 WorkbookRecord.CellValueType.INTEGER,
                 "",
@@ -145,7 +148,6 @@ class WorkbookRecordBinder<E> {
         return new WorkbookRecordProperty<>(
                 recordClass,
                 WorkbookRecordProperty.COLUMN_NUM_ROW_NUMBER,
-                "",
                 true,
                 WorkbookRecord.CellValueType.INTEGER,
                 "",
@@ -163,7 +165,6 @@ class WorkbookRecordBinder<E> {
         return new WorkbookRecordProperty<>(
                 recordClass,
                 propA.column(),
-                propA.title() == null ? "" : propA.title(),
                 propA.strict(),
                 propA.valueType() == null ? WorkbookRecord.CellValueType.AUTO : propA.valueType(),
                 propA.valueMethod() == null ? "" : propA.valueMethod(),

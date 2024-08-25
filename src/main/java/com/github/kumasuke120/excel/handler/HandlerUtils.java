@@ -4,6 +4,8 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.*;
 import java.util.Date;
 
@@ -90,6 +92,18 @@ class HandlerUtils {
             return ((Number) value).floatValue();
         } else {
             throw new IllegalArgumentException("cannot convert '" + value + "' to float");
+        }
+    }
+
+    static BigInteger asBigInteger(@NotNull Object value) {
+        if (value instanceof BigInteger) {
+            return (BigInteger) value;
+        } else if (value instanceof BigDecimal) {
+            return ((BigDecimal) value).toBigInteger();
+        } else if (value instanceof Number) {
+            return BigInteger.valueOf(((Number) value).longValue());
+        } else {
+            throw new IllegalArgumentException("cannot convert '" + value + "' to Date");
         }
     }
 

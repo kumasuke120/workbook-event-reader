@@ -5,6 +5,8 @@ import com.github.kumasuke120.excel.handler.WorkbookRecord;
 import com.github.kumasuke120.excel.handler.WorkbookRecordExtractor;
 import com.github.kumasuke120.util.ResourceUtil;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
@@ -14,11 +16,7 @@ public class SampleDataExtractor {
     public static void main(String[] args) {
         final Path filePath = ResourceUtil.getPathOfClasspathResource("handler/SampleData.xlsx");
         try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath)) {
-            WorkbookRecordExtractor<OfficeSupplySalesData> handler =
-                    new WorkbookRecordExtractor<>(reader, OfficeSupplySalesData.class);
-            reader.read(handler);
-
-            List<OfficeSupplySalesData> result = handler.getResult();
+            List<OfficeSupplySalesData> result = WorkbookRecordExtractor.extract(reader, OfficeSupplySalesData.class);
             result.forEach(System.out::println);
         }
     }
@@ -34,7 +32,7 @@ public class SampleDataExtractor {
         private Integer rowNum;
 
         @WorkbookRecord.Property(column = 0)
-        private LocalDate orderData;
+        private LocalDate orderDate;
 
         @WorkbookRecord.Property(column = 1)
         private String region;
@@ -46,20 +44,20 @@ public class SampleDataExtractor {
         private String item;
 
         @WorkbookRecord.Property(column = 4)
-        private Integer units;
+        private BigInteger units;
 
         @WorkbookRecord.Property(column = 5)
-        private Double unitCost;
+        private BigDecimal unitCost;
 
         @WorkbookRecord.Property(column = 6)
-        private Double total;
+        private BigDecimal total;
 
         @Override
         public String toString() {
             return "OfficeSupplySalesData{" +
                     "sheetIndex=" + sheetIndex +
                     ", rowNum=" + rowNum +
-                    ", orderData=" + orderData +
+                    ", orderDate=" + orderDate +
                     ", region='" + region + '\'' +
                     ", rep='" + rep + '\'' +
                     ", item='" + item + '\'' +

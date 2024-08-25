@@ -42,8 +42,6 @@ public @interface WorkbookRecord {
 
         int column();
 
-        String title() default "";
-
         boolean strict() default false;
 
         CellValueType valueType() default CellValueType.AUTO;
@@ -63,6 +61,8 @@ public @interface WorkbookRecord {
         LONG,
 
         DOUBLE,
+
+        DECIMAL,
 
         STRING,
 
