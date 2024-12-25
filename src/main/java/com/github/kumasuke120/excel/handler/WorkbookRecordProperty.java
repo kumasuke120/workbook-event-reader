@@ -22,7 +22,8 @@ import java.util.*;
 class WorkbookRecordProperty<E> {
 
     static final int COLUMN_NUM_SHEET_INDEX = -1;
-    static final int COLUMN_NUM_ROW_NUMBER = -2;
+    static final int COLUMN_NUM_SHEET_NAME = -2;
+    static final int COLUMN_NUM_ROW_NUMBER = -3;
 
     private final Class<E> recordClass;
 
@@ -72,7 +73,7 @@ class WorkbookRecordProperty<E> {
             field.setAccessible(true);
         }
 
-        boolean isPrimitive = field.getType().isPrimitive();
+        final boolean isPrimitive = field.getType().isPrimitive();
 
         try {
             if (isPrimitive) {
@@ -84,6 +85,20 @@ class WorkbookRecordProperty<E> {
             throw new AssertionError("Shouldn't happen", e);
         } catch (IllegalArgumentException e) {
             throw new WorkbookRecordException("cannot set int value on @WorkbookRecord record class", e);
+        }
+    }
+
+    void set(@NotNull E record, String value) {
+        if (!field.isAccessible()) {
+            field.setAccessible(true);
+        }
+
+        try {
+            field.set(record, value);
+        } catch (IllegalAccessException e) {
+            throw new AssertionError("Shouldn't happen", e);
+        } catch (IllegalArgumentException e) {
+            throw new WorkbookRecordException("cannot set String value on WorkbookRecord", e);
         }
     }
 
@@ -139,7 +154,7 @@ class WorkbookRecordProperty<E> {
 
         @Nullable
         private Object getValueByType0(@NotNull CellValue cellValue) {
-            Class<?> fieldType = field.getType();
+            final Class<?> fieldType = field.getType();
 
             if (cellValue.isNull()) {
                 if (!strict && fieldType.isPrimitive()) {
@@ -149,11 +164,11 @@ class WorkbookRecordProperty<E> {
                 }
             }
 
-            CellValueType valueType = getValueType();
+            final CellValueType valueType = getValueType();
             assert valueType != CellValueType.AUTO;
 
-            CellValue myCellValue = strict ? cellValue.strict() : cellValue;
-            Object ret;
+            final CellValue myCellValue = strict ? cellValue.strict() : cellValue;
+            final Object ret;
             switch (valueType) {
                 case BOOLEAN:
                     ret = myCellValue.booleanValue();
@@ -215,8 +230,8 @@ class WorkbookRecordProperty<E> {
                 }
             }
 
-            String msg = "cannot get value for field '" + field.getName() + "' using CellValueType '" + valueType + "'";
-            throw new WorkbookRecordException(msg);
+            throw new WorkbookRecordException("cannot get value for field '" + field.getName() +
+                    "' using CellValueType '" + valueType + "'");
         }
 
         @NotNull
@@ -228,7 +243,7 @@ class WorkbookRecordProperty<E> {
                 return autoValueType;
             }
 
-            Class<?> type = field.getType();
+            final Class<?> type = field.getType();
             if (type == boolean.class || type == Boolean.class) {
                 autoValueType = CellValueType.BOOLEAN;
             } else if (type == int.class || type == Integer.class) {
@@ -273,8 +288,7 @@ class WorkbookRecordProperty<E> {
                 return autoValueType;
             }
 
-            String msg = "cannot auto-determine CellValueType of field '" + field.getName() + "'";
-            throw new WorkbookRecordException(msg);
+            throw new WorkbookRecordException("cannot auto-determine CellValueType of field '" + field.getName() + "'");
         }
 
         @Nullable
@@ -299,7 +313,7 @@ class WorkbookRecordProperty<E> {
             }
 
             if (valueMethod == null) {
-                Method method;
+                final Method method;
                 try {
                     method = recordClass.getMethod(valueMethodName, CellValue.class);
                 } catch (NoSuchMethodException e) {

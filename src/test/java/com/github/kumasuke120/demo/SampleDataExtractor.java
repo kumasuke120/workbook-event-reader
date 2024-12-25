@@ -25,10 +25,13 @@ public class SampleDataExtractor {
     @WorkbookRecord(startSheet = 1, endSheet = 2, startRow = 1, endColumn = 7)
     public static class OfficeSupplySalesData {
 
-        @WorkbookRecord.SheetIndex
+        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.SHEET_INDEX)
         private Integer sheetIndex;
 
-        @WorkbookRecord.RowNumber
+        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.SHEET_NAME)
+        private String sheetName;
+
+        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.ROW_NUMBER)
         private Integer rowNum;
 
         @WorkbookRecord.Property(column = 0)
@@ -56,6 +59,7 @@ public class SampleDataExtractor {
         public String toString() {
             return "OfficeSupplySalesData{" +
                     "sheetIndex=" + sheetIndex +
+                    ", sheetName='" + sheetName + '\'' +
                     ", rowNum=" + rowNum +
                     ", orderDate=" + orderDate +
                     ", region='" + region + '\'' +

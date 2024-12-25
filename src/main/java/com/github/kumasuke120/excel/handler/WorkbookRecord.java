@@ -26,13 +26,9 @@ public @interface WorkbookRecord {
 
     @Target(ElementType.FIELD)
     @Retention(RetentionPolicy.RUNTIME)
-    @interface SheetIndex {
+    @interface Metadata {
 
-    }
-
-    @Target(ElementType.FIELD)
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface RowNumber {
+        MetadataType value();
 
     }
 
@@ -74,6 +70,15 @@ public @interface WorkbookRecord {
 
         DATETIME
 
+    }
+
+    enum MetadataType {
+
+        SHEET_INDEX,
+
+        SHEET_NAME,
+
+        ROW_NUMBER
     }
 
 }

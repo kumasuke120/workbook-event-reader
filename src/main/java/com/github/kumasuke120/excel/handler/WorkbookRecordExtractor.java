@@ -21,6 +21,8 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
 
     private List<E> result;
 
+    private String currentSheetName;
+
     private E currentRecord;
 
     public WorkbookRecordExtractor(@NotNull(exception = NullPointerException.class) Class<E> recordClass) {
@@ -55,6 +57,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
 
     @Override
     public void onStartSheet(int sheetIndex, @NotNull String sheetName) {
+        currentSheetName = sheetName;
         if (recordBinder.beyondRange(sheetIndex)) {
             WorkbookEventReader.currentRead().cancel();
         }
@@ -62,6 +65,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
 
     @Override
     public void onEndSheet(int sheetIndex) {
+        currentSheetName = null;
         if (recordBinder.beyondRange(sheetIndex - 1)) {
             WorkbookEventReader.currentRead().cancel();
         }
@@ -77,6 +81,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
 
         recordBinder.setSheetIndex(currentRecord, sheetIndex);
         recordBinder.setRowNumber(currentRecord, rowNum);
+        recordBinder.setSheetName(currentRecord, currentSheetName);
     }
 
     @Override
