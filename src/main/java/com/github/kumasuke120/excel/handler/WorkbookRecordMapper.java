@@ -9,7 +9,7 @@ import java.util.*;
 
 @SuppressWarnings("BooleanMethodIsAlwaysInverted")
 @ApiStatus.Experimental
-class WorkbookRecordBinder<E> {
+class WorkbookRecordMapper<E> {
 
     private final Class<E> recordClass;
 
@@ -17,7 +17,7 @@ class WorkbookRecordBinder<E> {
 
     private final Map<Integer, WorkbookRecordProperty<E>> properties;
 
-    WorkbookRecordBinder(@NotNull(exception = NullPointerException.class) Class<E> recordClass) {
+    WorkbookRecordMapper(@NotNull(exception = NullPointerException.class) Class<E> recordClass) {
         this.recordClass = HandlerUtils.ensureWorkbookRecordClass(recordClass);
         this.recordAnnotation = findAnnotation();
         this.properties = initProperties();
@@ -106,7 +106,7 @@ class WorkbookRecordBinder<E> {
 
         final Map<Integer, WorkbookRecordProperty<E>> ret = new HashMap<>(properties.size());
         for (WorkbookRecordProperty<E> property : properties) {
-            boolean exists = ret.putIfAbsent(property.getColumn(), property) != null;
+            final boolean exists = ret.putIfAbsent(property.getColumn(), property) != null;
             if (exists) {
                 if (property.getColumn() == WorkbookRecordProperty.COLUMN_NUM_SHEET_INDEX) {
                     throw new WorkbookRecordException("multiple @WorkbookRecord.Metadata(SHEET_INDEX) found");
@@ -123,10 +123,16 @@ class WorkbookRecordBinder<E> {
         return Collections.unmodifiableMap(ret);
     }
 
+    @NotNull
     private FieldPropertyKind detectFieldPropertyKind(@NotNull Field field) {
-        if (field.getAnnotation(WorkbookRecord.Metadata.class) != null) {
+        final WorkbookRecord.Metadata metaA = field.getAnnotation(WorkbookRecord.Metadata.class);
+        final WorkbookRecord.Property propA = field.getAnnotation(WorkbookRecord.Property.class);
+        if (propA != null && metaA != null) {
+            throw new WorkbookRecordException("field cannot be annotated by both @WorkbookRecord.Metadata and " +
+                    "@WorkbookRecord.Property");
+        } else if (metaA != null) {
             return FieldPropertyKind.METADATA;
-        } else if (field.getAnnotation(WorkbookRecord.Property.class) != null) {
+        } else if (propA != null) {
             return FieldPropertyKind.PROPERTY;
         } else {
             return FieldPropertyKind.NONE;
@@ -135,10 +141,10 @@ class WorkbookRecordBinder<E> {
 
     @NotNull
     private WorkbookRecordProperty<E> initMetadataProperty(@NotNull Field field) {
-        final WorkbookRecord.Metadata propA = field.getAnnotation(WorkbookRecord.Metadata.class);
-        assert propA != null;
+        final WorkbookRecord.Metadata metaA = field.getAnnotation(WorkbookRecord.Metadata.class);
+        assert metaA != null;
 
-        final WorkbookRecord.MetadataType metadataType = propA.value();
+        final WorkbookRecord.MetadataType metadataType = metaA.value();
         if (metadataType == null) {
             throw new WorkbookRecordException("@WorkbookRecord.Metadata must have a value specified");
         }

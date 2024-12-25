@@ -15,7 +15,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
 
     private final Class<E> recordClass;
 
-    private final WorkbookRecordBinder<E> recordBinder;
+    private final WorkbookRecordMapper<E> recordMapper;
 
     private final Constructor<E> constructor;
 
@@ -28,7 +28,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
     public WorkbookRecordExtractor(@NotNull(exception = NullPointerException.class) Class<E> recordClass) {
 
         this.recordClass = HandlerUtils.ensureWorkbookRecordClass(recordClass);
-        this.recordBinder = new WorkbookRecordBinder<>(recordClass);
+        this.recordMapper = new WorkbookRecordMapper<>(recordClass);
         this.constructor = findNoArgConstructor();
     }
 
@@ -58,7 +58,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
     @Override
     public void onStartSheet(int sheetIndex, @NotNull String sheetName) {
         currentSheetName = sheetName;
-        if (recordBinder.beyondRange(sheetIndex)) {
+        if (recordMapper.beyondRange(sheetIndex)) {
             WorkbookEventReader.currentRead().cancel();
         }
     }
@@ -66,22 +66,22 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
     @Override
     public void onEndSheet(int sheetIndex) {
         currentSheetName = null;
-        if (recordBinder.beyondRange(sheetIndex - 1)) {
+        if (recordMapper.beyondRange(sheetIndex - 1)) {
             WorkbookEventReader.currentRead().cancel();
         }
     }
 
     @Override
     public void onStartRow(int sheetIndex, int rowNum) {
-        if (!recordBinder.withinRange(sheetIndex, rowNum)) {
+        if (!recordMapper.withinRange(sheetIndex, rowNum)) {
             return;
         }
 
         currentRecord = createRecord();
 
-        recordBinder.setSheetIndex(currentRecord, sheetIndex);
-        recordBinder.setRowNumber(currentRecord, rowNum);
-        recordBinder.setSheetName(currentRecord, currentSheetName);
+        recordMapper.setSheetIndex(currentRecord, sheetIndex);
+        recordMapper.setRowNumber(currentRecord, rowNum);
+        recordMapper.setSheetName(currentRecord, currentSheetName);
     }
 
     @Override
@@ -90,18 +90,18 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
             return;
         }
 
-        if (recordBinder.withinRange(sheetIndex, rowNum)) {
+        if (recordMapper.withinRange(sheetIndex, rowNum)) {
             result.add(currentRecord);
         }
     }
 
     @Override
     public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
-        if (!recordBinder.withinRange(sheetIndex, rowNum, columnNum)) {
+        if (!recordMapper.withinRange(sheetIndex, rowNum, columnNum)) {
             return;
         }
 
-        recordBinder.setValue(currentRecord, columnNum, cellValue);
+        recordMapper.setValue(currentRecord, columnNum, cellValue);
     }
 
     protected E createRecord() {
