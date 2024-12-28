@@ -2,6 +2,10 @@ package com.github.kumasuke120.demo;
 
 import com.github.kumasuke120.excel.WorkbookEventReader;
 import com.github.kumasuke120.excel.handler.WorkbookRecord;
+import com.github.kumasuke120.excel.handler.WorkbookRecord.CellValueType;
+import com.github.kumasuke120.excel.handler.WorkbookRecord.Metadata;
+import com.github.kumasuke120.excel.handler.WorkbookRecord.MetadataType;
+import com.github.kumasuke120.excel.handler.WorkbookRecord.Property;
 import com.github.kumasuke120.excel.handler.WorkbookRecordExtractor;
 import com.github.kumasuke120.util.ResourceUtil;
 
@@ -25,34 +29,34 @@ public class SampleDataExtractor {
     @WorkbookRecord(startSheet = 1, endSheet = 2, startRow = 1, endColumn = 7)
     public static class OfficeSupplySalesData {
 
-        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.SHEET_INDEX)
+        @Metadata(MetadataType.SHEET_INDEX)
         private Integer sheetIndex;
 
-        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.SHEET_NAME)
+        @Metadata(MetadataType.SHEET_NAME)
         private String sheetName;
 
-        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.ROW_NUMBER)
+        @Metadata(MetadataType.ROW_NUMBER)
         private Integer rowNum;
 
-        @WorkbookRecord.Property(column = 0)
+        @Property(column = 0, valueType = CellValueType.DATE)
         private LocalDate orderDate;
 
-        @WorkbookRecord.Property(column = 1)
+        @Property(column = 1)
         private String region;
 
-        @WorkbookRecord.Property(column = 2)
+        @Property(column = 2)
         private String rep;
 
-        @WorkbookRecord.Property(column = 3)
+        @Property(column = 3)
         private String item;
 
-        @WorkbookRecord.Property(column = 4)
+        @Property(column = 4)
         private BigInteger units;
 
-        @WorkbookRecord.Property(column = 5)
+        @Property(column = 5)
         private BigDecimal unitCost;
 
-        @WorkbookRecord.Property(column = 6)
+        @Property(column = 6)
         private BigDecimal total;
 
         @Override

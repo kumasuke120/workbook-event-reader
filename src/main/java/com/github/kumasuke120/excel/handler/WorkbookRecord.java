@@ -40,6 +40,8 @@ public @interface WorkbookRecord {
 
         boolean strict() default false;
 
+        boolean trim() default true;
+
         CellValueType valueType() default CellValueType.AUTO;
 
         String valueMethod() default "";
@@ -61,8 +63,6 @@ public @interface WorkbookRecord {
         DECIMAL,
 
         STRING,
-
-        RAW_STRING,
 
         TIME,
 

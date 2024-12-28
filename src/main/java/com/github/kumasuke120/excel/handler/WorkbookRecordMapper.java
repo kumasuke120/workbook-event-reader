@@ -154,6 +154,7 @@ class WorkbookRecordMapper<E> {
                         recordClass,
                         WorkbookRecordProperty.COLUMN_NUM_SHEET_INDEX,
                         true,
+                        false,
                         WorkbookRecord.CellValueType.INTEGER,
                         "",
                         field
@@ -163,6 +164,7 @@ class WorkbookRecordMapper<E> {
                         recordClass,
                         WorkbookRecordProperty.COLUMN_NUM_SHEET_NAME,
                         true,
+                        false,
                         WorkbookRecord.CellValueType.STRING,
                         "",
                         field
@@ -172,6 +174,7 @@ class WorkbookRecordMapper<E> {
                         recordClass,
                         WorkbookRecordProperty.COLUMN_NUM_ROW_NUMBER,
                         true,
+                        false,
                         WorkbookRecord.CellValueType.INTEGER,
                         "",
                         field
@@ -189,6 +192,7 @@ class WorkbookRecordMapper<E> {
                 recordClass,
                 propA.column(),
                 propA.strict(),
+                propA.trim(),
                 propA.valueType() == null ? WorkbookRecord.CellValueType.AUTO : propA.valueType(),
                 propA.valueMethod() == null ? "" : propA.valueMethod(),
                 field

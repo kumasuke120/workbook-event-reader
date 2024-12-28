@@ -31,13 +31,15 @@ class WorkbookRecordProperty<E> {
 
     private final boolean strict;
 
+    private final boolean trim;
+
     private final ValueMethod valueMethod;
 
     private final Field field;
 
     WorkbookRecordProperty(@NotNull Class<E> recordClass,
                            int column,
-                           boolean strict,
+                           boolean strict, boolean trim,
                            @NotNull CellValueType valueType,
                            @NotNull String valueMethodName,
                            @NotNull Field field) {
@@ -45,6 +47,7 @@ class WorkbookRecordProperty<E> {
         this.recordClass = HandlerUtils.ensureWorkbookRecordClass(recordClass);
         this.column = column;
         this.strict = strict;
+        this.trim = trim;
         this.valueMethod = new ValueMethod(valueType, valueMethodName);
         this.field = field;
     }
@@ -167,7 +170,7 @@ class WorkbookRecordProperty<E> {
             final CellValueType valueType = getValueType();
             assert valueType != CellValueType.AUTO;
 
-            final CellValue myCellValue = strict ? cellValue.strict() : cellValue;
+            final CellValue myCellValue = getMyCellValue(cellValue);
             final Object ret;
             switch (valueType) {
                 case BOOLEAN:
@@ -186,9 +189,6 @@ class WorkbookRecordProperty<E> {
                     ret = myCellValue.bigDecimalValue();
                     break;
                 case STRING:
-                    ret = myCellValue.trim().stringValue();
-                    break;
-                case RAW_STRING:
                     ret = myCellValue.stringValue();
                     break;
                 case TIME:
@@ -289,6 +289,18 @@ class WorkbookRecordProperty<E> {
             }
 
             throw new WorkbookRecordException("cannot auto-determine CellValueType of field '" + field.getName() + "'");
+        }
+
+        @NotNull
+        private CellValue getMyCellValue(@NotNull CellValue cellValue) {
+            CellValue ret = cellValue;
+            if (strict) {
+                ret = cellValue.strict();
+            }
+            if (trim) {
+                ret = ret.trim();
+            }
+            return ret;
         }
 
         @Nullable
