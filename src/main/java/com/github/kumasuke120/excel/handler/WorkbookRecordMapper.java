@@ -86,23 +86,25 @@ class WorkbookRecordMapper<E> {
         final List<WorkbookRecordProperty<E>> properties = new ArrayList<>(fields.length);
         for (Field field : fields) {
             final FieldPropertyKind propertyKind = detectFieldPropertyKind(field);
+            final WorkbookRecordProperty<E> prop;
             switch (propertyKind) {
-                case NONE:
-                    break;
                 case METADATA:
-                    properties.add(initMetadataProperty(field));
+                    prop = WorkbookRecordProperty.newMetadataProperty(recordClass, field);
                     break;
                 case PROPERTY:
-                    properties.add(initProperty(field));
+                    prop = WorkbookRecordProperty.newNormalProperty(recordClass, field);
                     break;
+                default:
+                    continue;
             }
+            properties.add(prop);
         }
 
-        return asProperties(properties);
+        return asPropertyMap(properties);
     }
 
     @NotNull
-    private Map<Integer, WorkbookRecordProperty<E>> asProperties(List<WorkbookRecordProperty<E>> properties) {
+    private Map<Integer, WorkbookRecordProperty<E>> asPropertyMap(List<WorkbookRecordProperty<E>> properties) {
 
         final Map<Integer, WorkbookRecordProperty<E>> ret = new HashMap<>(properties.size());
         for (WorkbookRecordProperty<E> property : properties) {
@@ -137,66 +139,6 @@ class WorkbookRecordMapper<E> {
         } else {
             return FieldPropertyKind.NONE;
         }
-    }
-
-    @NotNull
-    private WorkbookRecordProperty<E> initMetadataProperty(@NotNull Field field) {
-        final WorkbookRecord.Metadata metaA = field.getAnnotation(WorkbookRecord.Metadata.class);
-        assert metaA != null;
-
-        final WorkbookRecord.MetadataType metadataType = metaA.value();
-        if (metadataType == null) {
-            throw new WorkbookRecordException("@WorkbookRecord.Metadata must have a value specified");
-        }
-        switch (metadataType) {
-            case SHEET_INDEX:
-                return new WorkbookRecordProperty<>(
-                        recordClass,
-                        WorkbookRecordProperty.COLUMN_NUM_SHEET_INDEX,
-                        true,
-                        false,
-                        WorkbookRecord.CellValueType.INTEGER,
-                        "",
-                        field
-                );
-            case SHEET_NAME:
-                return new WorkbookRecordProperty<>(
-                        recordClass,
-                        WorkbookRecordProperty.COLUMN_NUM_SHEET_NAME,
-                        true,
-                        false,
-                        WorkbookRecord.CellValueType.STRING,
-                        "",
-                        field
-                );
-            case ROW_NUMBER:
-                return new WorkbookRecordProperty<>(
-                        recordClass,
-                        WorkbookRecordProperty.COLUMN_NUM_ROW_NUMBER,
-                        true,
-                        false,
-                        WorkbookRecord.CellValueType.INTEGER,
-                        "",
-                        field
-                );
-            default:
-                throw new AssertionError();
-        }
-    }
-
-    @NotNull
-    private WorkbookRecordProperty<E> initProperty(@NotNull Field field) {
-        final WorkbookRecord.Property propA = field.getAnnotation(WorkbookRecord.Property.class);
-        assert propA != null;
-        return new WorkbookRecordProperty<>(
-                recordClass,
-                propA.column(),
-                propA.strict(),
-                propA.trim(),
-                propA.valueType() == null ? WorkbookRecord.CellValueType.AUTO : propA.valueType(),
-                propA.valueMethod() == null ? "" : propA.valueMethod(),
-                field
-        );
     }
 
     private enum FieldPropertyKind {
