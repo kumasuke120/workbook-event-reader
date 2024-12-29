@@ -16,10 +16,16 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.Date;
 
+/**
+ * A class represents a property marked by {@link WorkbookRecord.Property} in a {@link WorkbookRecord}-marked class.
+ * <p>
+ * This class is intended for internal use only.
+ * </p>
+ */
 @ApiStatus.Internal
-class WorkbookRecordProperty<E> {
+final class WorkbookRecordProperty<E> {
 
     static final int COLUMN_NUM_SHEET_INDEX = -1;
     static final int COLUMN_NUM_SHEET_NAME = -2;
@@ -37,6 +43,18 @@ class WorkbookRecordProperty<E> {
 
     private final Field field;
 
+    /**
+     * Creates a new instance of {@code WorkbookRecordProperty}.
+     *
+     * @param recordClass     the class of the record
+     * @param column          the column number of the property
+     * @param strict          whether the value should be strictly converted
+     * @param trim            whether the value should be trimmed
+     * @param valueType       the type of the value
+     * @param valueMethodName the method name to get the value if specified
+     * @param field           the field of the property
+     * @throws WorkbookRecordException if the specified class is not annotated with {@code @WorkbookRecord}
+     */
     WorkbookRecordProperty(@NotNull Class<E> recordClass,
                            int column,
                            boolean strict, boolean trim,
@@ -52,6 +70,14 @@ class WorkbookRecordProperty<E> {
         this.field = field;
     }
 
+    /**
+     * Creates a new instance of {@code WorkbookRecordProperty} for metadata properties.
+     *
+     * @param recordClass the class of the record
+     * @param field       the field of the metadata
+     * @param <T>         the type of the record
+     * @return a new instance of {@code WorkbookRecordProperty}
+     */
     static <T> WorkbookRecordProperty<T> newMetadataProperty(@NotNull Class<T> recordClass, @NotNull Field field) {
         final WorkbookRecord.Metadata metaA = field.getAnnotation(WorkbookRecord.Metadata.class);
         if (metaA == null) {
@@ -89,6 +115,14 @@ class WorkbookRecordProperty<E> {
         );
     }
 
+    /**
+     * Creates a new instance of {@code WorkbookRecordProperty} for normal properties.
+     *
+     * @param recordClass the class of the record
+     * @param field       the field of the property
+     * @param <T>         the type of the record
+     * @return a new instance of {@code WorkbookRecordProperty}
+     */
     static <T> WorkbookRecordProperty<T> newNormalProperty(@NotNull Class<T> recordClass, @NotNull Field field) {
         final WorkbookRecord.Property propA = field.getAnnotation(WorkbookRecord.Property.class);
         if (propA == null) {
@@ -106,10 +140,21 @@ class WorkbookRecordProperty<E> {
         );
     }
 
+    /**
+     * Gets the column number of the property.
+     *
+     * @return the column number of the property
+     */
     int getColumn() {
         return column;
     }
 
+    /**
+     * Sets the value of the property from the specified record.
+     *
+     * @param record    the record to set the value to
+     * @param cellValue the cell value to get the value from
+     */
     void set(@NotNull E record, @NotNull CellValue cellValue) {
         final Object value = valueMethod.getValue(record, cellValue);
         if (!field.isAccessible()) {
@@ -125,6 +170,12 @@ class WorkbookRecordProperty<E> {
         }
     }
 
+    /**
+     * Sets the value of the property from the specified record.
+     *
+     * @param record the record to set the value to
+     * @param value  the value to set
+     */
     void set(@NotNull E record, int value) {
         if (!field.isAccessible()) {
             field.setAccessible(true);
@@ -145,6 +196,12 @@ class WorkbookRecordProperty<E> {
         }
     }
 
+    /**
+     * Sets the value of the property from the specified record.
+     *
+     * @param record the record to set the value to
+     * @param value  the value to set
+     */
     void set(@NotNull E record, String value) {
         if (!field.isAccessible()) {
             field.setAccessible(true);
@@ -159,6 +216,9 @@ class WorkbookRecordProperty<E> {
         }
     }
 
+    /**
+     * A class represents the method to get the value of the property.
+     */
     private class ValueMethod {
 
         private final CellValueType valueType;
@@ -169,12 +229,25 @@ class WorkbookRecordProperty<E> {
 
         private volatile Method valueMethod;
 
+        /**
+         * Creates a new instance of {@code ValueMethod}.
+         *
+         * @param valueType       the type of the value
+         * @param valueMethodName the method name to get the value if specified
+         */
         ValueMethod(@NotNull CellValueType valueType,
                     @NotNull String valueMethodName) {
             this.valueType = valueType;
             this.valueMethodName = valueMethodName;
         }
 
+        /**
+         * Gets the value of the property from the specified {@link CellValue}.
+         *
+         * @param record    the given record, get the value method if necessary
+         * @param cellValue the cell value to get the value from
+         * @return the value of the property
+         */
         @Nullable
         Object getValue(@Nullable E record, @NotNull CellValue cellValue) {
             if (column < 0) {
@@ -360,8 +433,8 @@ class WorkbookRecordProperty<E> {
         }
 
         @Nullable
-        Object getValueByMethod(@NotNull Method valueMethod,
-                                @NotNull E record, @NotNull CellValue cellValue) {
+        private Object getValueByMethod(@NotNull Method valueMethod,
+                                        @NotNull E record, @NotNull CellValue cellValue) {
 
             try {
                 return valueMethod.invoke(record, cellValue);

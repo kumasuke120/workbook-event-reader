@@ -7,6 +7,12 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.Field;
 import java.util.*;
 
+/**
+ * A mapper for mapping a workbook record to its properties.
+ * <p>
+ * This annotation is currently experimental and may be changed or removed in the future.
+ * </p>
+ */
 @SuppressWarnings("BooleanMethodIsAlwaysInverted")
 @ApiStatus.Experimental
 class WorkbookRecordMapper<E> {
@@ -17,30 +23,70 @@ class WorkbookRecordMapper<E> {
 
     private final Map<Integer, WorkbookRecordProperty<E>> properties;
 
+    /**
+     * Constructs a new {@code WorkbookRecordMapper} for the specified record class.
+     *
+     * @param recordClass the record class
+     * @throws WorkbookRecordException if the specified class is not annotated with {@code @WorkbookRecord}
+     */
     WorkbookRecordMapper(@NotNull(exception = NullPointerException.class) Class<E> recordClass) {
         this.recordClass = HandlerUtils.ensureWorkbookRecordClass(recordClass);
-        this.recordAnnotation = findAnnotation();
+        this.recordAnnotation = findRecordAnnotation();
         this.properties = initProperties();
     }
 
+    /**
+     * Checks if the specified sheet index is beyond the range of the record.
+     *
+     * @param sheetIndex the sheet index to check
+     * @return {@code true} if the specified sheet index is beyond the range of the record, {@code false} otherwise
+     */
     boolean beyondRange(int sheetIndex) {
         return sheetIndex >= recordAnnotation.endSheet();
     }
 
+    /**
+     * Checks if the specified sheet index is within the range of the record.
+     *
+     * @param sheetIndex the sheet index to check
+     * @return {@code true} if the specified sheet index is within the range of the record, {@code false} otherwise
+     */
     boolean withinRange(int sheetIndex) {
         return sheetIndex >= recordAnnotation.startSheet() && sheetIndex < recordAnnotation.endSheet();
     }
 
+    /**
+     * Checks if the specified sheet index and row number are within the range of the record.
+     *
+     * @param sheetIndex the sheet index
+     * @param rowNum     the row number
+     * @return {@code true} if the specified sheet index and row number are within the range of the record,
+     */
     boolean withinRange(int sheetIndex, int rowNum) {
         return withinRange(sheetIndex) &&
                 rowNum >= recordAnnotation.startRow() && rowNum < recordAnnotation.endRow();
     }
 
+    /**
+     * Checks if the specified sheet index, row number, and column number are within the range of the record.
+     *
+     * @param sheetIndex the sheet index
+     * @param rowNum     the row number
+     * @param colNumNum  the column number
+     * @return {@code true} if the specified sheet index, row number, and column number are within the range of the record,
+     */
     boolean withinRange(int sheetIndex, int rowNum, int colNumNum) {
         return withinRange(sheetIndex, rowNum) &&
                 colNumNum >= recordAnnotation.startColumn() && colNumNum < recordAnnotation.endColumn();
     }
 
+    /**
+     * Sets the value of the specified cell to the specified record based on the column number.
+     *
+     * @param record    the record to set
+     * @param columnNum the column number of the cell
+     * @param cellValue the value of the cell
+     */
     void setValue(@NotNull E record, int columnNum, @NotNull CellValue cellValue) {
         final WorkbookRecordProperty<E> property = properties.get(columnNum);
         if (property == null) {
@@ -49,6 +95,12 @@ class WorkbookRecordMapper<E> {
         property.set(record, cellValue);
     }
 
+    /**
+     * Sets the sheet index of the specified record.
+     *
+     * @param record     the record to set
+     * @param sheetIndex the sheet index to set
+     */
     void setSheetIndex(@NotNull E record, int sheetIndex) {
         final WorkbookRecordProperty<E> property = properties.get(WorkbookRecordProperty.COLUMN_NUM_SHEET_INDEX);
         if (property == null) {
@@ -57,6 +109,12 @@ class WorkbookRecordMapper<E> {
         property.set(record, sheetIndex);
     }
 
+    /**
+     * Sets the sheet name of the specified record.
+     *
+     * @param record    the record to set
+     * @param sheetName the sheet name to set
+     */
     void setSheetName(@NotNull E record, @NotNull String sheetName) {
         final WorkbookRecordProperty<E> property = properties.get(WorkbookRecordProperty.COLUMN_NUM_SHEET_NAME);
         if (property == null) {
@@ -65,6 +123,12 @@ class WorkbookRecordMapper<E> {
         property.set(record, sheetName);
     }
 
+    /**
+     * Sets the row number of the specified record.
+     *
+     * @param record    the record to set
+     * @param rowNumber the row number to set
+     */
     void setRowNumber(@NotNull E record, int rowNumber) {
         final WorkbookRecordProperty<E> property = properties.get(WorkbookRecordProperty.COLUMN_NUM_ROW_NUMBER);
         if (property == null) {
@@ -73,7 +137,7 @@ class WorkbookRecordMapper<E> {
         property.set(record, rowNumber);
     }
 
-    private WorkbookRecord findAnnotation() {
+    private WorkbookRecord findRecordAnnotation() {
         assert recordClass != null;
         WorkbookRecord annotation = recordClass.getAnnotation(WorkbookRecord.class);
         assert annotation != null;

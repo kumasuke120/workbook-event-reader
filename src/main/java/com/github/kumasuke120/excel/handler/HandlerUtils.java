@@ -9,6 +9,14 @@ import java.math.BigInteger;
 import java.time.*;
 import java.util.Date;
 
+/**
+ * A utility class for handling various operations related to workbook records.
+ * This class contains methods for ensuring a class is annotated with {@code @WorkbookRecord},
+ * retrieving default values for primitive types, and converting values to different types.
+ * <p>
+ * This class is intended for internal use only.
+ * </p>
+ */
 @ApiStatus.Internal
 class HandlerUtils {
 
@@ -16,6 +24,14 @@ class HandlerUtils {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Ensures that the specified class is annotated with {@code @WorkbookRecord}.
+     *
+     * @param clazz the class to check
+     * @param <T>   the type of the given class
+     * @return the specified class
+     * @throws WorkbookRecordException if the specified class is not annotated with {@code @WorkbookRecord}
+     */
     static <T> Class<T> ensureWorkbookRecordClass(@Nullable Class<T> clazz) {
         if (clazz == null) {
             throw new NullPointerException();
@@ -29,6 +45,12 @@ class HandlerUtils {
         return clazz;
     }
 
+    /**
+     * Retrieves the default value for the specified class.
+     *
+     * @param clazz the given class
+     * @return the default value for the specified class
+     */
     static Object getDefaultValue(@NotNull Class<?> clazz) {
         if (!clazz.isPrimitive()) {
             return null;
@@ -55,6 +77,13 @@ class HandlerUtils {
         }
     }
 
+    /**
+     * Converts the specified value to a boolean as much as possible.
+     *
+     * @param value the value to convert
+     * @return the converted boolean value
+     * @throws IllegalArgumentException if the value cannot be converted to a boolean
+     */
     static boolean asBoolean(@NotNull Object value) {
         if (value instanceof Boolean) {
             return (boolean) value;
@@ -65,6 +94,13 @@ class HandlerUtils {
         }
     }
 
+    /**
+     * Converts the specified value to an integer as much as possible.
+     *
+     * @param value the value to convert
+     * @return the converted integer value
+     * @throws IllegalArgumentException if the value cannot be converted to an integer
+     */
     static byte asByte(@NotNull Object value) {
         if (value instanceof Byte) {
             return (byte) value;
@@ -75,6 +111,13 @@ class HandlerUtils {
         }
     }
 
+    /**
+     * Converts the specified value to a short as much as possible.
+     *
+     * @param value the value to convert
+     * @return the converted short value
+     * @throws IllegalArgumentException if the value cannot be converted to a short
+     */
     static short asShort(@NotNull Object value) {
         if (value instanceof Short) {
             return (short) value;
@@ -85,6 +128,13 @@ class HandlerUtils {
         }
     }
 
+    /**
+     * Converts the specified value to a float as much as possible.
+     *
+     * @param value the value to convert
+     * @return the converted float value
+     * @throws IllegalArgumentException if the value cannot be converted to a float
+     */
     static float asFloat(@NotNull Object value) {
         if (value instanceof Float) {
             return (short) value;
@@ -95,6 +145,13 @@ class HandlerUtils {
         }
     }
 
+    /**
+     * Converts the specified value to a {@link BigInteger} as much as possible.
+     *
+     * @param value the value to convert
+     * @return the converted {@link BigInteger} value
+     * @throws IllegalArgumentException if the value cannot be converted to a {@link BigInteger}
+     */
     static BigInteger asBigInteger(@NotNull Object value) {
         if (value instanceof BigInteger) {
             return (BigInteger) value;
@@ -107,6 +164,13 @@ class HandlerUtils {
         }
     }
 
+    /**
+     * Converts the specified value to a {@link Date} as much as possible.
+     *
+     * @param value the value to convert
+     * @return the converted {@link Date} value
+     * @throws IllegalArgumentException if the value cannot be converted to a {@link Date}
+     */
     @NotNull
     static Date asDate(@NotNull Object value) {
         if (value instanceof Date) {
@@ -124,6 +188,13 @@ class HandlerUtils {
         }
     }
 
+    /**
+     * Converts the specified value to a {@link java.sql.Time} as much as possible.
+     *
+     * @param value the value to convert
+     * @return the converted {@link java.sql.Time} value
+     * @throws IllegalArgumentException if the value cannot be converted to a {@link java.sql.Time}
+     */
     @NotNull
     static java.sql.Time asSqlTime(@NotNull Object value) {
         if (value instanceof java.sql.Time) {
@@ -140,6 +211,13 @@ class HandlerUtils {
         }
     }
 
+    /**
+     * Converts the specified value to a {@link java.sql.Date} as much as possible.
+     *
+     * @param value the value to convert
+     * @return the converted {@link java.sql.Date} value
+     * @throws IllegalArgumentException if the value cannot be converted to a {@link java.sql.Date}
+     */
     @NotNull
     static java.sql.Date asSqlDate(@NotNull Object value) {
         if (value instanceof java.sql.Date) {
@@ -159,7 +237,13 @@ class HandlerUtils {
         }
     }
 
-
+    /**
+     * Converts the specified value to a {@link java.sql.Timestamp} as much as possible.
+     *
+     * @param value the value to convert
+     * @return the converted {@link java.sql.Timestamp} value
+     * @throws IllegalArgumentException if the value cannot be converted to a {@link java.sql.Timestamp}
+     */
     @NotNull
     static java.sql.Timestamp asSqlTimestamp(@NotNull Object value) {
         if (value instanceof java.sql.Timestamp) {

@@ -10,6 +10,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * An extractor for extracting records from a workbook. It must be used with {@link WorkbookEventReader}.
+ * <p>
+ * This class is currently experimental and may be changed or removed in the future.
+ * </p>
+ *
+ * @param <E> the type of the record to extract
+ */
 @ApiStatus.Experimental
 public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHandler {
 
@@ -17,7 +25,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
 
     private final WorkbookRecordMapper<E> recordMapper;
 
-    private final Constructor<E> constructor;
+    private final Constructor<E> recordConstructor;
 
     private List<E> result;
 
@@ -25,14 +33,20 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
 
     private E currentRecord;
 
+    /**
+     * Constructs a new {@code WorkbookRecordExtractor} for the specified record class.
+     *
+     * @param recordClass the record class
+     * @throws WorkbookRecordException if the specified class is not annotated with {@code @WorkbookRecord}
+     */
     public WorkbookRecordExtractor(@NotNull(exception = NullPointerException.class) Class<E> recordClass) {
 
         this.recordClass = HandlerUtils.ensureWorkbookRecordClass(recordClass);
         this.recordMapper = new WorkbookRecordMapper<>(recordClass);
-        this.constructor = findNoArgConstructor();
+        this.recordConstructor = findNoArgRecordConstructor();
     }
 
-    private Constructor<E> findNoArgConstructor() {
+    private Constructor<E> findNoArgRecordConstructor() {
         try {
             return recordClass.getConstructor();
         } catch (NoSuchMethodException e) {
@@ -40,12 +54,24 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
         }
     }
 
+    /**
+     * Extracts records from the specified {@link WorkbookEventReader}.
+     *
+     * @param reader the reader to extract records from
+     * @param <T>    the type of the record to extract
+     * @return a list of extracted records
+     */
     public static <T> List<T> extract(WorkbookEventReader reader, Class<T> recordClass) {
         final WorkbookRecordExtractor<T> extractor = new WorkbookRecordExtractor<>(recordClass);
         reader.read(extractor);
         return extractor.getResult();
     }
 
+    /**
+     * Returns a list of extracted records after reading using {@link WorkbookEventReader#read(WorkbookEventReader.EventHandler)}.
+     *
+     * @return a list of extracted records
+     */
     public List<E> getResult() {
         return new ArrayList<>(result);
     }
@@ -104,10 +130,15 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
         recordMapper.setValue(currentRecord, columnNum, cellValue);
     }
 
+    /**
+     * Creates a new record instance.
+     *
+     * @return a new record instance
+     */
     protected E createRecord() {
-        if (constructor != null) {
+        if (recordConstructor != null) {
             try {
-                return constructor.newInstance();
+                return recordConstructor.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new WorkbookRecordException("cannot initialize @WorkbookRecord record class", e);
             } catch (InvocationTargetException e) {
