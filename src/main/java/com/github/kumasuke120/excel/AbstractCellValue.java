@@ -155,6 +155,7 @@ abstract class AbstractCellValue implements CellValue {
     }
 
     @Override
+    @NotNull
     public final CellValue strict() {
         if (this instanceof StrictCellValue) {
             return this;
@@ -164,6 +165,7 @@ abstract class AbstractCellValue implements CellValue {
     }
 
     @Override
+    @NotNull
     public final CellValue lenient() {
         if (this instanceof LenientCellValue) {
             return this;

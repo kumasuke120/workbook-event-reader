@@ -285,6 +285,7 @@ public interface CellValue {
      *
      * @return an instance of <code>CellValue</code>
      */
+    @NotNull
     CellValue strict();
 
     /**
@@ -295,6 +296,7 @@ public interface CellValue {
      *
      * @return an instance of <code>CellValue</code>
      */
+    @NotNull
     CellValue lenient();
 
 }
