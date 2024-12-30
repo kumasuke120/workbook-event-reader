@@ -47,27 +47,26 @@ final class WorkbookRecordProperty<E> {
      * Creates a new instance of {@code WorkbookRecordProperty}.
      *
      * @param recordClass     the class of the record
+     * @param field           the field of the property
      * @param column          the column number of the property
      * @param strict          whether the value should be strictly converted
      * @param trim            whether the value should be trimmed
      * @param valueType       the type of the value
      * @param valueMethodName the method name to get the value if specified
-     * @param field           the field of the property
      * @throws WorkbookRecordException if the specified class is not annotated with {@code @WorkbookRecord}
      */
     WorkbookRecordProperty(@NotNull Class<E> recordClass,
-                           int column,
+                           @NotNull Field field, int column,
                            boolean strict, boolean trim,
                            @NotNull CellValueType valueType,
-                           @NotNull String valueMethodName,
-                           @NotNull Field field) {
+                           @NotNull String valueMethodName) {
 
         this.recordClass = HandlerUtils.ensureWorkbookRecordClass(recordClass);
+        this.field = field;
         this.column = column;
         this.strict = strict;
         this.trim = trim;
         this.valueMethod = new ValueMethod(valueType, valueMethodName);
-        this.field = field;
     }
 
     /**
@@ -106,12 +105,11 @@ final class WorkbookRecordProperty<E> {
 
         return new WorkbookRecordProperty<>(
                 recordClass,
-                column,
+                field, column,
                 true,
                 false,
                 valueType,
-                "",
-                field
+                ""
         );
     }
 
@@ -131,12 +129,11 @@ final class WorkbookRecordProperty<E> {
 
         return new WorkbookRecordProperty<>(
                 recordClass,
-                propA.column(),
+                field, propA.column(),
                 propA.strict(),
                 propA.trim(),
                 propA.valueType() == null ? WorkbookRecord.CellValueType.AUTO : propA.valueType(),
-                propA.valueMethod() == null ? "" : propA.valueMethod(),
-                field
+                propA.valueMethod() == null ? "" : propA.valueMethod()
         );
     }
 
@@ -223,22 +220,25 @@ final class WorkbookRecordProperty<E> {
 
         private final CellValueType valueType;
 
+        private final CellValueType usingValueType;
+
         private final String valueMethodName;
 
-        private volatile CellValueType autoValueType;
+        private final Method valueMethod;
 
-        private volatile Method valueMethod;
 
         /**
          * Creates a new instance of {@code ValueMethod}.
          *
          * @param valueType       the type of the value
          * @param valueMethodName the method name to get the value if specified
+         * @throws WorkbookRecordException if value type cannot be determined or if the value method cannot be found
          */
-        ValueMethod(@NotNull CellValueType valueType,
-                    @NotNull String valueMethodName) {
+        ValueMethod(@NotNull CellValueType valueType, @NotNull String valueMethodName) {
             this.valueType = valueType;
+            this.usingValueType = determineValueType();
             this.valueMethodName = valueMethodName;
+            this.valueMethod = findValueMethod();
         }
 
         /**
@@ -258,12 +258,11 @@ final class WorkbookRecordProperty<E> {
                 return null;
             }
 
-            final Method valueMethod = findValueMethod();
-            if (valueMethod != null) {
-                return getValueByMethod(valueMethod, record, cellValue);
+            if (valueMethod == null) {
+                return getValueByType(cellValue);
+            } else {
+                return getValueByMethod(record, cellValue);
             }
-
-            return getValueByType(cellValue);
         }
 
         @Nullable
@@ -293,43 +292,10 @@ final class WorkbookRecordProperty<E> {
                 }
             }
 
-            final CellValueType valueType = determineValueType();
-            assert valueType != CellValueType.AUTO;
+            assert usingValueType != CellValueType.AUTO;
 
             final CellValue preparedValue = prepareCellValue(cellValue);
-            final Object ret;
-            switch (valueType) {
-                case BOOLEAN:
-                    ret = preparedValue.booleanValue();
-                    break;
-                case INTEGER:
-                    ret = preparedValue.intValue();
-                    break;
-                case LONG:
-                    ret = preparedValue.longValue();
-                    break;
-                case DOUBLE:
-                    ret = preparedValue.doubleValue();
-                    break;
-                case DECIMAL:
-                    ret = preparedValue.bigDecimalValue();
-                    break;
-                case STRING:
-                    ret = preparedValue.stringValue();
-                    break;
-                case TIME:
-                    ret = preparedValue.localTimeValue();
-                    break;
-                case DATE:
-                    ret = preparedValue.localDateValue();
-                    break;
-                case DATETIME:
-                    ret = preparedValue.localDateTimeValue();
-                    break;
-                default:
-                    throw new AssertionError("Shouldn't happen");
-            }
-
+            final Object ret = usingValueType.getValue(preparedValue);
             // if the field type matches the default type, return it directly
             if (fieldType == ret.getClass()) {
                 return ret;
@@ -367,11 +333,7 @@ final class WorkbookRecordProperty<E> {
                 return valueType;
             }
 
-            // returns the cached auto-detected CellValueType
-            if (autoValueType != null) {
-                return autoValueType;
-            }
-
+            CellValueType autoValueType = null;
             final Class<?> type = field.getType();
             if (type == boolean.class || type == Boolean.class) {
                 autoValueType = CellValueType.BOOLEAN;
@@ -424,7 +386,7 @@ final class WorkbookRecordProperty<E> {
         private CellValue prepareCellValue(@NotNull CellValue cellValue) {
             CellValue ret = cellValue;
             if (strict) {
-                ret = cellValue.strict();
+                ret = ret.strict();
             }
             if (trim) {
                 ret = ret.trim();
@@ -433,9 +395,7 @@ final class WorkbookRecordProperty<E> {
         }
 
         @Nullable
-        private Object getValueByMethod(@NotNull Method valueMethod,
-                                        @NotNull E record, @NotNull CellValue cellValue) {
-
+        private Object getValueByMethod(@NotNull E record, @NotNull CellValue cellValue) {
             try {
                 return valueMethod.invoke(record, cellValue);
             } catch (IllegalAccessException e) {
@@ -453,19 +413,13 @@ final class WorkbookRecordProperty<E> {
                 return null;
             }
 
-            if (valueMethod == null) {
-                final Method method;
-                try {
-                    method = recordClass.getMethod(valueMethodName, CellValue.class);
-                } catch (NoSuchMethodException e) {
-                    String msg = "valueMethod specified by @Workbook.Property cannot be found: " +
-                            "public Object " + valueMethodName + "(CellValue cellValue)";
-                    throw new WorkbookRecordException(msg, e);
-                }
-                valueMethod = method;
+            try {
+                return recordClass.getMethod(valueMethodName, CellValue.class);
+            } catch (NoSuchMethodException e) {
+                String msg = "valueMethod specified by @Workbook.Property cannot be found: " +
+                        "public Object " + valueMethodName + "(CellValue cellValue)";
+                throw new WorkbookRecordException(msg, e);
             }
-
-            return valueMethod;
         }
 
     }

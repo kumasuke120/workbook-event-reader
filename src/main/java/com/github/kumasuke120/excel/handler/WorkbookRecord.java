@@ -2,6 +2,7 @@ package com.github.kumasuke120.excel.handler;
 
 import com.github.kumasuke120.excel.CellValue;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.*;
 
@@ -167,7 +168,12 @@ public @interface WorkbookRecord {
          * In strict mode, only the value that is exactly a <code>boolean</code> is acceptable.
          * </p>
          */
-        BOOLEAN,
+        BOOLEAN {
+            @Override
+            public Object getValue(@NotNull CellValue cellValue) {
+                return cellValue.booleanValue();
+            }
+        },
 
         /**
          * The cell value is an <code>int</code>.
@@ -176,7 +182,12 @@ public @interface WorkbookRecord {
          * In strict mode, only the value that is exactly a <code>int</code> is acceptable.
          * </p>
          */
-        INTEGER,
+        INTEGER {
+            @Override
+            public Object getValue(@NotNull CellValue cellValue) {
+                return cellValue.intValue();
+            }
+        },
 
         /**
          * The cell value is a <code>long</code>.
@@ -185,7 +196,12 @@ public @interface WorkbookRecord {
          * In strict mode, only the value that is exactly a <code>long</code> is acceptable.
          * </p>
          */
-        LONG,
+        LONG {
+            @Override
+            public Object getValue(@NotNull CellValue cellValue) {
+                return cellValue.longValue();
+            }
+        },
 
         /**
          * The cell value is a <code>double</code>.
@@ -194,7 +210,12 @@ public @interface WorkbookRecord {
          * In strict mode, only the value that is exactly a <code>double</code> is acceptable.
          * </p>
          */
-        DOUBLE,
+        DOUBLE {
+            @Override
+            public Object getValue(@NotNull CellValue cellValue) {
+                return cellValue.doubleValue();
+            }
+        },
 
         /**
          * The cell value is a {@link java.math.BigDecimal}.
@@ -203,7 +224,12 @@ public @interface WorkbookRecord {
          * In strict mode, only the value that is exactly a {@link java.math.BigDecimal} is acceptable.
          * </p>
          */
-        DECIMAL,
+        DECIMAL {
+            @Override
+            public Object getValue(@NotNull CellValue cellValue) {
+                return cellValue.bigDecimalValue();
+            }
+        },
 
         /**
          * The cell value is a {@link String}.
@@ -212,7 +238,12 @@ public @interface WorkbookRecord {
          * In strict mode, only the value that is exactly a {@link String} is acceptable.
          * </p>
          */
-        STRING,
+        STRING {
+            @Override
+            public Object getValue(@NotNull CellValue cellValue) {
+                return cellValue.stringValue();
+            }
+        },
 
         /**
          * The cell value is a {@link java.time.LocalTime}.
@@ -221,7 +252,12 @@ public @interface WorkbookRecord {
          * In strict mode, only the value that is exactly a {@link java.time.LocalTime} is acceptable.
          * </p>
          */
-        TIME,
+        TIME {
+            @Override
+            public Object getValue(@NotNull CellValue cellValue) {
+                return cellValue.localTimeValue();
+            }
+        },
 
         /**
          * The cell value is a {@link java.time.LocalDate}.
@@ -230,7 +266,12 @@ public @interface WorkbookRecord {
          * In strict mode, only the value that is exactly a {@link java.time.LocalDate} is acceptable.
          * </p>
          */
-        DATE,
+        DATE {
+            @Override
+            public Object getValue(@NotNull CellValue cellValue) {
+                return cellValue.localDateValue();
+            }
+        },
 
         /**
          * The cell value is a {@link java.time.LocalDateTime}.
@@ -239,7 +280,24 @@ public @interface WorkbookRecord {
          * In strict mode, only the value that is exactly a {@link java.time.LocalDateTime} is acceptable.
          * </p>
          */
-        DATETIME
+        DATETIME {
+            @Override
+            public Object getValue(@NotNull CellValue cellValue) {
+                return cellValue.localDateTimeValue();
+            }
+        },
+
+        ;
+
+        /**
+         * Gets the value from the specified {@link CellValue} based on the current type.
+         *
+         * @param cellValue the cell value
+         * @return the value
+         */
+        public Object getValue(@NotNull CellValue cellValue) {
+            throw new UnsupportedOperationException();
+        }
 
     }
 
