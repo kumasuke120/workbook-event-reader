@@ -137,7 +137,7 @@ class HandlerUtils {
      */
     static float asFloat(@NotNull Object value) {
         if (value instanceof Float) {
-            return (short) value;
+            return (float) value;
         } else if (value instanceof Number) {
             return ((Number) value).floatValue();
         } else {

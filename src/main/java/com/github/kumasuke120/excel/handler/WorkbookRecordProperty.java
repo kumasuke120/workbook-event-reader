@@ -250,10 +250,6 @@ final class WorkbookRecordProperty<E> {
          */
         @Nullable
         Object getValue(@Nullable E record, @NotNull CellValue cellValue) {
-            if (column < 0) {
-                throw new WorkbookRecordException("cannot get value for column " + column);
-            }
-
             if (record == null) {
                 return null;
             }
