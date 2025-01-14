@@ -124,7 +124,8 @@ class HandlerUtilsTest {
     void asSqlTimestamp() {
         java.sql.Timestamp now = new java.sql.Timestamp(new Date().getTime());
         assertEquals(now, HandlerUtils.asSqlTimestamp(now));
-        assertEquals(java.sql.Timestamp.valueOf(LocalDateTime.now()), HandlerUtils.asSqlTimestamp(LocalDateTime.now()));
+        final LocalDateTime localDateTimeNow = LocalDateTime.now();
+        assertEquals(java.sql.Timestamp.valueOf(localDateTimeNow), HandlerUtils.asSqlTimestamp(localDateTimeNow));
         assertThrows(IllegalArgumentException.class, () -> HandlerUtils.asSqlTimestamp("string"));
     }
 
