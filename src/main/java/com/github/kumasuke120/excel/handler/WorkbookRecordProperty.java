@@ -270,7 +270,7 @@ final class WorkbookRecordProperty<E> {
                     throw e;
                 } else {
                     String msg = "cannot get value for field '" + field.getName() +
-                            "' using CellValueType '" + valueType + "'";
+                            "' using CellValueType '" + usingValueType + "'";
                     throw new WorkbookRecordException(msg, e);
                 }
             }
@@ -320,7 +320,7 @@ final class WorkbookRecordProperty<E> {
             }
 
             throw new WorkbookRecordException("cannot get value for field '" + field.getName() +
-                    "' using CellValueType '" + valueType + "'");
+                    "' using CellValueType '" + usingValueType + "'");
         }
 
         @NotNull
@@ -393,12 +393,14 @@ final class WorkbookRecordProperty<E> {
         @Nullable
         private Object getValueByMethod(@NotNull E record, @NotNull CellValue cellValue) {
             try {
-                return valueMethod.invoke(record, cellValue);
+                final CellValue preparedValue = prepareCellValue(cellValue);
+                return valueMethod.invoke(record, preparedValue);
             } catch (IllegalAccessException e) {
-                String msg = "valueMethod specified by @Workbook.Property '" + valueMethodName + "' cannot be accessed";
+                String msg = "valueMethod specified by @WorkbookRecord.Property '" + valueMethodName + "' " +
+                        "should be public: public Object " + valueMethodName + "(CellValue cellValue)";
                 throw new WorkbookRecordException(msg, e);
             } catch (InvocationTargetException e) {
-                String msg = "valueMethod specified by @Workbook.Property '" + valueMethodName +
+                String msg = "valueMethod specified by @WorkbookRecord.Property '" + valueMethodName +
                         "' encountered an error";
                 throw new WorkbookRecordException(msg, e.getTargetException());
             }
@@ -410,10 +412,10 @@ final class WorkbookRecordProperty<E> {
             }
 
             try {
-                return recordClass.getMethod(valueMethodName, CellValue.class);
+                return recordClass.getDeclaredMethod(valueMethodName, CellValue.class);
             } catch (NoSuchMethodException e) {
-                String msg = "valueMethod specified by @Workbook.Property cannot be found: " +
-                        "public Object " + valueMethodName + "(CellValue cellValue)";
+                String msg = "valueMethod specified by @WorkbookRecord.Property cannot be found: " +
+                        "Object " + valueMethodName + "(CellValue cellValue)";
                 throw new WorkbookRecordException(msg, e);
             }
         }
