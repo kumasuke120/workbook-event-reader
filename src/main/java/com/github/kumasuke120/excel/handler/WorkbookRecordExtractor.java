@@ -2,6 +2,7 @@ package com.github.kumasuke120.excel.handler;
 
 import com.github.kumasuke120.excel.CellValue;
 import com.github.kumasuke120.excel.WorkbookEventReader;
+import com.github.kumasuke120.excel.handler.WorkbookRecord.MetadataType;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -105,9 +106,9 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
 
         currentRecord = createRecord();
 
-        recordMapper.setSheetIndex(currentRecord, sheetIndex);
-        recordMapper.setRowNumber(currentRecord, rowNum);
-        recordMapper.setSheetName(currentRecord, currentSheetName);
+        recordMapper.setMetadata(MetadataType.SHEET_INDEX, currentRecord, sheetIndex);
+        recordMapper.setMetadata(MetadataType.SHEET_NAME, currentRecord, currentSheetName);
+        recordMapper.setMetadata(MetadataType.ROW_NUMBER, currentRecord, rowNum);
     }
 
     @Override

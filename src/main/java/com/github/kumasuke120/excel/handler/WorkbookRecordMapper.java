@@ -21,7 +21,7 @@ class WorkbookRecordMapper<E> {
 
     private final WorkbookRecord recordAnnotation;
 
-    private final Map<Integer, WorkbookRecordProperty<E>> properties;
+    private final PropertyBinder propertyBinder;
 
     /**
      * Constructs a new {@code WorkbookRecordMapper} for the specified record class.
@@ -32,7 +32,7 @@ class WorkbookRecordMapper<E> {
     WorkbookRecordMapper(@NotNull(exception = NullPointerException.class) Class<E> recordClass) {
         this.recordClass = HandlerUtils.ensureWorkbookRecordClass(recordClass);
         this.recordAnnotation = findRecordAnnotation();
-        this.properties = initProperties();
+        this.propertyBinder = initPropertyBinder();
     }
 
     /**
@@ -88,53 +88,29 @@ class WorkbookRecordMapper<E> {
      * @param cellValue the value of the cell
      */
     void setValue(@NotNull E record, int columnNum, @NotNull CellValue cellValue) {
-        final WorkbookRecordProperty<E> property = properties.get(columnNum);
+        final WorkbookRecordProperty<E> property = propertyBinder.getByColumn(columnNum);
         if (property == null) {
             return;
         }
         property.set(record, cellValue);
     }
 
-    /**
-     * Sets the sheet index of the specified record.
-     *
-     * @param record     the record to set
-     * @param sheetIndex the sheet index to set
-     */
-    void setSheetIndex(@NotNull E record, int sheetIndex) {
-        final WorkbookRecordProperty<E> property = properties.get(WorkbookRecordProperty.COLUMN_NUM_SHEET_INDEX);
+    void setMetadata(@NotNull WorkbookRecord.MetadataType metadataType, @NotNull E record, @NotNull Object value) {
+        final WorkbookRecordProperty<E> property = propertyBinder.getByMetadata(metadataType);
         if (property == null) {
             return;
         }
-        property.set(record, sheetIndex);
-    }
-
-    /**
-     * Sets the sheet name of the specified record.
-     *
-     * @param record    the record to set
-     * @param sheetName the sheet name to set
-     */
-    void setSheetName(@NotNull E record, @NotNull String sheetName) {
-        final WorkbookRecordProperty<E> property = properties.get(WorkbookRecordProperty.COLUMN_NUM_SHEET_NAME);
-        if (property == null) {
-            return;
+        final WorkbookRecord.CellValueType valueType = metadataType.getValueType();
+        switch (valueType) {
+            case STRING:
+                property.set(record, (String) value);
+                break;
+            case INTEGER:
+                property.set(record, (int) value);
+                break;
+            default:
+                throw new AssertionError("Shouldn't happen");
         }
-        property.set(record, sheetName);
-    }
-
-    /**
-     * Sets the row number of the specified record.
-     *
-     * @param record    the record to set
-     * @param rowNumber the row number to set
-     */
-    void setRowNumber(@NotNull E record, int rowNumber) {
-        final WorkbookRecordProperty<E> property = properties.get(WorkbookRecordProperty.COLUMN_NUM_ROW_NUMBER);
-        if (property == null) {
-            return;
-        }
-        property.set(record, rowNumber);
     }
 
     private WorkbookRecord findRecordAnnotation() {
@@ -144,7 +120,7 @@ class WorkbookRecordMapper<E> {
         return annotation;
     }
 
-    private Map<Integer, WorkbookRecordProperty<E>> initProperties() {
+    private PropertyBinder initPropertyBinder() {
         final Field[] fields = recordClass.getDeclaredFields();
 
         final List<WorkbookRecordProperty<E>> properties = new ArrayList<>(fields.length);
@@ -164,11 +140,11 @@ class WorkbookRecordMapper<E> {
             properties.add(prop);
         }
 
-        return asPropertyMap(properties);
+        return checkAndInitPropertyBinder(properties);
     }
 
     @NotNull
-    private Map<Integer, WorkbookRecordProperty<E>> asPropertyMap(List<WorkbookRecordProperty<E>> properties) {
+    private PropertyBinder checkAndInitPropertyBinder(List<WorkbookRecordProperty<E>> properties) {
 
         final Map<Integer, WorkbookRecordProperty<E>> ret = new HashMap<>(properties.size());
         for (WorkbookRecordProperty<E> property : properties) {
@@ -186,7 +162,7 @@ class WorkbookRecordMapper<E> {
                 }
             }
         }
-        return Collections.unmodifiableMap(ret);
+        return new PropertyBinder(ret);
     }
 
     @NotNull
@@ -213,6 +189,23 @@ class WorkbookRecordMapper<E> {
 
         PROPERTY
 
+    }
+
+    class PropertyBinder {
+
+        private final Map<Integer, WorkbookRecordProperty<E>> properties;
+
+        PropertyBinder(Map<Integer, WorkbookRecordProperty<E>> properties) {
+            this.properties = Collections.unmodifiableMap(properties);
+        }
+
+        WorkbookRecordProperty<E> getByColumn(int column) {
+            return properties.get(column);
+        }
+
+        WorkbookRecordProperty<E> getByMetadata(WorkbookRecord.MetadataType metadataType) {
+            return properties.get(metadataType.getMetaColumn());
+        }
     }
 
 }

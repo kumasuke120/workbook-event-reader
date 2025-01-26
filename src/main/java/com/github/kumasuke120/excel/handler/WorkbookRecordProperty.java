@@ -84,24 +84,8 @@ final class WorkbookRecordProperty<E> {
         }
 
         final WorkbookRecord.MetadataType metadataType = metaA.value();
-        int column;
-        CellValueType valueType;
-        switch (metadataType) {
-            case SHEET_INDEX:
-                column = COLUMN_NUM_SHEET_INDEX;
-                valueType = CellValueType.INTEGER;
-                break;
-            case SHEET_NAME:
-                column = COLUMN_NUM_SHEET_NAME;
-                valueType = CellValueType.STRING;
-                break;
-            case ROW_NUMBER:
-                column = COLUMN_NUM_ROW_NUMBER;
-                valueType = CellValueType.INTEGER;
-                break;
-            default:
-                throw new AssertionError("Shouldn't happen");
-        }
+        final int column = metadataType.getMetaColumn();
+        final CellValueType valueType = metadataType.getValueType();
 
         return new WorkbookRecordProperty<>(
                 recordClass,

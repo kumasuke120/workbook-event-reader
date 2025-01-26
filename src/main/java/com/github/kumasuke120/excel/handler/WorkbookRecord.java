@@ -85,17 +85,55 @@ public @interface WorkbookRecord {
         /**
          * The index(zero-based) of the sheet.
          */
-        SHEET_INDEX,
+        SHEET_INDEX(-1, CellValueType.INTEGER),
 
         /**
          * The name of the sheet.
          */
-        SHEET_NAME,
+        SHEET_NAME(-2, CellValueType.STRING),
 
         /**
          * The index(zero-based) of the row.
          */
-        ROW_NUMBER
+        ROW_NUMBER(-3, CellValueType.INTEGER),
+
+        ;
+
+        private final int metaColumn;
+        private final CellValueType valueType;
+
+        MetadataType(int metaColumn, CellValueType valueType) {
+            this.metaColumn = metaColumn;
+            this.valueType = valueType;
+        }
+
+        /**
+         * Gets the special column bound to the metadata type.
+         *
+         * @return the column bound to the metadata type
+         */
+        public int getMetaColumn() {
+            return metaColumn;
+        }
+
+        /**
+         * Gets the value type of the metadata value.
+         *
+         * @return the value type of the metadata value
+         */
+        public CellValueType getValueType() {
+            return valueType;
+        }
+
+        <E> void setMetadataValue(WorkbookRecordProperty<E> property, E record, Object value) {
+            if (valueType == CellValueType.STRING) {
+                property.set(record, (String) value);
+            } else if (valueType == CellValueType.INTEGER) {
+                property.set(record, (int) value);
+            } else {
+                throw new AssertionError("Shouldn't happen");
+            }
+        }
     }
 
     /**
