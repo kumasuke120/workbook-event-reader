@@ -95,7 +95,7 @@ class WorkbookRecordMapper<E> {
         property.set(record, cellValue);
     }
 
-    void setMetadata(@NotNull WorkbookRecord.MetadataType metadataType, @NotNull E record, @NotNull Object value) {
+    void setMetadata(@NotNull E record, @NotNull WorkbookRecord.MetadataType metadataType, @NotNull Object value) {
         final WorkbookRecordProperty<E> property = propertyBinder.getByMetadata(metadataType);
         if (property == null) {
             return;
@@ -146,15 +146,15 @@ class WorkbookRecordMapper<E> {
     @NotNull
     private PropertyBinder checkAndInitPropertyBinder(List<WorkbookRecordProperty<E>> properties) {
 
-        final Map<Integer, WorkbookRecordProperty<E>> ret = new HashMap<>(properties.size());
+        final Map<Integer, WorkbookRecordProperty<E>> map = new HashMap<>(properties.size());
         for (WorkbookRecordProperty<E> property : properties) {
-            final boolean exists = ret.putIfAbsent(property.getColumn(), property) != null;
+            final boolean exists = map.putIfAbsent(property.getColumn(), property) != null;
             if (exists) {
-                if (property.getColumn() == WorkbookRecordProperty.COLUMN_NUM_SHEET_INDEX) {
+                if (property.isMetadataType(WorkbookRecord.MetadataType.SHEET_INDEX)) {
                     throw new WorkbookRecordException("multiple @WorkbookRecord.Metadata(SHEET_INDEX) found");
-                } else if (property.getColumn() == WorkbookRecordProperty.COLUMN_NUM_SHEET_NAME) {
+                } else if (property.isMetadataType(WorkbookRecord.MetadataType.SHEET_NAME)) {
                     throw new WorkbookRecordException("multiple @WorkbookRecord.Metadata(SHEET_NAME) found");
-                } else if (property.getColumn() == WorkbookRecordProperty.COLUMN_NUM_ROW_NUMBER) {
+                } else if (property.isMetadataType(WorkbookRecord.MetadataType.ROW_NUMBER)) {
                     throw new WorkbookRecordException("multiple @WorkbookRecord.Metadata(ROW_NUMBER) found");
                 } else {
                     throw new WorkbookRecordException("column '" + property.getColumn() +
@@ -162,7 +162,7 @@ class WorkbookRecordMapper<E> {
                 }
             }
         }
-        return new PropertyBinder(ret);
+        return new PropertyBinder(map);
     }
 
     @NotNull

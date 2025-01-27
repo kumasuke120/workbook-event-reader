@@ -124,16 +124,6 @@ public @interface WorkbookRecord {
         public CellValueType getValueType() {
             return valueType;
         }
-
-        <E> void setMetadataValue(WorkbookRecordProperty<E> property, E record, Object value) {
-            if (valueType == CellValueType.STRING) {
-                property.set(record, (String) value);
-            } else if (valueType == CellValueType.INTEGER) {
-                property.set(record, (int) value);
-            } else {
-                throw new AssertionError("Shouldn't happen");
-            }
-        }
     }
 
     /**

@@ -27,10 +27,6 @@ import java.util.Date;
 @ApiStatus.Internal
 final class WorkbookRecordProperty<E> {
 
-    static final int COLUMN_NUM_SHEET_INDEX = -1;
-    static final int COLUMN_NUM_SHEET_NAME = -2;
-    static final int COLUMN_NUM_ROW_NUMBER = -3;
-
     private final Class<E> recordClass;
 
     private final int column;
@@ -128,6 +124,10 @@ final class WorkbookRecordProperty<E> {
      */
     int getColumn() {
         return column;
+    }
+
+    boolean isMetadataType(@NotNull WorkbookRecord.MetadataType metadataType) {
+        return metadataType.getMetaColumn() == column;
     }
 
     /**

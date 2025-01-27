@@ -106,9 +106,9 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
 
         currentRecord = createRecord();
 
-        recordMapper.setMetadata(MetadataType.SHEET_INDEX, currentRecord, sheetIndex);
-        recordMapper.setMetadata(MetadataType.SHEET_NAME, currentRecord, currentSheetName);
-        recordMapper.setMetadata(MetadataType.ROW_NUMBER, currentRecord, rowNum);
+        recordMapper.setMetadata(currentRecord, MetadataType.SHEET_INDEX, sheetIndex);
+        recordMapper.setMetadata(currentRecord, MetadataType.SHEET_NAME, currentSheetName);
+        recordMapper.setMetadata(currentRecord, MetadataType.ROW_NUMBER, rowNum);
     }
 
     @Override
