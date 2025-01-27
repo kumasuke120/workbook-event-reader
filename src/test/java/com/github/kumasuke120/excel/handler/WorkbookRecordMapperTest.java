@@ -14,6 +14,12 @@ class WorkbookRecordMapperTest {
         assertThrows(NullPointerException.class, () -> new WorkbookRecordMapper<>(null));
         assertThrows(WorkbookRecordException.class, () -> new WorkbookRecordMapper<>(ErrorTestRecord.class));
         assertDoesNotThrow(() -> new WorkbookRecordMapper<>(TestRecord.class));
+
+        assertThrows(WorkbookRecordException.class, () -> new WorkbookRecordMapper<>(MultipleSameColumnTestRecord.class));
+
+        assertThrows(WorkbookRecordException.class, () -> new WorkbookRecordMapper<>(MultipleSameMetadataTestRecord.class));
+        assertThrows(WorkbookRecordException.class, () -> new WorkbookRecordMapper<>(MultipleSameMetadata2TestRecord.class));
+        assertThrows(WorkbookRecordException.class, () -> new WorkbookRecordMapper<>(MultipleSameMetadata3TestRecord.class));
     }
 
     @Test
@@ -55,14 +61,17 @@ class WorkbookRecordMapperTest {
     @Test
     void setMetadata() {
         final WorkbookRecordMapper<TestRecord> mapper = new WorkbookRecordMapper<>(TestRecord.class);
-
         final TestRecord t = new TestRecord();
-        mapper.setMetadata(WorkbookRecord.MetadataType.SHEET_INDEX, t, 1);
+        mapper.setMetadata(t, WorkbookRecord.MetadataType.SHEET_INDEX, 1);
         assertEquals(1, t.sheetIndex);
-        mapper.setMetadata(WorkbookRecord.MetadataType.SHEET_NAME, t, "Sheet1");
+        mapper.setMetadata(t, WorkbookRecord.MetadataType.SHEET_NAME, "Sheet1");
         assertEquals("Sheet1", t.sheetName);
-        mapper.setMetadata(WorkbookRecord.MetadataType.ROW_NUMBER, t, 2);
+        mapper.setMetadata(t, WorkbookRecord.MetadataType.ROW_NUMBER, 2);
         assertEquals(2, t.rowNumber);
+
+        final WorkbookRecordMapper<TestRecord2> mapper2 = new WorkbookRecordMapper<>(TestRecord2.class);
+        final TestRecord2 t2 = new TestRecord2();
+        assertDoesNotThrow(() -> mapper2.setMetadata(t2, WorkbookRecord.MetadataType.SHEET_INDEX, 1));
     }
 
     public static class ErrorTestRecord {
@@ -90,6 +99,46 @@ class WorkbookRecordMapperTest {
         private String b;
         @Property(column = 2)
         private String c;
+    }
+
+    @WorkbookRecord
+    public static class TestRecord2 {
+        @Property(column = 0)
+        private String a;
+        @Property(column = 1)
+        private String b;
+    }
+
+    @WorkbookRecord
+    public static class MultipleSameColumnTestRecord {
+        @Property(column = 0)
+        private String a;
+        @Property(column = 0)
+        private String b;
+    }
+
+    @WorkbookRecord
+    public static class MultipleSameMetadataTestRecord {
+        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.SHEET_INDEX)
+        private Integer sheetIndex;
+        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.SHEET_INDEX)
+        private Integer sheetIndex2;
+    }
+
+    @WorkbookRecord
+    public static class MultipleSameMetadata2TestRecord {
+        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.SHEET_NAME)
+        private String sheetName;
+        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.SHEET_NAME)
+        private String sheetName2;
+    }
+
+    @WorkbookRecord
+    public static class MultipleSameMetadata3TestRecord {
+        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.ROW_NUMBER)
+        private Integer rowNumber;
+        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.ROW_NUMBER)
+        private Integer rowNumber2;
     }
 
 }
