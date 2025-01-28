@@ -18,22 +18,22 @@ import java.util.List;
 public class SampleDataExtractor {
 
     public static void main(String[] args) {
-        final Path filePath = ResourceUtil.getPathOfClasspathResource("handler/SampleData.xlsx");
+        final Path filePath = ResourceUtil.getPathOfClasspathResource("handler/sample-data.xlsx");
         try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath)) {
-            List<OfficeSupplySalesData> result = WorkbookRecordExtractor.extract(reader, OfficeSupplySalesData.class);
+            List<OrderDetail> result = WorkbookRecordExtractor.extract(reader, OrderDetail.class);
             result.forEach(System.out::println);
         }
     }
 
     @SuppressWarnings("unused")
-    @WorkbookRecord(startSheet = 1, endSheet = 2, startRow = 1, endColumn = 7)
-    public static class OfficeSupplySalesData {
+    @WorkbookRecord(endSheet = 2, startRow = 1)
+    public static class OrderDetail {
 
         @Metadata(MetadataType.SHEET_INDEX)
         private Integer sheetIndex;
 
         @Metadata(MetadataType.SHEET_NAME)
-        private String sheetName;
+        private String country;
 
         @Metadata(MetadataType.ROW_NUMBER)
         private Integer rowNum;
@@ -62,8 +62,8 @@ public class SampleDataExtractor {
         @Override
         public String toString() {
             return "OfficeSupplySalesData{" +
-                    "sheetIndex=" + sheetIndex +
-                    ", sheetName='" + sheetName + '\'' +
+                    "country='" + country + '\'' +
+                    ", sheetIndex=" + sheetIndex +
                     ", rowNum=" + rowNum +
                     ", orderDate=" + orderDate +
                     ", region='" + region + '\'' +
