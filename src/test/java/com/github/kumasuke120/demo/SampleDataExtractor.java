@@ -29,11 +29,11 @@ public class SampleDataExtractor {
     @WorkbookRecord(endSheet = 2, startRow = 1)
     public static class OrderDetail {
 
+        @Metadata(MetadataType.SHEET_NAME)
+        private String lang;
+
         @Metadata(MetadataType.SHEET_INDEX)
         private Integer sheetIndex;
-
-        @Metadata(MetadataType.SHEET_NAME)
-        private String country;
 
         @Metadata(MetadataType.ROW_NUMBER)
         private Integer rowNum;
@@ -62,7 +62,7 @@ public class SampleDataExtractor {
         @Override
         public String toString() {
             return "OfficeSupplySalesData{" +
-                    "country='" + country + '\'' +
+                    "lang='" + lang + '\'' +
                     ", sheetIndex=" + sheetIndex +
                     ", rowNum=" + rowNum +
                     ", orderDate=" + orderDate +
