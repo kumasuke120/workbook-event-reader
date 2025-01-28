@@ -6,6 +6,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -29,40 +30,30 @@ final class WorkbookRecordProperty<E> {
 
     private final Class<E> recordClass;
 
-    private final int column;
+    private final Field field;
 
-    private final boolean strict;
+    private final Kind kind;
 
-    private final boolean trim;
+    private final Annotation annotation;
 
     private final ValueMethod valueMethod;
 
-    private final Field field;
-
-    /**
-     * Creates a new instance of {@code WorkbookRecordProperty}.
-     *
-     * @param recordClass     the class of the record
-     * @param field           the field of the property
-     * @param column          the column number of the property
-     * @param strict          whether the value should be strictly converted
-     * @param trim            whether the value should be trimmed
-     * @param valueType       the type of the value
-     * @param valueMethodName the method name to get the value if specified
-     * @throws WorkbookRecordException if the specified class is not annotated with {@code @WorkbookRecord}
-     */
-    WorkbookRecordProperty(@NotNull Class<E> recordClass,
-                           @NotNull Field field, int column,
-                           boolean strict, boolean trim,
-                           @NotNull CellValueType valueType,
-                           @NotNull String valueMethodName) {
-
+    WorkbookRecordProperty(@NotNull Class<E> recordClass, @NotNull Field field,
+                           @NotNull WorkbookRecord.Property annotation) {
         this.recordClass = HandlerUtils.ensureWorkbookRecordClass(recordClass);
         this.field = field;
-        this.column = column;
-        this.strict = strict;
-        this.trim = trim;
-        this.valueMethod = new ValueMethod(valueType, valueMethodName);
+        this.kind = Kind.PROPERTY;
+        this.annotation = annotation;
+        this.valueMethod = new ValueMethod(annotation.valueType(), annotation.valueMethod());
+    }
+
+    WorkbookRecordProperty(@NotNull Class<E> recordClass, @NotNull Field field,
+                           @NotNull WorkbookRecord.Metadata annotation) {
+        this.recordClass = HandlerUtils.ensureWorkbookRecordClass(recordClass);
+        this.field = field;
+        this.kind = Kind.METADATA;
+        this.annotation = annotation;
+        this.valueMethod = new ValueMethod(annotation.value().getValueType(), "");
     }
 
     /**
@@ -78,19 +69,7 @@ final class WorkbookRecordProperty<E> {
         if (metaA == null) {
             throw new WorkbookRecordException("field must be annotated with @WorkbookRecord.Metadata");
         }
-
-        final WorkbookRecord.MetadataType metadataType = metaA.value();
-        final int column = metadataType.getMetaColumn();
-        final CellValueType valueType = metadataType.getValueType();
-
-        return new WorkbookRecordProperty<>(
-                recordClass,
-                field, column,
-                true,
-                false,
-                valueType,
-                ""
-        );
+        return new WorkbookRecordProperty<>(recordClass, field, metaA);
     }
 
     /**
@@ -106,15 +85,49 @@ final class WorkbookRecordProperty<E> {
         if (propA == null) {
             throw new WorkbookRecordException("field must be annotated with @WorkbookRecord.Property");
         }
+        return new WorkbookRecordProperty<>(recordClass, field, propA);
+    }
 
-        return new WorkbookRecordProperty<>(
-                recordClass,
-                field, propA.column(),
-                propA.strict(),
-                propA.trim(),
-                propA.valueType() == null ? WorkbookRecord.CellValueType.AUTO : propA.valueType(),
-                propA.valueMethod() == null ? "" : propA.valueMethod()
-        );
+    /**
+     * Converts the annotation to a property annotation if possible.
+     *
+     * @return the property annotation
+     */
+    WorkbookRecord.Property propertyAnnotation() {
+        if (kind != Kind.PROPERTY) {
+            throw new WorkbookRecordException("property is not a normal property");
+        }
+        return (WorkbookRecord.Property) annotation;
+    }
+
+    /**
+     * Converts the annotation to a metadata annotation if possible.
+     *
+     * @return the metadata annotation
+     */
+    WorkbookRecord.Metadata metadataAnnotation() {
+        if (kind != Kind.METADATA) {
+            throw new WorkbookRecordException("property is not a metadata property");
+        }
+        return (WorkbookRecord.Metadata) annotation;
+    }
+
+    /**
+     * Checks whether the property is in strict mode.
+     *
+     * @return {@code true} if the property is in strict mode, otherwise {@code false}
+     */
+    boolean isStrict() {
+        return propertyAnnotation().strict();
+    }
+
+    /**
+     * Checks whether the property is in trim mode.
+     *
+     * @return {@code true} if the property is in trim mode, otherwise {@code false}
+     */
+    boolean isTrim() {
+        return propertyAnnotation().trim();
     }
 
     /**
@@ -123,11 +136,24 @@ final class WorkbookRecordProperty<E> {
      * @return the column number of the property
      */
     int getColumn() {
-        return column;
+        switch (kind) {
+            case PROPERTY:
+                return propertyAnnotation().column();
+            case METADATA:
+                return metadataAnnotation().value().getMetaColumn();
+            default:
+                throw new AssertionError("Shouldn't happen");
+        }
     }
 
+    /**
+     * Determines whether the property is a metadata property.
+     *
+     * @param metadataType the metadata type to check
+     * @return {@code true} if the property is a metadata property, otherwise {@code false}
+     */
     boolean isMetadataType(@NotNull WorkbookRecord.MetadataType metadataType) {
-        return metadataType.getMetaColumn() == column;
+        return metadataType == metadataAnnotation().value();
     }
 
     /**
@@ -265,7 +291,7 @@ final class WorkbookRecordProperty<E> {
             final Class<?> fieldType = field.getType();
 
             if (cellValue.isNull()) {
-                if (!strict && fieldType.isPrimitive()) {
+                if (!isStrict() && fieldType.isPrimitive()) {
                     return HandlerUtils.getDefaultValue(fieldType);
                 } else {
                     return null;
@@ -281,7 +307,7 @@ final class WorkbookRecordProperty<E> {
                 return ret;
             }
 
-            if (!strict) {
+            if (!isStrict()) {
                 if (fieldType == boolean.class || fieldType == Boolean.class) {
                     return HandlerUtils.asBoolean(ret);
                 } else if (fieldType == byte.class || fieldType == Byte.class) {
@@ -335,7 +361,7 @@ final class WorkbookRecordProperty<E> {
                 autoValueType = CellValueType.DATETIME;
             }
 
-            if (!strict) {
+            if (!isStrict()) {
                 if (type == byte.class || type == Byte.class) {
                     autoValueType = CellValueType.INTEGER;
                 } else if (type == short.class || type == Short.class) {
@@ -365,10 +391,10 @@ final class WorkbookRecordProperty<E> {
         @NotNull
         private CellValue prepareCellValue(@NotNull CellValue cellValue) {
             CellValue ret = cellValue;
-            if (strict) {
+            if (isStrict()) {
                 ret = ret.strict();
             }
-            if (trim) {
+            if (isTrim()) {
                 ret = ret.trim();
             }
             return ret;
@@ -403,6 +429,17 @@ final class WorkbookRecordProperty<E> {
                 throw new WorkbookRecordException(msg, e);
             }
         }
+
+    }
+
+
+    public enum Kind {
+
+        NONE,
+
+        METADATA,
+
+        PROPERTY
 
     }
 

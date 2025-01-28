@@ -95,6 +95,13 @@ class WorkbookRecordMapper<E> {
         property.set(record, cellValue);
     }
 
+    /**
+     * Sets the value of the specified cell to the specified record based on the metadata type.
+     *
+     * @param record       the record to set
+     * @param metadataType the metadata type
+     * @param value        the value of the cell
+     */
     void setMetadata(@NotNull E record, @NotNull WorkbookRecord.MetadataType metadataType, @NotNull Object value) {
         final WorkbookRecordProperty<E> property = propertyBinder.getByMetadata(metadataType);
         if (property == null) {
@@ -125,7 +132,7 @@ class WorkbookRecordMapper<E> {
 
         final List<WorkbookRecordProperty<E>> properties = new ArrayList<>(fields.length);
         for (Field field : fields) {
-            final FieldPropertyKind propertyKind = detectFieldPropertyKind(field);
+            final WorkbookRecordProperty.Kind propertyKind = detectFieldPropertyKind(field);
             final WorkbookRecordProperty<E> prop;
             switch (propertyKind) {
                 case METADATA:
@@ -166,32 +173,22 @@ class WorkbookRecordMapper<E> {
     }
 
     @NotNull
-    private FieldPropertyKind detectFieldPropertyKind(@NotNull Field field) {
+    private WorkbookRecordProperty.Kind detectFieldPropertyKind(@NotNull Field field) {
         final WorkbookRecord.Metadata metaA = field.getAnnotation(WorkbookRecord.Metadata.class);
         final WorkbookRecord.Property propA = field.getAnnotation(WorkbookRecord.Property.class);
         if (propA != null && metaA != null) {
             throw new WorkbookRecordException("field cannot be annotated by both @WorkbookRecord.Metadata and " +
                     "@WorkbookRecord.Property");
         } else if (metaA != null) {
-            return FieldPropertyKind.METADATA;
+            return WorkbookRecordProperty.Kind.METADATA;
         } else if (propA != null) {
-            return FieldPropertyKind.PROPERTY;
+            return WorkbookRecordProperty.Kind.PROPERTY;
         } else {
-            return FieldPropertyKind.NONE;
+            return WorkbookRecordProperty.Kind.NONE;
         }
     }
 
-    private enum FieldPropertyKind {
-
-        NONE,
-
-        METADATA,
-
-        PROPERTY
-
-    }
-
-    class PropertyBinder {
+    final class PropertyBinder {
 
         private final Map<Integer, WorkbookRecordProperty<E>> properties;
 
