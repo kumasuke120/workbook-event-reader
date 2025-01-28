@@ -1,5 +1,6 @@
 package com.github.kumasuke120.excel;
 
+import com.github.kumasuke120.excel.util.StringUtils;
 import com.github.kumasuke120.util.LightWeightConstructor;
 import com.github.kumasuke120.util.ResourceUtil;
 import com.github.kumasuke120.util.WorkbookRowCounter;
@@ -76,7 +77,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
         });
         // endregion
 
-        if (encryptedFileName == null || encryptedFileName.isEmpty()) { // skips encryption test
+        if (StringUtils.isEmpty(encryptedFileName)) { // skips encryption test
             return;
         }
 
@@ -378,7 +379,7 @@ abstract class AbstractWorkbookEventReaderTest<R extends AbstractWorkbookEventRe
             sheetStack.push(sheetIndex);
 
             if (sheetIndex == 0) {
-                assertTrue("Sheet1".equals(sheetName) || sheetName.isEmpty());
+                assertTrue("Sheet1".equals(sheetName) || StringUtils.isEmpty(sheetName));
             } else if (sheetIndex == 1) {
                 assertEquals("Sheet2", sheetName);
             } else {

@@ -2,6 +2,7 @@ package com.github.kumasuke120.excel.handler;
 
 import com.github.kumasuke120.excel.CellValue;
 import com.github.kumasuke120.excel.handler.WorkbookRecord.CellValueType;
+import com.github.kumasuke120.excel.util.StringUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -417,7 +418,7 @@ final class WorkbookRecordProperty<E> {
         }
 
         private Method findValueMethod() {
-            if (valueMethodName.isEmpty()) {
+            if (StringUtils.isBlank(valueMethodName)) {
                 return null;
             }
 

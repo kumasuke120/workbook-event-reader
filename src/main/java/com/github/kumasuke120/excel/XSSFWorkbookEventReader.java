@@ -1,5 +1,6 @@
 package com.github.kumasuke120.excel;
 
+import com.github.kumasuke120.excel.util.StringUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
@@ -429,7 +430,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             final short formatIndex = getFormatIndex();
             final String formatString = getFormatString(formatIndex);
 
-            if (stringCellValue == null || stringCellValue.isEmpty()) {
+            if (StringUtils.isEmpty(stringCellValue)) {
                 cellValue = null;
             } else if (isCurrentCellString() ||
                     ReaderUtils.isATextFormat(formatIndex, formatString)) { // deals with cell marked as text

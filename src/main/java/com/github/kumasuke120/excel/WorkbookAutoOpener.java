@@ -1,5 +1,6 @@
 package com.github.kumasuke120.excel;
 
+import com.github.kumasuke120.excel.util.CollectionUtils;
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.poifs.filesystem.FileMagic;
 import org.apache.poi.util.IOUtils;
@@ -180,7 +181,7 @@ class WorkbookAutoOpener {
     @NotNull
     private WorkbookEventReader tryConstruct(@NotNull List<ReaderConstructor> constructors,
                                              @NotNull Supplier<InputStream> inSupplier) {
-        assert !constructors.isEmpty();
+        assert CollectionUtils.isNotEmpty(constructors);
 
         WorkbookIOException thrown = null;
         for (ReaderConstructor constructor : constructors) {
@@ -199,7 +200,7 @@ class WorkbookAutoOpener {
     @NotNull
     private WorkbookEventReader tryConstruct(@NotNull List<ReaderConstructor> constructors,
                                              @NotNull Path filePath) {
-        assert !constructors.isEmpty();
+        assert CollectionUtils.isNotEmpty(constructors);
 
         WorkbookIOException thrown = null;
         for (ReaderConstructor constructor : constructors) {
