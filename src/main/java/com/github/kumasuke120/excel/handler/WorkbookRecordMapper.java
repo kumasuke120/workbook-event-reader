@@ -128,7 +128,7 @@ class WorkbookRecordMapper<E> {
     }
 
     private PropertyBinder initPropertyBinder() {
-        final Field[] fields = recordClass.getDeclaredFields();
+        final Field[] fields = getDeclaredFields();
 
         final List<WorkbookRecordProperty<E>> properties = new ArrayList<>(fields.length);
         for (Field field : fields) {
@@ -150,6 +150,15 @@ class WorkbookRecordMapper<E> {
         return checkAndInitPropertyBinder(properties);
     }
 
+    private Field[] getDeclaredFields() {
+        List<Field> fields = new ArrayList<>();
+        Class<?> clazz;
+        for (clazz = recordClass; clazz != null; clazz = clazz.getSuperclass()) {
+            fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
+        }
+        return fields.toArray(new Field[0]);
+    }
+
     @NotNull
     private PropertyBinder checkAndInitPropertyBinder(List<WorkbookRecordProperty<E>> properties) {
 
@@ -164,8 +173,8 @@ class WorkbookRecordMapper<E> {
                 } else if (property.isMetadataType(WorkbookRecord.MetadataType.ROW_NUMBER)) {
                     throw new WorkbookRecordException("multiple @WorkbookRecord.Metadata(ROW_NUMBER) found");
                 } else {
-                    throw new WorkbookRecordException("column '" + property.getColumn() +
-                            "' specified @WorkbookRecord.Property already exists");
+                    throw new WorkbookRecordException("A @WorkbookRecord.Property is already specified for column '" +
+                            property.getColumn() + "'");
                 }
             }
         }

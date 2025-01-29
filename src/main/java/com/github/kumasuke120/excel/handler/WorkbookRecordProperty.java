@@ -154,6 +154,9 @@ final class WorkbookRecordProperty<E> {
      * @return {@code true} if the property is a metadata property, otherwise {@code false}
      */
     boolean isMetadataType(@NotNull WorkbookRecord.MetadataType metadataType) {
+        if (kind != Kind.METADATA) {
+            return false;
+        }
         return metadataType == metadataAnnotation().value();
     }
 
@@ -304,7 +307,7 @@ final class WorkbookRecordProperty<E> {
             final CellValue preparedValue = prepareCellValue(cellValue);
             final Object ret = usingValueType.getValue(preparedValue);
             // if the field type matches the default type, return it directly
-            if (fieldType == ret.getClass()) {
+            if (HandlerUtils.primitiveToWrapper(fieldType) == ret.getClass()) {
                 return ret;
             }
 

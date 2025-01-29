@@ -41,7 +41,6 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      * @throws WorkbookRecordException if the specified class is not annotated with {@code @WorkbookRecord}
      */
     public WorkbookRecordExtractor(@NotNull(exception = NullPointerException.class) Class<E> recordClass) {
-
         this.recordClass = HandlerUtils.ensureWorkbookRecordClass(recordClass);
         this.recordMapper = new WorkbookRecordMapper<>(recordClass);
         this.recordConstructor = findNoArgRecordConstructor();
@@ -56,16 +55,25 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
     }
 
     /**
+     * Creates a new {@code WorkbookRecordExtractor} for the specified record class.
+     *
+     * @param recordClass the record class
+     * @param <T>         the type of the record to extract
+     * @return a new {@code WorkbookRecordExtractor} for the specified record class
+     */
+    public static <T> WorkbookRecordExtractor<T> ofRecord(Class<T> recordClass) {
+        return new WorkbookRecordExtractor<>(recordClass);
+    }
+
+    /**
      * Extracts records from the specified {@link WorkbookEventReader}.
      *
-     * @param reader the reader to extract records from
-     * @param <T>    the type of the record to extract
+     * @param reader the {@link WorkbookEventReader} to read
      * @return a list of extracted records
      */
-    public static <T> List<T> extract(WorkbookEventReader reader, Class<T> recordClass) {
-        final WorkbookRecordExtractor<T> extractor = new WorkbookRecordExtractor<>(recordClass);
-        reader.read(extractor);
-        return extractor.getResult();
+    public List<E> extract(WorkbookEventReader reader) {
+        reader.read(this);
+        return getResult();
     }
 
     /**
@@ -85,15 +93,17 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
     @Override
     public void onStartSheet(int sheetIndex, @NotNull String sheetName) {
         currentSheetName = sheetName;
-        if (recordMapper.beyondRange(sheetIndex)) {
-            WorkbookEventReader.currentRead().cancel();
-        }
+        cancelIfSheetBeyondRange(sheetIndex);
     }
 
     @Override
     public void onEndSheet(int sheetIndex) {
         currentSheetName = null;
-        if (recordMapper.beyondRange(sheetIndex - 1)) {
+        cancelIfSheetBeyondRange(sheetIndex + 1);
+    }
+
+    void cancelIfSheetBeyondRange(int sheetIndex) {
+        if (recordMapper.beyondRange(sheetIndex)) {
             WorkbookEventReader.currentRead().cancel();
         }
     }
