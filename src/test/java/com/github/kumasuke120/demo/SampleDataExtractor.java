@@ -20,7 +20,8 @@ public class SampleDataExtractor {
     public static void main(String[] args) {
         final Path filePath = ResourceUtil.getPathOfClasspathResource("handler/sample-data.xlsx");
         try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath)) {
-            List<OrderDetail> result = WorkbookRecordExtractor.extract(reader, OrderDetail.class);
+            final WorkbookRecordExtractor<OrderDetail> extractor = WorkbookRecordExtractor.ofRecord(OrderDetail.class);
+            final List<OrderDetail> result = extractor.extract(reader);
             result.forEach(System.out::println);
         }
     }
@@ -61,11 +62,8 @@ public class SampleDataExtractor {
 
         @Override
         public String toString() {
-            return "OfficeSupplySalesData{" +
-                    "lang='" + lang + '\'' +
-                    ", sheetIndex=" + sheetIndex +
-                    ", rowNum=" + rowNum +
-                    ", orderDate=" + orderDate +
+            return "OrderDetail[" + lang + ":" + sheetIndex + ":" + rowNum + "]{" +
+                    "orderDate=" + orderDate +
                     ", region='" + region + '\'' +
                     ", rep='" + rep + '\'' +
                     ", item='" + item + '\'' +

@@ -129,6 +129,20 @@ class HandlerUtilsTest {
         assertThrows(IllegalArgumentException.class, () -> HandlerUtils.asSqlTimestamp("string"));
     }
 
+    @Test
+    void primitiveToWrapper() {
+        assertEquals(Boolean.class, HandlerUtils.primitiveToWrapper(boolean.class));
+        assertEquals(Byte.class, HandlerUtils.primitiveToWrapper(byte.class));
+        assertEquals(Short.class, HandlerUtils.primitiveToWrapper(short.class));
+        assertEquals(Integer.class, HandlerUtils.primitiveToWrapper(int.class));
+        assertEquals(Long.class, HandlerUtils.primitiveToWrapper(long.class));
+        assertEquals(Float.class, HandlerUtils.primitiveToWrapper(float.class));
+        assertEquals(Double.class, HandlerUtils.primitiveToWrapper(double.class));
+        assertEquals(Character.class, HandlerUtils.primitiveToWrapper(char.class));
+        assertEquals(Void.class, HandlerUtils.primitiveToWrapper(void.class));
+        assertEquals(String.class, HandlerUtils.primitiveToWrapper(String.class));
+    }
+
     @WorkbookRecord
     public static class TestRecord {
     }
