@@ -59,6 +59,9 @@ class WorkbookRecordPropertyTest {
         assertEquals(3, property2.getColumn());
         property2.set(record, 456);
         assertEquals(456, record.integerValue);
+
+        assertThrows(WorkbookRecordException.class, () -> newTestProperty("plainValue"));
+
     }
 
     @Test
@@ -130,7 +133,10 @@ class WorkbookRecordPropertyTest {
     private static WorkbookRecordProperty<TestRecord> newTestProperty(String fieldName) {
         try {
             final Field field = TestRecord.class.getDeclaredField(fieldName);
-            return WorkbookRecordProperty.newNormalProperty(TestRecord.class, field);
+            final WorkbookRecordProperty<TestRecord> property = WorkbookRecordProperty.newNormalProperty(TestRecord.class, field);
+            assertDoesNotThrow(property::propertyAnnotation);
+            assertThrows(WorkbookRecordException.class, property::metadataAnnotation);
+            return property;
         } catch (ReflectiveOperationException e) {
             throw new AssertionError(e);
         }
@@ -140,7 +146,10 @@ class WorkbookRecordPropertyTest {
     private static WorkbookRecordProperty<TestRecord> newTestMetadataProperty(String fieldName) {
         try {
             final Field field = TestRecord.class.getDeclaredField(fieldName);
-            return WorkbookRecordProperty.newMetadataProperty(TestRecord.class, field);
+            final WorkbookRecordProperty<TestRecord> property = WorkbookRecordProperty.newMetadataProperty(TestRecord.class, field);
+            assertDoesNotThrow(property::metadataAnnotation);
+            assertThrows(WorkbookRecordException.class, property::propertyAnnotation);
+            return property;
         } catch (ReflectiveOperationException e) {
             throw new AssertionError(e);
         }
