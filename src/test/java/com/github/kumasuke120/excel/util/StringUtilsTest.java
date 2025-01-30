@@ -2,10 +2,27 @@ package com.github.kumasuke120.excel.util;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings("ConstantValue")
 class StringUtilsTest {
+
+    @Test
+    void newInstance() {
+        try {
+            final Constructor<StringUtils> constructor = StringUtils.class.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            constructor.newInstance();
+        } catch (InvocationTargetException e) {
+            assertTrue(e.getTargetException() instanceof UnsupportedOperationException);
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
+    }
 
     @Test
     void isEmpty() {

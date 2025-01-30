@@ -2,7 +2,6 @@ package com.github.kumasuke120.demo;
 
 import com.github.kumasuke120.excel.CellValue;
 import com.github.kumasuke120.excel.WorkbookEventReader;
-import com.github.kumasuke120.excel.XSSFWorkbookEventReader;
 import com.github.kumasuke120.util.ResourceUtil;
 import org.jetbrains.annotations.NotNull;
 
