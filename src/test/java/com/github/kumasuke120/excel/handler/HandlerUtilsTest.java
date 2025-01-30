@@ -14,6 +14,7 @@ import java.time.ZoneId;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class HandlerUtilsTest {
 
@@ -48,6 +49,7 @@ class HandlerUtilsTest {
         assertEquals(false, HandlerUtils.getDefaultValue(boolean.class));
         assertEquals('\0', HandlerUtils.getDefaultValue(char.class));
         assertNull(HandlerUtils.getDefaultValue(String.class));
+        assertThrows(AssertionError.class, () -> HandlerUtils.getDefaultValue(void.class));
     }
 
     @Test
@@ -110,6 +112,9 @@ class HandlerUtilsTest {
         assertEquals(java.sql.Time.valueOf(localTimeNow), HandlerUtils.asSqlTime(localTimeNow));
         assertThrows(IllegalArgumentException.class, () -> HandlerUtils.asSqlTime(localTimeNow.toString()));
         assertThrows(IllegalArgumentException.class, () -> HandlerUtils.asSqlTime("string"));
+
+        final LocalDateTime localDateTimeNow = LocalDateTime.now();
+        assertEquals(java.sql.Time.valueOf(localDateTimeNow.toLocalTime()), HandlerUtils.asSqlTime(localDateTimeNow));
     }
 
     @Test

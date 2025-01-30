@@ -204,7 +204,8 @@ class HandlerUtils {
         } else {
             try {
                 Date date = asDate(value);
-                return new java.sql.Time(date.getTime());
+                final long time = date.getTime() % (24 * 60 * 60 * 1000) / 1000 * 1000;
+                return new java.sql.Time(time);
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("cannot convert '" + value + "' to Time", e);
             }
