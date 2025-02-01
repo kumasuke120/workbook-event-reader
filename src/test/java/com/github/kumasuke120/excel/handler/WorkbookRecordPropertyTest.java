@@ -36,7 +36,7 @@ class WorkbookRecordPropertyTest {
         final CellValue cellValue3 = newCellValue(" 123 ");
         final WorkbookRecordProperty<TestRecord> property3 = newTestProperty("strictLongValue");
         assertEquals(7, property3.getColumn());
-
+        property3.set(record, cellValue2);
         assertThrows(WorkbookRecordException.class, () -> property3.set(record, cellValue3));
     }
 
