@@ -40,6 +40,7 @@ class WorkbookRecordPropertyTest {
         assertThrows(WorkbookRecordException.class, () -> property3.set(record, cellValue3));
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Test
     void setIntValue() {
         final TestRecord record = new TestRecord();
@@ -62,8 +63,11 @@ class WorkbookRecordPropertyTest {
 
         assertThrows(WorkbookRecordException.class, () -> newTestProperty("plainValue"));
 
+        final WorkbookRecordProperty property3 = newTestProperty("integerValue");
+        assertThrows(WorkbookRecordException.class, () -> property3.set(new Object(), cellValue2));
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Test
     void setMetadataValue() {
         final TestRecord record = new TestRecord();
@@ -75,9 +79,15 @@ class WorkbookRecordPropertyTest {
         property2.set(record, 2);
         assertEquals(2, record.sheetIndex);
 
-        final WorkbookRecordProperty<TestRecord> property3 = newTestMetadataProperty("sheetName");
-        property3.set(record, "name");
+        final WorkbookRecordProperty property3 = newTestMetadataProperty("sheetIndex");
+        assertThrows(WorkbookRecordException.class, () -> property3.set(new Object(), 2));
+
+        final WorkbookRecordProperty<TestRecord> property4 = newTestMetadataProperty("sheetName");
+        property4.set(record, "name");
         assertEquals("name", record.sheetName);
+
+        final WorkbookRecordProperty property5 = newTestMetadataProperty("sheetName");
+        assertThrows(WorkbookRecordException.class, () -> property5.set(new Object(), "name"));
 
         assertThrows(WorkbookRecordException.class, () -> newTestMetadataProperty("plainValue"));
     }
