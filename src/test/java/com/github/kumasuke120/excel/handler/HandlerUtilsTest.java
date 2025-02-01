@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -104,7 +105,7 @@ class HandlerUtilsTest {
 
     @Test
     void asSqlTime() {
-        java.sql.Time now = new java.sql.Time(new Date().getTime());
+        final java.sql.Time now = new java.sql.Time(new Date().getTime());
         assertEquals(now, HandlerUtils.asSqlTime(now));
 
         final LocalTime localTimeNow = LocalTime.now();
@@ -118,19 +119,32 @@ class HandlerUtilsTest {
 
     @Test
     void asSqlDate() {
-        java.sql.Date now = new java.sql.Date(new Date().getTime());
+        final java.sql.Date now = new java.sql.Date(new Date().getTime());
         assertEquals(now, HandlerUtils.asSqlDate(now));
         assertEquals(java.sql.Date.valueOf(LocalDate.now()), HandlerUtils.asSqlDate(LocalDate.now()));
         assertThrows(IllegalArgumentException.class, () -> HandlerUtils.asSqlDate("string"));
+
+        final LocalDateTime localDateTimeNow = LocalDateTime.now();
+        assertEquals(java.sql.Date.valueOf(localDateTimeNow.toLocalDate()), HandlerUtils.asSqlDate(localDateTimeNow));
+
+        final Date date = new Date();
+        assertEquals(new java.sql.Date(date.getTime()), HandlerUtils.asSqlDate(date));
     }
 
     @Test
     void asSqlTimestamp() {
-        java.sql.Timestamp now = new java.sql.Timestamp(new Date().getTime());
+        final java.sql.Timestamp now = new java.sql.Timestamp(new Date().getTime());
         assertEquals(now, HandlerUtils.asSqlTimestamp(now));
         final LocalDateTime localDateTimeNow = LocalDateTime.now();
         assertEquals(java.sql.Timestamp.valueOf(localDateTimeNow), HandlerUtils.asSqlTimestamp(localDateTimeNow));
+
+        final LocalDate localDateNow = LocalDate.now();
+        assertEquals(java.sql.Timestamp.valueOf(localDateNow.atStartOfDay()), HandlerUtils.asSqlTimestamp(localDateNow));
+
         assertThrows(IllegalArgumentException.class, () -> HandlerUtils.asSqlTimestamp("string"));
+
+        final Date date = new Date();
+        assertEquals(new java.sql.Timestamp(date.getTime()), HandlerUtils.asSqlTimestamp(date));
     }
 
     @Test
@@ -145,6 +159,7 @@ class HandlerUtilsTest {
         assertEquals(Character.class, HandlerUtils.primitiveToWrapper(char.class));
         assertEquals(Void.class, HandlerUtils.primitiveToWrapper(void.class));
         assertEquals(String.class, HandlerUtils.primitiveToWrapper(String.class));
+        assertNotEquals(String.class, HandlerUtils.primitiveToWrapper(List.class));
     }
 
     @WorkbookRecord
