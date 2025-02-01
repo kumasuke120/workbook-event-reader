@@ -53,15 +53,6 @@ class HandlerUtilsTest {
     }
 
     @Test
-    void asBoolean() {
-        assertTrue(HandlerUtils.asBoolean(true));
-        assertFalse(HandlerUtils.asBoolean(false));
-        assertTrue(HandlerUtils.asBoolean(1));
-        assertFalse(HandlerUtils.asBoolean(0));
-        assertThrows(IllegalArgumentException.class, () -> HandlerUtils.asBoolean("string"));
-    }
-
-    @Test
     void asByte() {
         assertEquals((byte) 1, HandlerUtils.asByte((byte) 1));
         assertEquals((byte) 1, HandlerUtils.asByte(1));

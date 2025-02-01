@@ -308,9 +308,7 @@ final class WorkbookRecordProperty<E> {
             }
 
             if (!isStrict()) {
-                if (fieldType == boolean.class || fieldType == Boolean.class) {
-                    return HandlerUtils.asBoolean(ret);
-                } else if (fieldType == byte.class || fieldType == Byte.class) {
+                if (fieldType == byte.class || fieldType == Byte.class) {
                     return HandlerUtils.asByte(ret);
                 } else if (fieldType == short.class || fieldType == Short.class) {
                     return HandlerUtils.asShort(ret);
@@ -433,12 +431,24 @@ final class WorkbookRecordProperty<E> {
     }
 
 
+    /**
+     * An enumeration represents the kind of the property.
+     */
     public enum Kind {
 
+        /**
+         * Represents an ignored property
+         */
         NONE,
 
+        /**
+         * Represents a metadata property
+         */
         METADATA,
 
+        /**
+         * Represents a normal property
+         */
         PROPERTY
 
     }

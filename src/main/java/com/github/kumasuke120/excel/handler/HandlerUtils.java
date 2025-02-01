@@ -79,23 +79,6 @@ class HandlerUtils {
     }
 
     /**
-     * Converts the specified value to a boolean as much as possible.
-     *
-     * @param value the value to convert
-     * @return the converted boolean value
-     * @throws IllegalArgumentException if the value cannot be converted to a boolean
-     */
-    static boolean asBoolean(@NotNull Object value) {
-        if (value instanceof Boolean) {
-            return (boolean) value;
-        } else if (value instanceof Number) {
-            return ((Number) value).intValue() != 0;
-        } else {
-            throw new IllegalArgumentException("cannot convert '" + value + "' to boolean");
-        }
-    }
-
-    /**
      * Converts the specified value to an integer as much as possible.
      *
      * @param value the value to convert
