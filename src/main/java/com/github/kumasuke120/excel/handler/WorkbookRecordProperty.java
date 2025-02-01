@@ -263,11 +263,7 @@ final class WorkbookRecordProperty<E> {
          * @return the value of the property
          */
         @Nullable
-        Object getValue(@Nullable E record, @NotNull CellValue cellValue) {
-            if (record == null) {
-                return null;
-            }
-
+        Object getValue(@NotNull E record, @NotNull CellValue cellValue) {
             if (valueMethod == null) {
                 return getValueByType(cellValue);
             } else {
