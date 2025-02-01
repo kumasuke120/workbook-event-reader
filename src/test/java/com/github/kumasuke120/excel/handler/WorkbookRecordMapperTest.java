@@ -1,6 +1,7 @@
 package com.github.kumasuke120.excel.handler;
 
 import com.github.kumasuke120.excel.CellValue;
+import com.github.kumasuke120.excel.handler.WorkbookRecord.Metadata;
 import com.github.kumasuke120.excel.handler.WorkbookRecord.Property;
 import org.junit.jupiter.api.Test;
 
@@ -20,6 +21,8 @@ class WorkbookRecordMapperTest {
         assertThrows(WorkbookRecordException.class, () -> new WorkbookRecordMapper<>(MultipleSameMetadataTestRecord.class));
         assertThrows(WorkbookRecordException.class, () -> new WorkbookRecordMapper<>(MultipleSameMetadata2TestRecord.class));
         assertThrows(WorkbookRecordException.class, () -> new WorkbookRecordMapper<>(MultipleSameMetadata3TestRecord.class));
+
+        assertThrows(WorkbookRecordException.class, () -> new WorkbookRecordMapper<>(DuplicateAnnotationTestRecord.class));
     }
 
     @Test
@@ -74,6 +77,13 @@ class WorkbookRecordMapperTest {
         assertDoesNotThrow(() -> mapper2.setMetadata(t2, WorkbookRecord.MetadataType.SHEET_INDEX, 1));
     }
 
+    @WorkbookRecord
+    public static class DuplicateAnnotationTestRecord {
+        @Property(column = 0)
+        @Metadata(WorkbookRecord.MetadataType.SHEET_NAME)
+        private String a;
+    }
+
     public static class ErrorTestRecord {
         @Property(column = 0)
         private String a;
@@ -86,11 +96,11 @@ class WorkbookRecordMapperTest {
     @WorkbookRecord(startSheet = 1, endSheet = 5,
             startRow = 2, endRow = 10, startColumn = 1, endColumn = 6)
     public static class TestRecord {
-        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.SHEET_INDEX)
+        @Metadata(WorkbookRecord.MetadataType.SHEET_INDEX)
         private Integer sheetIndex;
-        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.SHEET_NAME)
+        @Metadata(WorkbookRecord.MetadataType.SHEET_NAME)
         private String sheetName;
-        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.ROW_NUMBER)
+        @Metadata(WorkbookRecord.MetadataType.ROW_NUMBER)
         private int rowNumber;
 
         @Property(column = 0)
@@ -119,25 +129,25 @@ class WorkbookRecordMapperTest {
 
     @WorkbookRecord
     public static class MultipleSameMetadataTestRecord {
-        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.SHEET_INDEX)
+        @Metadata(WorkbookRecord.MetadataType.SHEET_INDEX)
         private Integer sheetIndex;
-        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.SHEET_INDEX)
+        @Metadata(WorkbookRecord.MetadataType.SHEET_INDEX)
         private Integer sheetIndex2;
     }
 
     @WorkbookRecord
     public static class MultipleSameMetadata2TestRecord {
-        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.SHEET_NAME)
+        @Metadata(WorkbookRecord.MetadataType.SHEET_NAME)
         private String sheetName;
-        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.SHEET_NAME)
+        @Metadata(WorkbookRecord.MetadataType.SHEET_NAME)
         private String sheetName2;
     }
 
     @WorkbookRecord
     public static class MultipleSameMetadata3TestRecord {
-        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.ROW_NUMBER)
+        @Metadata(WorkbookRecord.MetadataType.ROW_NUMBER)
         private Integer rowNumber;
-        @WorkbookRecord.Metadata(WorkbookRecord.MetadataType.ROW_NUMBER)
+        @Metadata(WorkbookRecord.MetadataType.ROW_NUMBER)
         private Integer rowNumber2;
     }
 
