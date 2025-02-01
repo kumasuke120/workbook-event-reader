@@ -32,6 +32,7 @@ class HandlerUtils {
      * @return the specified class
      * @throws WorkbookRecordException if the specified class is not annotated with {@code @WorkbookRecord}
      */
+    @NotNull
     static <T> Class<T> ensureWorkbookRecordClass(@Nullable Class<T> clazz) {
         if (clazz == null) {
             throw new NullPointerException();

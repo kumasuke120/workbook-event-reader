@@ -121,10 +121,7 @@ class WorkbookRecordMapper<E> {
     }
 
     private WorkbookRecord findRecordAnnotation() {
-        assert recordClass != null;
-        WorkbookRecord annotation = recordClass.getAnnotation(WorkbookRecord.class);
-        assert annotation != null;
-        return annotation;
+        return recordClass.getAnnotation(WorkbookRecord.class);
     }
 
     private PropertyBinder initPropertyBinder() {
