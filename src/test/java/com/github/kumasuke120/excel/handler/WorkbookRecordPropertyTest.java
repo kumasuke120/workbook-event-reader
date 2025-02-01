@@ -1,6 +1,7 @@
 package com.github.kumasuke120.excel.handler;
 
 import com.github.kumasuke120.excel.CellValue;
+import com.github.kumasuke120.excel.handler.WorkbookRecord.CellValueType;
 import com.github.kumasuke120.excel.handler.WorkbookRecord.Metadata;
 import com.github.kumasuke120.excel.handler.WorkbookRecord.MetadataType;
 import com.github.kumasuke120.excel.handler.WorkbookRecord.Property;
@@ -11,11 +12,60 @@ import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class WorkbookRecordPropertyTest {
+
+    @Test
+    void determineValueType() {
+        final WorkbookRecordProperty<TestRecord> property = newTestProperty("booleanValue");
+        assertEquals(20, property.getColumn());
+        assertUsingValueType(CellValueType.BOOLEAN, property);
+
+        final WorkbookRecordProperty<TestRecord> property2 = newTestProperty("booleanValue2");
+        assertEquals(21, property2.getColumn());
+        assertUsingValueType(CellValueType.BOOLEAN, property2);
+
+        final WorkbookRecordProperty<TestRecord> property3 = newTestProperty("longValue");
+        assertEquals(22, property3.getColumn());
+        assertUsingValueType(CellValueType.LONG, property3);
+
+        final WorkbookRecordProperty<TestRecord> property4 = newTestProperty("longValue2");
+        assertEquals(23, property4.getColumn());
+        assertUsingValueType(CellValueType.LONG, property4);
+
+        final WorkbookRecordProperty<TestRecord> property5 = newTestProperty("doubleValue");
+        assertEquals(24, property5.getColumn());
+        assertUsingValueType(CellValueType.DOUBLE, property5);
+
+        final WorkbookRecordProperty<TestRecord> property6 = newTestProperty("doubleValue2");
+        assertEquals(25, property6.getColumn());
+        assertUsingValueType(CellValueType.DOUBLE, property6);
+
+        final WorkbookRecordProperty<TestRecord> property7 = newTestProperty("localTimeValue");
+        assertEquals(26, property7.getColumn());
+        assertUsingValueType(CellValueType.TIME, property7);
+
+        final WorkbookRecordProperty<TestRecord> property8 = newTestProperty("localDateTimeValue");
+        assertEquals(27, property8.getColumn());
+        assertUsingValueType(CellValueType.DATETIME, property8);
+
+        assertThrows(WorkbookRecordException.class, () -> newTestProperty("objectValue"));
+    }
+
+    void assertUsingValueType(CellValueType expected, WorkbookRecordProperty<?> property) {
+        if (property == null) {
+            fail("property is null");
+        } else if (property.valueMethod == null) {
+            fail("property.valueMethod is null");
+        } else {
+            assertEquals(expected, property.valueMethod.usingValueType);
+        }
+    }
 
     @Test
     void setObjectValue() {
@@ -104,9 +154,13 @@ class WorkbookRecordPropertyTest {
 
         final WorkbookRecordProperty<TestRecord> property2 = newTestProperty("absIntValue");
         assertEquals(6, property2.getColumn());
-
         property2.set(record, cellValue);
         assertEquals(123, record.absIntValue);
+
+        final WorkbookRecordProperty<TestRecord> property3 = newTestProperty("errorProneMethod");
+        assertEquals(28, property3.getColumn());
+        final CellValue cellValue2 = newCellValue("abc");
+        assertThrows(WorkbookRecordException.class, () -> property3.set(record, cellValue2));
     }
 
     @Test
@@ -117,11 +171,20 @@ class WorkbookRecordPropertyTest {
         final WorkbookRecordProperty<TestRecord> byteProperty = newTestProperty("lenientByteValue");
         byteProperty.set(record, numberValue);
 
+        final WorkbookRecordProperty<TestRecord> byteProperty2 = newTestProperty("lenientByteValue2");
+        byteProperty2.set(record, numberValue);
+
         final WorkbookRecordProperty<TestRecord> shortProperty = newTestProperty("lenientShortValue");
         shortProperty.set(record, numberValue);
 
+        final WorkbookRecordProperty<TestRecord> shortProperty2 = newTestProperty("lenientShortValue2");
+        shortProperty2.set(record, numberValue);
+
         final WorkbookRecordProperty<TestRecord> floatProperty = newTestProperty("lenientFloatValue");
         floatProperty.set(record, numberValue);
+
+        final WorkbookRecordProperty<TestRecord> floatProperty2 = newTestProperty("lenientFloatValue2");
+        floatProperty2.set(record, numberValue);
 
         final CellValue dateTimeValue = newCellValue("2020-01-01 01:23:45");
         final WorkbookRecordProperty<TestRecord> dateProperty = newTestProperty("lenientDateValue");
@@ -218,6 +281,34 @@ class WorkbookRecordPropertyTest {
         private java.sql.Date lenientSqlDateValue;
         @Property(column = 15)
         private BigInteger lenientBigIntegerValue;
+        @Property(column = 16)
+        private Byte lenientByteValue2;
+        @Property(column = 17)
+        private Short lenientShortValue2;
+        @Property(column = 18)
+        private Float lenientFloatValue2;
+        @Property(column = 19)
+        private Object objectValue;
+
+        @Property(column = 20)
+        private boolean booleanValue;
+        @Property(column = 21)
+        private Boolean booleanValue2;
+        @Property(column = 22)
+        private long longValue;
+        @Property(column = 23)
+        private Long longValue2;
+        @Property(column = 24)
+        private double doubleValue;
+        @Property(column = 25)
+        private Double doubleValue2;
+        @Property(column = 26)
+        private LocalTime localTimeValue;
+        @Property(column = 27)
+        private LocalDateTime localDateTimeValue;
+
+        @Property(column = 28, valueMethod = "errorProneMethod")
+        private Integer errorProneMethod;
 
         private Object privateMethod(CellValue cellValue) {
             throw new UnsupportedOperationException();
@@ -225,6 +316,10 @@ class WorkbookRecordPropertyTest {
 
         public Object absIntValue(CellValue cellValue) {
             return Math.abs(cellValue.intValue());
+        }
+
+        public Integer errorProneMethod(CellValue cellValue) {
+            return Integer.parseInt(cellValue.stringValue());
         }
     }
 }

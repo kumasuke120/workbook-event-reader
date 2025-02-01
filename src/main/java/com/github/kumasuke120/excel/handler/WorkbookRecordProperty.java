@@ -37,7 +37,7 @@ final class WorkbookRecordProperty<E> {
 
     private final Annotation annotation;
 
-    private final ValueMethod valueMethod;
+    final ValueMethod valueMethod;
 
     WorkbookRecordProperty(@NotNull Class<E> recordClass, @NotNull Field field,
                            @NotNull WorkbookRecord.Property annotation) {
@@ -230,16 +230,15 @@ final class WorkbookRecordProperty<E> {
     /**
      * A class represents the method to get the value of the property.
      */
-    private class ValueMethod {
+    class ValueMethod {
 
-        private final CellValueType valueType;
+        final CellValueType valueType;
 
-        private final CellValueType usingValueType;
+        final CellValueType usingValueType;
 
-        private final String valueMethodName;
+        final String valueMethodName;
 
-        private final Method valueMethod;
-
+        final Method valueMethod;
 
         /**
          * Creates a new instance of {@code ValueMethod}.
