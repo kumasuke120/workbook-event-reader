@@ -29,7 +29,7 @@ class WorkbookRecordExtractorTest {
             final List<Sheet0OrderDetail> result = extractor.extract(reader);
 
             assertTrue(CollectionUtils.isEmpty(extractor.getColumnTitles()));
-            assertNull(extractor.getColumnTitle(0));
+            assertEquals("", extractor.getColumnTitle(0));
 
             assertEquals(42, result.size());
             assertEquals("eng", result.get(0).lang);
