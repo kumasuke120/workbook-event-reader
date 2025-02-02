@@ -4,6 +4,9 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -26,16 +29,34 @@ class CollectionUtilsTest {
 
     @Test
     void isEmpty() {
-        assertTrue(CollectionUtils.isEmpty(null));
+        // test for collection
+        assertTrue(CollectionUtils.isEmpty((Collection<?>) null));
         assertTrue(CollectionUtils.isEmpty(new java.util.ArrayList<>()));
         assertFalse(CollectionUtils.isEmpty(java.util.Arrays.asList(1, 2, 3)));
+
+        // test for map
+        assertTrue(CollectionUtils.isEmpty((java.util.Map<?, ?>) null));
+        assertTrue(CollectionUtils.isEmpty(new java.util.HashMap<>()));
+        Map<String, String> map = new HashMap<>();
+        map.put("1", "one");
+        map.put("2", "two");
+        assertFalse(CollectionUtils.isEmpty(map));
     }
 
     @Test
     void isNotEmpty() {
-        assertFalse(CollectionUtils.isNotEmpty(null));
+        // test for collection
+        assertFalse(CollectionUtils.isNotEmpty((Collection<?>) null));
         assertFalse(CollectionUtils.isNotEmpty(new java.util.ArrayList<>()));
         assertTrue(CollectionUtils.isNotEmpty(java.util.Arrays.asList(1, 2, 3)));
+
+        // test for map
+        assertFalse(CollectionUtils.isNotEmpty((java.util.Map<?, ?>) null));
+        assertFalse(CollectionUtils.isNotEmpty(new java.util.HashMap<>()));
+        Map<String, String> map = new HashMap<>();
+        map.put("1", "one");
+        map.put("2", "two");
+        assertTrue(CollectionUtils.isNotEmpty(map));
     }
 
 }

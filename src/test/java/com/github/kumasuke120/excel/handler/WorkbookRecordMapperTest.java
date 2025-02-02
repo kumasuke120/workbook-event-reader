@@ -25,6 +25,17 @@ class WorkbookRecordMapperTest {
         assertThrows(WorkbookRecordException.class, () -> new WorkbookRecordMapper<>(DuplicateAnnotationTestRecord.class));
     }
 
+    void titleRow() {
+        final WorkbookRecordMapper<TitleRowTestRecord> mapper = new WorkbookRecordMapper<>(TitleRowTestRecord.class);
+        assertTrue(mapper.isTitleRow(0));
+        assertFalse(mapper.isTitleRow(1));
+        assertFalse(mapper.isTitleRow(-1));
+
+        final WorkbookRecordMapper<NoTitleRowTestRecord> mapper2 = new WorkbookRecordMapper<>(NoTitleRowTestRecord.class);
+        assertFalse(mapper.isTitleRow(0));
+        assertFalse(mapper.isTitleRow(-1));
+    }
+
     @Test
     void rangeCheck() {
         final WorkbookRecordMapper<TestRecord> mapper = new WorkbookRecordMapper<>(TestRecord.class);
@@ -82,6 +93,14 @@ class WorkbookRecordMapperTest {
         @Property(column = 0)
         @Metadata(WorkbookRecord.MetadataType.SHEET_NAME)
         private String a;
+    }
+
+    @WorkbookRecord(titleRow = 0)
+    public static class TitleRowTestRecord {
+    }
+
+    @WorkbookRecord
+    public static class NoTitleRowTestRecord {
     }
 
     public static class ErrorTestRecord {

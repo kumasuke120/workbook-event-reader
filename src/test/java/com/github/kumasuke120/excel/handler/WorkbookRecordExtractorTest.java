@@ -5,6 +5,7 @@ import com.github.kumasuke120.excel.WorkbookProcessException;
 import com.github.kumasuke120.excel.handler.WorkbookRecord.Metadata;
 import com.github.kumasuke120.excel.handler.WorkbookRecord.MetadataType;
 import com.github.kumasuke120.excel.handler.WorkbookRecord.Property;
+import com.github.kumasuke120.excel.util.CollectionUtils;
 import com.github.kumasuke120.util.ResourceUtil;
 import org.junit.jupiter.api.Test;
 
@@ -13,12 +14,12 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class WorkbookRecordExtractorTest {
 
     private static final String TEST_RESOURCE_NAME = "handler/sample-data.xlsx";
+    private static final String TEST_RESOURCE_NOTITLE_NAME = "handler/sample-data-notitle.xlsx";
 
     @Test
     void extract() {
@@ -26,6 +27,9 @@ class WorkbookRecordExtractorTest {
         try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath)) {
             final WorkbookRecordExtractor<Sheet0OrderDetail> extractor = WorkbookRecordExtractor.ofRecord(Sheet0OrderDetail.class);
             final List<Sheet0OrderDetail> result = extractor.extract(reader);
+
+            assertTrue(CollectionUtils.isEmpty(extractor.getColumnTitles()));
+            assertNull(extractor.getColumnTitle(0));
 
             assertEquals(42, result.size());
             assertEquals("eng", result.get(0).lang);
@@ -39,6 +43,44 @@ class WorkbookRecordExtractorTest {
             assertEquals(80, result.get(30).units);
             assertEquals(new BigDecimal("4.99"), result.get(32).unitCost);
             assertEquals(new BigDecimal("1879.06"), result.get(41).total);
+        }
+    }
+
+    @Test
+    void extractWithTitle() {
+        final Path filePath = ResourceUtil.getPathOfClasspathResource(TEST_RESOURCE_NAME);
+        try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath)) {
+            final WorkbookRecordExtractor<Sheet0WithTitleOrderDetail> extractor = WorkbookRecordExtractor.ofRecord(Sheet0WithTitleOrderDetail.class);
+            final List<Sheet0WithTitleOrderDetail> result = extractor.extract(reader);
+
+            final List<String> columnTitles = extractor.getColumnTitles();
+            assertTrue(CollectionUtils.isNotEmpty(columnTitles));
+            assertEquals("OrderDate", columnTitles.get(0));
+            assertEquals("Region", columnTitles.get(1));
+            assertEquals("Rep", columnTitles.get(2));
+            assertEquals("Item", columnTitles.get(3));
+            assertEquals("Units", columnTitles.get(4));
+            assertEquals("Unit Cost", columnTitles.get(5));
+            assertEquals("Total", columnTitles.get(6));
+            assertEquals("OrderDate", extractor.getColumnTitle(0));
+            assertEquals("Region", extractor.getColumnTitle(1));
+            assertEquals("Rep", extractor.getColumnTitle(2));
+            assertEquals("Item", extractor.getColumnTitle(3));
+            assertEquals("Units", extractor.getColumnTitle(4));
+            assertEquals("Unit Cost", extractor.getColumnTitle(5));
+            assertEquals("Total", extractor.getColumnTitle(6));
+
+            assertEquals(43, result.size());
+        }
+
+        final Path filePath2 = ResourceUtil.getPathOfClasspathResource(TEST_RESOURCE_NOTITLE_NAME);
+        try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath2)) {
+            final WorkbookRecordExtractor<Sheet0WithTitleOrderDetail> extractor = WorkbookRecordExtractor.ofRecord(Sheet0WithTitleOrderDetail.class);
+            final List<Sheet0WithTitleOrderDetail> result = extractor.extract(reader);
+
+            final List<String> columnTitles = extractor.getColumnTitles();
+            assertTrue(CollectionUtils.isEmpty(columnTitles));
+            assertEquals(43, result.size());
         }
     }
 
@@ -111,6 +153,10 @@ class WorkbookRecordExtractorTest {
         @Property(column = 6)
         BigDecimal total;
 
+    }
+
+    @WorkbookRecord(titleRow = 0, endSheet = 1, startRow = 1)
+    public static class Sheet0WithTitleOrderDetail extends OrderDetail {
     }
 
     @WorkbookRecord(endSheet = 1, startRow = 1, endRow = 43)

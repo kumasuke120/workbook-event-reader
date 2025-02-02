@@ -1,6 +1,7 @@
 package com.github.kumasuke120.excel.handler;
 
 
+import com.github.kumasuke120.excel.CellValue;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
@@ -151,6 +152,15 @@ class HandlerUtilsTest {
         assertEquals(Void.class, HandlerUtils.primitiveToWrapper(void.class));
         assertEquals(String.class, HandlerUtils.primitiveToWrapper(String.class));
         assertNotEquals(String.class, HandlerUtils.primitiveToWrapper(List.class));
+    }
+
+    @Test
+    void isValueEmpty() {
+        assertTrue(HandlerUtils.isValueEmpty(null));
+        assertTrue(HandlerUtils.isValueEmpty(CellValue.newInstance(null)));
+        assertTrue(HandlerUtils.isValueEmpty(CellValue.newInstance("")));
+        assertTrue(HandlerUtils.isValueEmpty(CellValue.newInstance("   ")));
+        assertFalse(HandlerUtils.isValueEmpty(CellValue.newInstance("1")));
     }
 
     @WorkbookRecord
