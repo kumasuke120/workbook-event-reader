@@ -28,7 +28,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
 
     private final Constructor<E> recordConstructor;
 
-    private Map<Integer, String> columnTitles;
+    private Map<Integer, Map<Integer, String>> columnTitles;
 
     private List<E> result;
 
@@ -88,35 +88,64 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
     }
 
     /**
-     * Returns the title of the specified column number.
+     * Returns the title of the specified column in sheet 0.
      *
-     * @param columnNum the column number
+     * @param columnNum  the column number
      * @return the title of the specified column number
      */
     public String getColumnTitle(int columnNum) {
-        if (CollectionUtils.isEmpty(columnTitles)) {
+        return getColumnTitle(0, columnNum);
+    }
+
+    /**
+     * Returns the title of the specified column in given sheet.
+     *
+     * @param sheetIndex the index of the sheet
+     * @param columnNum  the column number
+     * @return the title of the specified column number
+     */
+    public String getColumnTitle(int sheetIndex, int columnNum) {
+        Map<Integer, String> sheetColumnTitles;
+        if (CollectionUtils.isEmpty(columnTitles) ||
+                CollectionUtils.isEmpty(sheetColumnTitles = columnTitles.get(sheetIndex))) {
             return null;
         }
-        final String title = columnTitles.get(columnNum);
+        final String title = sheetColumnTitles.get(columnNum);
         return title == null ? "" : title;
     }
 
     /**
-     * Returns a list of all column titles.
+     * Returns a list of all column titles in sheet 0.
      *
      * @return a list of all column titles
      */
     public List<String> getColumnTitles() {
+        return getColumnTitles(0);
+    }
+
+    /**
+     * Returns a list of all column titles in given sheet.
+     *
+     * @param sheetIndex the index of the sheet
+     * @return a list of all column titles
+     */
+    public List<String> getColumnTitles(int sheetIndex) {
         if (CollectionUtils.isEmpty(columnTitles)) {
             return null;
         }
-        final Integer maxColumn = Collections.max(columnTitles.keySet());
-        if (maxColumn == null) {
+        Map<Integer, String> sheetColumnTitles = columnTitles.get(sheetIndex);
+        if (sheetColumnTitles == null) {
+            return null;
+        }
+        final Integer maxColumn;
+        try {
+            maxColumn = Collections.max(sheetColumnTitles.keySet());
+        } catch (NoSuchElementException e) {
             return null;
         }
         final List<String> titles = new ArrayList<>(maxColumn + 1);
         for (int i = 0; i <= maxColumn; i++) {
-            titles.add(getColumnTitle(i));
+            titles.add(getColumnTitle(sheetIndex, i));
         }
         return titles;
     }
@@ -129,6 +158,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
 
     @Override
     public void onStartSheet(int sheetIndex, @NotNull String sheetName) {
+        columnTitles.putIfAbsent(sheetIndex, new TreeMap<>());
         currentSheetName = sheetName;
         cancelIfSheetBeyondRange(sheetIndex);
     }
@@ -174,7 +204,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
         if (recordMapper.isTitleRow(rowNum)) {
             if (!HandlerUtils.isValueEmpty(cellValue)) {
                 String columnTitle = cellValue.trim().stringValue();
-                columnTitles.put(columnNum, columnTitle);
+                columnTitles.get(sheetIndex).put(columnNum, columnTitle);
             }
         }
 
