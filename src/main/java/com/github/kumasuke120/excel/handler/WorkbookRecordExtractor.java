@@ -3,6 +3,7 @@ package com.github.kumasuke120.excel.handler;
 import com.github.kumasuke120.excel.CellValue;
 import com.github.kumasuke120.excel.WorkbookEventReader;
 import com.github.kumasuke120.excel.handler.WorkbookRecord.MetadataType;
+import com.github.kumasuke120.excel.util.CollectionUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -93,10 +94,11 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      * @return the title of the specified column number
      */
     public String getColumnTitle(int columnNum) {
-        if (columnTitles == null) {
+        if (CollectionUtils.isEmpty(columnTitles)) {
             return null;
         }
-        return columnTitles.get(columnNum) == null ? "" : columnTitles.get(columnNum);
+        final String title = columnTitles.get(columnNum);
+        return title == null ? "" : title;
     }
 
     /**
@@ -105,12 +107,12 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      * @return a list of all column titles
      */
     public List<String> getColumnTitles() {
-        if (columnTitles == null) {
+        if (CollectionUtils.isEmpty(columnTitles)) {
             return null;
         }
         final Integer maxColumn = Collections.max(columnTitles.keySet());
         if (maxColumn == null) {
-            return new ArrayList<>();
+            return null;
         }
         final List<String> titles = new ArrayList<>(maxColumn + 1);
         for (int i = 0; i <= maxColumn; i++) {
@@ -170,7 +172,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
     @Override
     public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
         if (recordMapper.isTitleRow(rowNum)) {
-            if (!cellValue.isNull()) {
+            if (!HandlerUtils.isValueEmpty(cellValue)) {
                 String columnTitle = cellValue.trim().stringValue();
                 columnTitles.put(columnNum, columnTitle);
             }

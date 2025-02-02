@@ -1,5 +1,7 @@
 package com.github.kumasuke120.excel.handler;
 
+import com.github.kumasuke120.excel.CellValue;
+import com.github.kumasuke120.excel.util.StringUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -276,6 +278,10 @@ class HandlerUtils {
         } else {
             return clazz;
         }
+    }
+
+    public static boolean isValueEmpty(@Nullable CellValue cellValue) {
+        return cellValue == null || cellValue.isNull() || StringUtils.isBlank(cellValue.stringValue());
     }
 
 }

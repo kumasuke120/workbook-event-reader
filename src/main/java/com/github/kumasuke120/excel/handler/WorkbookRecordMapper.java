@@ -87,7 +87,7 @@ class WorkbookRecordMapper<E> {
      * @return {@code true} if the specified row number is the title row, {@code false} otherwise
      */
     boolean isTitleRow(int rowNum) {
-        return rowNum == recordAnnotation.titleRow();
+        return rowNum >= 0 && rowNum == recordAnnotation.titleRow();
     }
 
     /**

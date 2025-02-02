@@ -3,6 +3,7 @@ package com.github.kumasuke120.excel.util;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * A utility class that provides some common operations on {@link Collection}
@@ -32,6 +33,26 @@ public class CollectionUtils {
      */
     public static boolean isNotEmpty(Collection<?> coll) {
         return !isEmpty(coll);
+    }
+
+    /**
+     * Checks if the given {@link Map} is {@code null} or empty
+     *
+     * @param map the {@link Map} to be checked
+     * @return {@code true} if the given {@link Map} is {@code null} or empty, otherwise {@code false}
+     */
+    public static boolean isEmpty(Map<?, ?> map) {
+        return map == null || map.isEmpty();
+    }
+
+    /**
+     * Checks if the given {@link Map} is not {@code null} and not empty
+     *
+     * @param map the {@link Map} to be checked
+     * @return {@code true} if the given {@link Map} is not {@code null} and not empty, otherwise {@code false}
+     */
+    public static boolean isNotEmpty(Map<?, ?> map) {
+        return !isEmpty(map);
     }
 
 }
