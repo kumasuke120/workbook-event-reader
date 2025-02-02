@@ -90,7 +90,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
     /**
      * Returns the title of the specified column in sheet 0.
      *
-     * @param columnNum  the column number
+     * @param columnNum the column number
      * @return the title of the specified column number
      */
     public String getColumnTitle(int columnNum) {
@@ -107,7 +107,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
     public String getColumnTitle(int sheetIndex, int columnNum) {
         Map<Integer, String> sheetColumnTitles;
         if (CollectionUtils.isEmpty(columnTitles) ||
-                CollectionUtils.isEmpty(sheetColumnTitles = columnTitles.get(sheetIndex))) {
+                (sheetColumnTitles = columnTitles.get(sheetIndex)) == null) {
             return null;
         }
         final String title = sheetColumnTitles.get(columnNum);

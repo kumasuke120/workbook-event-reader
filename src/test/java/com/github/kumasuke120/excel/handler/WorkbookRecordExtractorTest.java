@@ -78,11 +78,13 @@ class WorkbookRecordExtractorTest {
             final WorkbookRecordExtractor<Sheet0WithTitleOrderDetail> extractor = WorkbookRecordExtractor.ofRecord(Sheet0WithTitleOrderDetail.class);
             assertNull(extractor.getColumnTitles());
             assertNull(extractor.getColumnTitles(1));
+            assertNull(extractor.getColumnTitle(0));
 
             final List<Sheet0WithTitleOrderDetail> result = extractor.extract(reader);
 
             assertTrue(CollectionUtils.isEmpty(extractor.getColumnTitles()));
             assertTrue(CollectionUtils.isEmpty(extractor.getColumnTitles(1)));
+            assertEquals("", extractor.getColumnTitle(0));
             assertEquals(43, result.size());
         }
     }
