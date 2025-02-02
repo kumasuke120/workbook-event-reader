@@ -76,10 +76,13 @@ class WorkbookRecordExtractorTest {
         final Path filePath2 = ResourceUtil.getPathOfClasspathResource(TEST_RESOURCE_NOTITLE_NAME);
         try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath2)) {
             final WorkbookRecordExtractor<Sheet0WithTitleOrderDetail> extractor = WorkbookRecordExtractor.ofRecord(Sheet0WithTitleOrderDetail.class);
+            assertNull(extractor.getColumnTitles());
+            assertNull(extractor.getColumnTitles(1));
+
             final List<Sheet0WithTitleOrderDetail> result = extractor.extract(reader);
 
-            final List<String> columnTitles = extractor.getColumnTitles();
-            assertTrue(CollectionUtils.isEmpty(columnTitles));
+            assertTrue(CollectionUtils.isEmpty(extractor.getColumnTitles()));
+            assertTrue(CollectionUtils.isEmpty(extractor.getColumnTitles(1)));
             assertEquals(43, result.size());
         }
     }
