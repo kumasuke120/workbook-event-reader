@@ -161,7 +161,7 @@ class ReaderUtils {
 
             if (excelDateValue < 1) { // time only
                 return localDateTime.toLocalTime();
-            } else if (ReaderUtils.isAWholeNumber(excelDateValue)) { // date only
+            } else if (isAWholeNumber(excelDateValue)) { // date only
                 return localDateTime.toLocalDate();
             } else { // date with time
                 return localDateTime;
