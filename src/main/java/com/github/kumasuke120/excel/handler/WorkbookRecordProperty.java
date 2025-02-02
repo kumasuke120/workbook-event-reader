@@ -323,6 +323,8 @@ final class WorkbookRecordProperty<E> {
                     return HandlerUtils.asSqlDate(ret);
                 } else if (fieldType == BigInteger.class) {
                     return HandlerUtils.asBigInteger(ret);
+                } else if (fieldType == Object.class) {
+                    return ret;
                 }
             }
 
