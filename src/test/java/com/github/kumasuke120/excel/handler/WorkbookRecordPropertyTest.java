@@ -88,6 +88,10 @@ class WorkbookRecordPropertyTest {
         assertEquals(7, property3.getColumn());
         property3.set(record, cellValue2);
         assertThrows(WorkbookRecordException.class, () -> property3.set(record, cellValue3));
+
+        final CellValue cellValue4 = newCellValue(123L);
+        final WorkbookRecordProperty<TestRecord> property4 = newTestProperty("strictIntegerValue");
+        assertThrows(WorkbookRecordException.class, () -> property4.set(record, cellValue4));
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -201,6 +205,10 @@ class WorkbookRecordPropertyTest {
 
         final WorkbookRecordProperty<TestRecord> bigIntegerProperty = newTestProperty("lenientBigIntegerValue");
         bigIntegerProperty.set(record, numberValue);
+
+        final WorkbookRecordProperty<TestRecord> integerObjectValue = newTestProperty("integerObjectValue");
+        integerObjectValue.set(record, numberValue);
+        assertEquals(1, record.integerObjectValue);
     }
 
     private static WorkbookRecordProperty<TestRecord> newTestProperty(String fieldName) {
@@ -309,6 +317,12 @@ class WorkbookRecordPropertyTest {
 
         @Property(column = 28, valueMethod = "errorProneMethod")
         private Integer errorProneMethod;
+
+        @Property(column = 29, valueType = CellValueType.INTEGER)
+        private Object integerObjectValue;
+
+        @Property(column = 30, valueType = CellValueType.LONG, strict = true)
+        private Integer strictIntegerValue;
 
         private Object privateMethod(CellValue cellValue) {
             throw new UnsupportedOperationException();
