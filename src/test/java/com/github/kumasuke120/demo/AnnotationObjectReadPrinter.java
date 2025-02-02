@@ -15,19 +15,34 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 
-public class SampleDataExtractor {
+public class AnnotationObjectReadPrinter {
 
     public static void main(String[] args) {
         final Path filePath = ResourceUtil.getPathOfClasspathResource("handler/sample-data.xlsx");
         try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath)) {
             final WorkbookRecordExtractor<OrderDetail> extractor = WorkbookRecordExtractor.ofRecord(OrderDetail.class);
             final List<OrderDetail> result = extractor.extract(reader);
-            result.forEach(System.out::println);
+
+            printOrderDetailTitle(extractor.getColumnTitles());
+            result.forEach(AnnotationObjectReadPrinter::printOrderDetail);
         }
     }
 
+    private static void printOrderDetailTitle(List<String> titles) {
+        System.out.println("+------------+------------+------------+--------------+----------+------------+------------+");
+        System.out.printf("| %-10s | %-10s | %-10s | %-12s | %-8s | %-10s | %-10s |\n",
+                titles.get(0), titles.get(1), titles.get(2), titles.get(3), titles.get(4), titles.get(5), titles.get(6));
+        System.out.println("+------------+------------+------------+--------------+----------+------------+------------+");
+    }
+
+    private static void printOrderDetail(OrderDetail orderDetail) {
+        System.out.printf("| %-10s | %-10s | %-10s | %-12s | %8s | %10s | %10s |\n",
+                orderDetail.getOrderDate(), orderDetail.getRegion(), orderDetail.getRep(),
+                orderDetail.getItem(), orderDetail.getUnits(), orderDetail.getUnitCost(), orderDetail.getTotal());
+    }
+
     @SuppressWarnings("unused")
-    @WorkbookRecord(endSheet = 2, startRow = 1)
+    @WorkbookRecord(titleRow = 0, endSheet = 1, startRow = 1)
     public static class OrderDetail {
 
         @Metadata(MetadataType.SHEET_NAME)
@@ -59,6 +74,46 @@ public class SampleDataExtractor {
 
         @Property(column = 6)
         private BigDecimal total;
+
+        public String getLang() {
+            return lang;
+        }
+
+        public Integer getSheetIndex() {
+            return sheetIndex;
+        }
+
+        public Integer getRowNum() {
+            return rowNum;
+        }
+
+        public LocalDate getOrderDate() {
+            return orderDate;
+        }
+
+        public String getRegion() {
+            return region;
+        }
+
+        public String getRep() {
+            return rep;
+        }
+
+        public String getItem() {
+            return item;
+        }
+
+        public BigInteger getUnits() {
+            return units;
+        }
+
+        public BigDecimal getUnitCost() {
+            return unitCost;
+        }
+
+        public BigDecimal getTotal() {
+            return total;
+        }
 
         @Override
         public String toString() {
