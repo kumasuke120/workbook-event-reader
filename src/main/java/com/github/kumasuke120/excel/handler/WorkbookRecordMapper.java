@@ -81,6 +81,16 @@ class WorkbookRecordMapper<E> {
     }
 
     /**
+     * Checks if the specified row number is the title row.
+     *
+     * @param rowNum the row number to check
+     * @return {@code true} if the specified row number is the title row, {@code false} otherwise
+     */
+    boolean isTitleRow(int rowNum) {
+        return rowNum == recordAnnotation.titleRow();
+    }
+
+    /**
      * Sets the value of the specified cell to the specified record based on the column number.
      *
      * @param record    the record to set

@@ -8,8 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * An extractor for extracting records from a workbook. It must be used with {@link WorkbookEventReader}.
@@ -27,6 +26,8 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
     private final WorkbookRecordMapper<E> recordMapper;
 
     private final Constructor<E> recordConstructor;
+
+    private Map<Integer, String> columnTitles;
 
     private List<E> result;
 
@@ -85,8 +86,42 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
         return new ArrayList<>(result);
     }
 
+    /**
+     * Returns the title of the specified column number.
+     *
+     * @param columnNum the column number
+     * @return the title of the specified column number
+     */
+    public String getColumnTitle(int columnNum) {
+        if (columnTitles == null) {
+            return null;
+        }
+        return columnTitles.get(columnNum) == null ? "" : columnTitles.get(columnNum);
+    }
+
+    /**
+     * Returns a list of all column titles.
+     *
+     * @return a list of all column titles
+     */
+    public List<String> getColumnTitles() {
+        if (columnTitles == null) {
+            return null;
+        }
+        final Integer maxColumn = Collections.max(columnTitles.keySet());
+        if (maxColumn == null) {
+            return new ArrayList<>();
+        }
+        final List<String> titles = new ArrayList<>(maxColumn + 1);
+        for (int i = 0; i <= maxColumn; i++) {
+            titles.add(getColumnTitle(i));
+        }
+        return titles;
+    }
+
     @Override
     public void onStartDocument() {
+        columnTitles = new TreeMap<>();
         result = new ArrayList<>();
     }
 
@@ -134,11 +169,16 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
 
     @Override
     public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
-        if (!recordMapper.withinRange(sheetIndex, rowNum, columnNum)) {
-            return;
+        if (recordMapper.isTitleRow(rowNum)) {
+            if (!cellValue.isNull()) {
+                String columnTitle = cellValue.trim().stringValue();
+                columnTitles.put(columnNum, columnTitle);
+            }
         }
 
-        recordMapper.setValue(currentRecord, columnNum, cellValue);
+        if (recordMapper.withinRange(sheetIndex, rowNum, columnNum)) {
+            recordMapper.setValue(currentRecord, columnNum, cellValue);
+        }
     }
 
     /**

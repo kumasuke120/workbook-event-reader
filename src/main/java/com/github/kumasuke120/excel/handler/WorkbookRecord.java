@@ -19,6 +19,16 @@ import java.lang.annotation.*;
 public @interface WorkbookRecord {
 
     /**
+     * The index(zero-based) of the title row.
+     * <p>
+     * If the value is greater than or equal to zero, the content of each column in the specified row will be recorded as the title.
+     * </p>
+     *
+     * @return the index of the title row
+     */
+    int titleRow() default -1;
+
+    /**
      * The index(zero-based, inclusive) of the first sheet to be processed.
      *
      * @return the index of the first sheet to be processed
