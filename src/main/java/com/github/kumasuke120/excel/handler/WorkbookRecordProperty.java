@@ -254,6 +254,75 @@ final class WorkbookRecordProperty<E> {
             this.valueMethod = findValueMethod();
         }
 
+        @NotNull
+        private CellValueType determineValueType() {
+            if (CellValueType.AUTO != valueType) {
+                return valueType;
+            }
+
+            CellValueType autoValueType = null;
+            final Class<?> type = field.getType();
+            if (type == boolean.class || type == Boolean.class) {
+                autoValueType = CellValueType.BOOLEAN;
+            } else if (type == int.class || type == Integer.class) {
+                autoValueType = CellValueType.INTEGER;
+            } else if (type == long.class || type == Long.class) {
+                autoValueType = CellValueType.LONG;
+            } else if (type == double.class || type == Double.class) {
+                autoValueType = CellValueType.DOUBLE;
+            } else if (type == BigDecimal.class) {
+                autoValueType = CellValueType.DECIMAL;
+            } else if (type == String.class) {
+                autoValueType = CellValueType.STRING;
+            } else if (type == LocalDate.class) {
+                autoValueType = CellValueType.DATE;
+            } else if (type == LocalTime.class) {
+                autoValueType = CellValueType.TIME;
+            } else if (type == LocalDateTime.class) {
+                autoValueType = CellValueType.DATETIME;
+            }
+
+            if (!isStrict()) {
+                if (type == byte.class || type == Byte.class) {
+                    autoValueType = CellValueType.INTEGER;
+                } else if (type == short.class || type == Short.class) {
+                    autoValueType = CellValueType.INTEGER;
+                } else if (type == float.class || type == Float.class) {
+                    autoValueType = CellValueType.DOUBLE;
+                } else if (type == Date.class) {
+                    autoValueType = CellValueType.DATETIME;
+                } else if (type == Time.class) {
+                    autoValueType = CellValueType.TIME;
+                } else if (type == Timestamp.class) {
+                    autoValueType = CellValueType.DATETIME;
+                } else if (type == java.sql.Date.class) {
+                    autoValueType = CellValueType.DATE;
+                } else if (type == BigInteger.class) {
+                    autoValueType = CellValueType.DECIMAL;
+                }
+            }
+
+            if (autoValueType != null) {
+                return autoValueType;
+            }
+
+            throw new WorkbookRecordException("cannot auto-determine CellValueType of field '" + field.getName() + "'");
+        }
+
+        private Method findValueMethod() {
+            if (StringUtils.isBlank(valueMethodName)) {
+                return null;
+            }
+
+            try {
+                return recordClass.getDeclaredMethod(valueMethodName, CellValue.class);
+            } catch (NoSuchMethodException e) {
+                String msg = "valueMethod specified by @WorkbookRecord.Property cannot be found: " +
+                        "Object " + valueMethodName + "(CellValue cellValue)";
+                throw new WorkbookRecordException(msg, e);
+            }
+        }
+
         /**
          * Gets the value of the property from the specified {@link CellValue}.
          *
@@ -333,61 +402,6 @@ final class WorkbookRecordProperty<E> {
         }
 
         @NotNull
-        private CellValueType determineValueType() {
-            if (CellValueType.AUTO != valueType) {
-                return valueType;
-            }
-
-            CellValueType autoValueType = null;
-            final Class<?> type = field.getType();
-            if (type == boolean.class || type == Boolean.class) {
-                autoValueType = CellValueType.BOOLEAN;
-            } else if (type == int.class || type == Integer.class) {
-                autoValueType = CellValueType.INTEGER;
-            } else if (type == long.class || type == Long.class) {
-                autoValueType = CellValueType.LONG;
-            } else if (type == double.class || type == Double.class) {
-                autoValueType = CellValueType.DOUBLE;
-            } else if (type == BigDecimal.class) {
-                autoValueType = CellValueType.DECIMAL;
-            } else if (type == String.class) {
-                autoValueType = CellValueType.STRING;
-            } else if (type == LocalDate.class) {
-                autoValueType = CellValueType.DATE;
-            } else if (type == LocalTime.class) {
-                autoValueType = CellValueType.TIME;
-            } else if (type == LocalDateTime.class) {
-                autoValueType = CellValueType.DATETIME;
-            }
-
-            if (!isStrict()) {
-                if (type == byte.class || type == Byte.class) {
-                    autoValueType = CellValueType.INTEGER;
-                } else if (type == short.class || type == Short.class) {
-                    autoValueType = CellValueType.INTEGER;
-                } else if (type == float.class || type == Float.class) {
-                    autoValueType = CellValueType.DOUBLE;
-                } else if (type == Date.class) {
-                    autoValueType = CellValueType.DATETIME;
-                } else if (type == Time.class) {
-                    autoValueType = CellValueType.TIME;
-                } else if (type == Timestamp.class) {
-                    autoValueType = CellValueType.DATETIME;
-                } else if (type == java.sql.Date.class) {
-                    autoValueType = CellValueType.DATE;
-                } else if (type == BigInteger.class) {
-                    autoValueType = CellValueType.DECIMAL;
-                }
-            }
-
-            if (autoValueType != null) {
-                return autoValueType;
-            }
-
-            throw new WorkbookRecordException("cannot auto-determine CellValueType of field '" + field.getName() + "'");
-        }
-
-        @NotNull
         private CellValue prepareCellValue(@NotNull CellValue cellValue) {
             CellValue ret = cellValue;
             if (isStrict()) {
@@ -412,20 +426,6 @@ final class WorkbookRecordProperty<E> {
                 String msg = "valueMethod specified by @WorkbookRecord.Property '" + valueMethodName +
                         "' encountered an error";
                 throw new WorkbookRecordException(msg, e.getTargetException());
-            }
-        }
-
-        private Method findValueMethod() {
-            if (StringUtils.isBlank(valueMethodName)) {
-                return null;
-            }
-
-            try {
-                return recordClass.getDeclaredMethod(valueMethodName, CellValue.class);
-            } catch (NoSuchMethodException e) {
-                String msg = "valueMethod specified by @WorkbookRecord.Property cannot be found: " +
-                        "Object " + valueMethodName + "(CellValue cellValue)";
-                throw new WorkbookRecordException(msg, e);
             }
         }
 
