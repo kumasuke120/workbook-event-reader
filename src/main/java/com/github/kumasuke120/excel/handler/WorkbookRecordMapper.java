@@ -35,6 +35,33 @@ class WorkbookRecordMapper<E> {
         this.propertyBinder = initPropertyBinder();
     }
 
+    private WorkbookRecord findRecordAnnotation() {
+        return recordClass.getAnnotation(WorkbookRecord.class);
+    }
+
+    private PropertyBinder initPropertyBinder() {
+        final Field[] fields = getDeclaredFields();
+
+        final List<WorkbookRecordProperty<E>> properties = new ArrayList<>(fields.length);
+        for (Field field : fields) {
+            final WorkbookRecordProperty.Kind propertyKind = detectFieldPropertyKind(field);
+            final WorkbookRecordProperty<E> prop;
+            switch (propertyKind) {
+                case METADATA:
+                    prop = WorkbookRecordProperty.newMetadataProperty(recordClass, field);
+                    break;
+                case PROPERTY:
+                    prop = WorkbookRecordProperty.newNormalProperty(recordClass, field);
+                    break;
+                default:
+                    continue;
+            }
+            properties.add(prop);
+        }
+
+        return checkAndInitPropertyBinder(properties);
+    }
+
     /**
      * Checks if the specified sheet index is beyond the range of the record.
      *
@@ -128,33 +155,6 @@ class WorkbookRecordMapper<E> {
             default:
                 throw new AssertionError("Shouldn't happen");
         }
-    }
-
-    private WorkbookRecord findRecordAnnotation() {
-        return recordClass.getAnnotation(WorkbookRecord.class);
-    }
-
-    private PropertyBinder initPropertyBinder() {
-        final Field[] fields = getDeclaredFields();
-
-        final List<WorkbookRecordProperty<E>> properties = new ArrayList<>(fields.length);
-        for (Field field : fields) {
-            final WorkbookRecordProperty.Kind propertyKind = detectFieldPropertyKind(field);
-            final WorkbookRecordProperty<E> prop;
-            switch (propertyKind) {
-                case METADATA:
-                    prop = WorkbookRecordProperty.newMetadataProperty(recordClass, field);
-                    break;
-                case PROPERTY:
-                    prop = WorkbookRecordProperty.newNormalProperty(recordClass, field);
-                    break;
-                default:
-                    continue;
-            }
-            properties.add(prop);
-        }
-
-        return checkAndInitPropertyBinder(properties);
     }
 
     private Field[] getDeclaredFields() {
