@@ -20,23 +20,31 @@ public class AnnotationObjectReadPrinter {
     public static void main(String[] args) {
         final Path filePath = ResourceUtil.getPathOfClasspathResource("handler/sample-data.xlsx");
         try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath)) {
+            // extracts the records to Java Objects
             final WorkbookRecordExtractor<OrderDetail> extractor = WorkbookRecordExtractor.ofRecord(OrderDetail.class);
-            final List<OrderDetail> result = extractor.extract(reader);
+            reader.read(extractor);
 
-            printOrderDetailTitle(extractor.getColumnTitles());
-            result.forEach(AnnotationObjectReadPrinter::printOrderDetail);
+            // prints the result
+            printResult(extractor);
+        }
+    }
+
+    private static void printResult(WorkbookRecordExtractor<OrderDetail> extractor) {
+        printOrderDetailTitle(extractor.getColumnTitles());
+        for (OrderDetail orderDetail : extractor.getResult()) {
+            printOrderDetail(orderDetail);
         }
     }
 
     private static void printOrderDetailTitle(List<String> titles) {
-        System.out.println("+------------+------------+------------+--------------+----------+------------+------------+");
-        System.out.printf("| %-10s | %-10s | %-10s | %-12s | %-8s | %-10s | %-10s |\n",
+        System.out.println("+-----+------------+------------+------------+--------------+----------+------------+------------+");
+        System.out.printf("| No. | %-10s | %-10s | %-10s | %-12s | %-8s | %-10s | %-10s |\n",
                 titles.get(0), titles.get(1), titles.get(2), titles.get(3), titles.get(4), titles.get(5), titles.get(6));
-        System.out.println("+------------+------------+------------+--------------+----------+------------+------------+");
+        System.out.println("+-----+------------+------------+------------+--------------+----------+------------+------------+");
     }
 
     private static void printOrderDetail(OrderDetail orderDetail) {
-        System.out.printf("| %-10s | %-10s | %-10s | %-12s | %8s | %10s | %10s |\n",
+        System.out.printf("| %02d  | %-10s | %-10s | %-10s | %-12s | %8s | %10s | %10s |\n", orderDetail.rowNum,
                 orderDetail.getOrderDate(), orderDetail.getRegion(), orderDetail.getRep(),
                 orderDetail.getItem(), orderDetail.getUnits(), orderDetail.getUnitCost(), orderDetail.getTotal());
     }
