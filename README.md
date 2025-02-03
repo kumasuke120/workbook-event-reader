@@ -82,10 +82,9 @@ public class AnnotationObjectReadPrinter {
                 orderDetail.getItem(), orderDetail.getUnits(), orderDetail.getUnitCost(), orderDetail.getTotal());
     }
 
-    @SuppressWarnings("unused")
+    @lombok.Data
     @WorkbookRecord(titleRow = 0, endSheet = 1, startRow = 1)
     public static class OrderDetail {
-        
         @Metadata(MetadataType.ROW_NUMBER)
         private Integer rowNum;
 
@@ -109,46 +108,6 @@ public class AnnotationObjectReadPrinter {
 
         @Property(column = 6)
         private BigDecimal total;
-
-        public String getLang() {
-            return lang;
-        }
-
-        public Integer getSheetIndex() {
-            return sheetIndex;
-        }
-
-        public Integer getRowNum() {
-            return rowNum;
-        }
-
-        public LocalDate getOrderDate() {
-            return orderDate;
-        }
-
-        public String getRegion() {
-            return region;
-        }
-
-        public String getRep() {
-            return rep;
-        }
-
-        public String getItem() {
-            return item;
-        }
-
-        public BigInteger getUnits() {
-            return units;
-        }
-
-        public BigDecimal getUnitCost() {
-            return unitCost;
-        }
-
-        public BigDecimal getTotal() {
-            return total;
-        }
     }
 
 }
