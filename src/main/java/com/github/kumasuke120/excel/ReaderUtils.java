@@ -20,12 +20,12 @@ import java.util.regex.Pattern;
  * A utility class that contains various methods for dealing with workbook
  */
 @ApiStatus.Internal
-class Util {
+class ReaderUtils {
 
     private static final double MAX_EXCEL_DATE_EXCLUSIVE = 2958466;
     private static final Pattern cellReferencePattern = Pattern.compile("([A-Z]+)(\\d+)");
 
-    private Util() {
+    private ReaderUtils() {
         throw new UnsupportedOperationException();
     }
 
@@ -161,7 +161,7 @@ class Util {
 
             if (excelDateValue < 1) { // time only
                 return localDateTime.toLocalTime();
-            } else if (Util.isAWholeNumber(excelDateValue)) { // date only
+            } else if (isAWholeNumber(excelDateValue)) { // date only
                 return localDateTime.toLocalDate();
             } else { // date with time
                 return localDateTime;

@@ -1,5 +1,6 @@
 package com.github.kumasuke120.excel;
 
+import com.github.kumasuke120.excel.util.CollectionUtils;
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
 import org.jetbrains.annotations.ApiStatus;
@@ -42,7 +43,7 @@ class ByteArrayCharsetDetector {
     }
 
     private Charset getWithMaxScore(@NotNull List<CharsetCandidate> candidates) {
-        if (candidates.isEmpty()) {
+        if (CollectionUtils.isEmpty(candidates)) {
             return null;
         }
 
@@ -61,7 +62,7 @@ class ByteArrayCharsetDetector {
 
     @NotNull
     private List<CharsetCandidate> mergeCandidates(@NotNull List<Map<String, CharsetCandidate>> candidatesList) {
-        if (candidatesList.isEmpty()) {
+        if (CollectionUtils.isEmpty(candidatesList)) {
             return new ArrayList<>(0);
         }
 
@@ -118,7 +119,7 @@ class ByteArrayCharsetDetector {
         final Locale locale = Locale.getDefault();
 
         final Set<String> codePages = WindowsCodePage.getByLocale(locale);
-        if (codePages.isEmpty()) {
+        if (CollectionUtils.isEmpty(codePages)) {
             return new HashMap<>(0);
         }
 

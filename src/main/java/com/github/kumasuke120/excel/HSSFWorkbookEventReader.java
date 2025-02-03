@@ -385,18 +385,18 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             if (formatString != null) {
                 boolean returnAsString = false;
 
-                if (Util.isATextFormat(formatIndex, formatString)) { // deals with cell marked as text
+                if (ReaderUtils.isATextFormat(formatIndex, formatString)) { // deals with cell marked as text
                     returnAsString = true;
                 } else if (DateUtil.isADateFormat(formatIndex, formatString)) { // deals with date
-                    if (Util.isValidExcelDate(value)) {
-                        return Util.toJsr310DateOrTime(value, use1904Windowing);
+                    if (ReaderUtils.isValidExcelDate(value)) {
+                        return ReaderUtils.toJsr310DateOrTime(value, use1904Windowing);
                     } else {
                         returnAsString = true;
                     }
                 }
 
                 if (returnAsString) {
-                    if (Util.isAWholeNumber(value)) {
+                    if (ReaderUtils.isAWholeNumber(value)) {
                         return Long.toString((long) (value));
                     } else {
                         return Double.toString(value);
@@ -404,7 +404,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 }
 
                 final String decimalStringValue = dataFormatter.formatRawCellContents(value, formatIndex, formatString);
-                return Util.decimalStringToDecimal(decimalStringValue);
+                return ReaderUtils.decimalStringToDecimal(decimalStringValue);
             }
 
             return value;
@@ -432,7 +432,7 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 handleStartRow();
             }
 
-            cellValue = Util.toRelativeType(cellValue);
+            cellValue = ReaderUtils.toRelativeType(cellValue);
             handler.onHandleCell(currentSheetIndex, rowNum, columnNum,
                     CellValue.newInstance(cellValue));
 

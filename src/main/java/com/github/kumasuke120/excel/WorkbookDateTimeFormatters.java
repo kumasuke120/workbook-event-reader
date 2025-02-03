@@ -22,6 +22,7 @@ import java.util.Set;
 class WorkbookDateTimeFormatters {
 
     // region predefined workbook formatters
+    public static final DateTimeFormatter NORMAL_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     public static final DateTimeFormatter CN_DATE = DateTimeFormatter.ofPattern("yyyy'年'M'月'd'日'");
     public static final DateTimeFormatter CN_SLASH_DATE_TIME_AM_PM =
             DateTimeFormatter.ofPattern("yyyy/M/d h:mm a", Locale.US);
@@ -31,8 +32,7 @@ class WorkbookDateTimeFormatters {
             DateTimeFormatter.ofPattern("M/d/yyyy h:mm a", Locale.US);
     public static final DateTimeFormatter EN_SLASH_DATE_TIME = DateTimeFormatter.ofPattern("M/d/yyyy[ H:mm]");
     public static final DateTimeFormatter EN_SLASH_DATE = DateTimeFormatter.ofPattern("MM/dd/yy H:m");
-    public static final DateTimeFormatter EN_TIME_AM_PM =
-            DateTimeFormatter.ofPattern("h:mm[:ss] a", Locale.US);
+    public static final DateTimeFormatter EN_TIME_AM_PM = DateTimeFormatter.ofPattern("h:mm[:ss] a", Locale.US);
     // endregion
 
     /**

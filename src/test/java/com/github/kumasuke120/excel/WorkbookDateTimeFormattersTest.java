@@ -16,6 +16,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class WorkbookDateTimeFormattersTest {
 
     @Test
+    void predefinedFormatters() {
+        final LocalDateTime date = WorkbookDateTimeFormatters.NORMAL_DATE_TIME.parse("2025-01-05 15:55:00",
+                LocalDateTime::from);
+        assertEquals(LocalDateTime.of(2025, 1, 5, 15, 55, 0), date);
+    }
+
+    @Test
     void cnPredefinedFormatters() {
         final LocalDate date1 = WorkbookDateTimeFormatters.CN_DATE.parse("2021年4月12日", LocalDate::from);
         assertEquals(LocalDate.of(2021, 4, 12), date1);
