@@ -28,7 +28,7 @@ class WorkbookRecordExtractorTest {
             final WorkbookRecordExtractor<Sheet0OrderDetail> extractor = WorkbookRecordExtractor.ofRecord(Sheet0OrderDetail.class);
             final List<Sheet0OrderDetail> result = extractor.extract(reader);
 
-            assertTrue(CollectionUtils.isEmpty(extractor.getColumnTitles()));
+            assertTrue(CollectionUtils.isEmpty(extractor.getColumnTitles(0)));
             assertEquals("", extractor.getColumnTitle(0));
 
             assertEquals(42, result.size());
@@ -53,7 +53,7 @@ class WorkbookRecordExtractorTest {
             final WorkbookRecordExtractor<Sheet0WithTitleOrderDetail> extractor = WorkbookRecordExtractor.ofRecord(Sheet0WithTitleOrderDetail.class);
             final List<Sheet0WithTitleOrderDetail> result = extractor.extract(reader);
 
-            final List<String> columnTitles = extractor.getColumnTitles();
+            final List<String> columnTitles = extractor.getColumnTitles(0);
             assertTrue(CollectionUtils.isNotEmpty(columnTitles));
             assertEquals("OrderDate", columnTitles.get(0));
             assertEquals("Region", columnTitles.get(1));
@@ -76,13 +76,13 @@ class WorkbookRecordExtractorTest {
         final Path filePath2 = ResourceUtil.getPathOfClasspathResource(TEST_RESOURCE_NOTITLE_NAME);
         try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath2)) {
             final WorkbookRecordExtractor<Sheet0WithTitleOrderDetail> extractor = WorkbookRecordExtractor.ofRecord(Sheet0WithTitleOrderDetail.class);
-            assertNull(extractor.getColumnTitles());
+            assertNull(extractor.getColumnTitles(0));
             assertNull(extractor.getColumnTitles(1));
             assertNull(extractor.getColumnTitle(0));
 
             final List<Sheet0WithTitleOrderDetail> result = extractor.extract(reader);
 
-            assertTrue(CollectionUtils.isEmpty(extractor.getColumnTitles()));
+            assertTrue(CollectionUtils.isEmpty(extractor.getColumnTitles(0)));
             assertTrue(CollectionUtils.isEmpty(extractor.getColumnTitles(1)));
             assertEquals("", extractor.getColumnTitle(0));
             assertEquals(43, result.size());

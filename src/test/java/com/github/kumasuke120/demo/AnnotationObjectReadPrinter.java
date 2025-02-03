@@ -30,8 +30,8 @@ public class AnnotationObjectReadPrinter {
     }
 
     private static void printResult(WorkbookRecordExtractor<OrderDetail> extractor) {
-        printOrderDetailTitle(extractor.getColumnTitles());
-        for (OrderDetail orderDetail : extractor.getResult()) {
+        printOrderDetailTitle(extractor.getColumnTitles(0));
+        for (OrderDetail orderDetail : extractor.getRecordsIn(0)) {
             printOrderDetail(orderDetail);
         }
     }

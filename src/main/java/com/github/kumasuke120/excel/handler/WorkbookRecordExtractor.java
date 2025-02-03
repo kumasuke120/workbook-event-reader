@@ -30,7 +30,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
 
     private Map<Integer, Map<Integer, String>> columnTitles;
 
-    private List<E> result;
+    private Map<Integer, List<E>> sheetRecords;
 
     private String currentSheetName;
 
@@ -75,16 +75,41 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      */
     public List<E> extract(WorkbookEventReader reader) {
         reader.read(this);
-        return getResult();
+        return getRecords();
     }
 
     /**
-     * Returns a list of extracted records after reading using {@link WorkbookEventReader#read(WorkbookEventReader.EventHandler)}.
+     * Returns a list of all records in all sheets.
      *
-     * @return a list of extracted records
+     * @return a list of all records
      */
-    public List<E> getResult() {
-        return new ArrayList<>(result);
+    public List<E> getRecords() {
+        if (CollectionUtils.isEmpty(sheetRecords)) {
+            return null;
+        }
+
+        final List<E> records = new ArrayList<>();
+        for (List<E> sheetRecord : sheetRecords.values()) {
+            records.addAll(sheetRecord);
+        }
+        return records;
+    }
+
+    /**
+     * Returns a list of records in the specified sheet.
+     *
+     * @param sheetIndex the index of the sheet
+     * @return a list of records in the specified sheet
+     */
+    public List<E> getRecordsIn(int sheetIndex) {
+        if (CollectionUtils.isEmpty(sheetRecords)) {
+            return null;
+        }
+        final List<E> records = sheetRecords.get(sheetIndex);
+        if (records == null) {
+            return null;
+        }
+        return new ArrayList<>(records);
     }
 
     /**
@@ -112,15 +137,6 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
         }
         final String title = sheetColumnTitles.get(columnNum);
         return title == null ? "" : title;
-    }
-
-    /**
-     * Returns a list of all column titles in sheet 0.
-     *
-     * @return a list of all column titles
-     */
-    public List<String> getColumnTitles() {
-        return getColumnTitles(0);
     }
 
     /**
@@ -153,14 +169,16 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
     @Override
     public void onStartDocument() {
         columnTitles = new TreeMap<>();
-        result = new ArrayList<>();
+        sheetRecords = new TreeMap<>();
     }
 
     @Override
     public void onStartSheet(int sheetIndex, @NotNull String sheetName) {
-        columnTitles.putIfAbsent(sheetIndex, new TreeMap<>());
         currentSheetName = sheetName;
         cancelIfSheetBeyondRange(sheetIndex);
+
+        columnTitles.putIfAbsent(sheetIndex, new TreeMap<>());
+        sheetRecords.putIfAbsent(sheetIndex, new ArrayList<>());
     }
 
     @Override
@@ -195,7 +213,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
         }
 
         if (recordMapper.withinRange(sheetIndex, rowNum)) {
-            result.add(currentRecord);
+            sheetRecords.get(sheetIndex).add(currentRecord);
         }
     }
 
