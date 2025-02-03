@@ -17,12 +17,12 @@ See in other languages: English | [中文](README_CN.md)
 ## Requirements
 Requirements for this project are as follows:
 
-| Dependency               	 | Bundled 	  | Minimum  	                                                                                               |
-|----------------------------|------------|----------------------------------------------------------------------------------------------------------|
-| Java Ver.             	    | None     	 | 8      	                                                                                                 |
-| Apache POI Ver.       	    | 4.1.2   	  | 3.17<sup><a href="https://bz.apache.org/bugzilla/show_bug.cgi?id=61034" target="_blank">[?]</a></sup>  	 |
-| Apache Xerces Ver.    	    | 2.12.2  	  | 2.0.0 	                                                                                                  |
-| Apache Commons CSV Ver. 	  | 1.8     	  | 1.0   	                                                                                                  |
+| Dependency               	 | Bundled 	  | Minimum  	                                                                   |
+|----------------------------|------------|------------------------------------------------------------------------------|
+| Java Ver.             	    | None     	 | 8      	                                                                     |
+| Apache POI Ver.       	    | 4.1.2   	  | 3.17<sup>[[?]](https://bz.apache.org/bugzilla/show_bug.cgi?id=61034)</sup> 	 |
+| Apache Xerces Ver.    	    | 2.12.2  	  | 2.0.0 	                                                                      |
+| Apache Commons CSV Ver. 	  | 1.8     	  | 1.0   	                                                                      |
 
 ## Build and Installation
 You could use the following command to install:
