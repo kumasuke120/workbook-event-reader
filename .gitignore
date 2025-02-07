@@ -2,3 +2,5 @@
 /.idea/
 /WorkbookEventReader.iml
 maven-wrapper.jar
+~$*.xlsx
+~$*.xls
