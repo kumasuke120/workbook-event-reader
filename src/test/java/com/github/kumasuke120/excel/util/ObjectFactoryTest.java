@@ -62,6 +62,12 @@ class ObjectFactoryTest {
         newInstanceSpeedTest(B.class, 500_000, false, true);
 
         // actual test
+        newInstanceSpeedTest(A.class, 100_000, true);
+        newInstanceSpeedTest(B.class, 100_000, true);
+
+        newInstanceSpeedTest(A.class, 100_000, false);
+        newInstanceSpeedTest(B.class, 100_000, false);
+
         newInstanceSpeedTest(A.class, 5_000_000, true);
         newInstanceSpeedTest(B.class, 5_000_000, true);
 
@@ -91,7 +97,22 @@ class ObjectFactoryTest {
 
         if (!heatUp) {
             final double elapsed = (System.nanoTime() - start) / 1_000_000d;
-            System.out.printf("[%s][%b] %d times new instance cost %.3f ms\n", clazz.getSimpleName(), useHandle, testCount, elapsed);
+            System.out.printf("[%s][%s] %s times new instance cost %.3f ms\n", clazz.getSimpleName(),
+                    useHandle ? "handle" : "reflect", abbrNum(testCount), elapsed);
+        }
+
+        System.gc();
+    }
+
+    private static String abbrNum(int number) {
+        if (number < 1000) {
+            return String.valueOf(number);
+        } else if (number < 1000000) {
+            return (number / 1000) + "k";
+        } else if (number < 1000000000) {
+            return (number / 1000000) + "M";
+        } else {
+            return (number / 1000000000) + "B";
         }
     }
 
