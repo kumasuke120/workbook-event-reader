@@ -59,7 +59,8 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      * @param <T>         the type of the record to extract
      * @return a new {@code WorkbookRecordExtractor} for the specified record class
      */
-    public static <T> WorkbookRecordExtractor<T> ofRecord(Class<T> recordClass) {
+    @NotNull
+    public static <T> WorkbookRecordExtractor<T> ofRecord(@NotNull Class<T> recordClass) {
         return new WorkbookRecordExtractor<>(recordClass);
     }
 
@@ -69,6 +70,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      * @param reader the {@link WorkbookEventReader} to read
      * @return a list of extracted records
      */
+    @NotNull
     public List<E> extract(WorkbookEventReader reader) {
         reader.read(this);
         return getAllRecords();
@@ -79,9 +81,10 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      *
      * @return a list of all records
      */
+    @NotNull
     public List<E> getAllRecords() {
         if (CollectionUtils.isEmpty(sheetRecords)) {
-            return null;
+            return new ArrayList<>(0);
         }
 
         final List<E> records = new ArrayList<>();
@@ -99,11 +102,11 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      */
     public List<E> getRecords(int sheetIndex) {
         if (CollectionUtils.isEmpty(sheetRecords)) {
-            return null;
+            return new ArrayList<>(0);
         }
         final List<E> records = sheetRecords.get(sheetIndex);
         if (records == null) {
-            return null;
+            return new ArrayList<>(0);
         }
         return new ArrayList<>(records);
     }
@@ -119,7 +122,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
         Map<Integer, String> sheetColumnTitles;
         if (CollectionUtils.isEmpty(columnTitles) ||
                 (sheetColumnTitles = columnTitles.get(sheetIndex)) == null) {
-            return null;
+            return "";
         }
         final String title = sheetColumnTitles.get(columnNum);
         return title == null ? "" : title;
