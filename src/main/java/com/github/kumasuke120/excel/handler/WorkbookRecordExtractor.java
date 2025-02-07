@@ -9,6 +9,7 @@ import com.github.kumasuke120.excel.util.ObjectFactory;
 import com.github.kumasuke120.excel.util.StringUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -80,6 +81,40 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
         return getAllRecords();
     }
 
+    /**
+     * Gets all failed extract results.
+     *
+     * @return a list of all failed extract results
+     */
+    @NotNull
+    public List<ExtractResult<E>> getAllFailExtractResults() {
+        if (CollectionUtils.isEmpty(sheetFailResults)) {
+            return new ArrayList<>(0);
+        }
+
+        return sheetFailResults.values().stream()
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Gets all failed extract results in the specified sheet.
+     *
+     * @param sheetIndex the index of the sheet
+     * @return a list of all failed extract results in the specified sheet
+     */
+    @NotNull
+    public List<ExtractResult<E>> getFailExtractResults(int sheetIndex) {
+        return getExtractResults(sheetFailResults, sheetIndex);
+    }
+
+    @Nullable
+    public ExtractResult<E> getFailExtractResult(int sheetIndex, int rowNum) {
+        return getFailExtractResults(sheetIndex).stream()
+                .filter(r -> rowNum == r.getRowNum())
+                .findFirst()
+                .orElse(null);
+    }
 
     /**
      * Returns a list of all success records in all sheets.
@@ -92,14 +127,10 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
             return new ArrayList<>(0);
         }
 
-        final List<E> records = new ArrayList<>();
-        for (List<ExtractResult<E>> extractResults : sheetResults.values()) {
-            for (ExtractResult<E> extractResult : extractResults) {
-                final E record = extractResult.unwrap();
-                records.add(record);
-            }
-        }
-        return records;
+        return sheetResults.values().stream()
+                .flatMap(Collection::stream)
+                .map(ExtractResult::unwrap)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -110,6 +141,12 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      */
     @NotNull
     public List<E> getRecords(int sheetIndex) {
+        return getExtractResults(sheetResults, sheetIndex).stream()
+                .map(ExtractResult::unwrap)
+                .collect(Collectors.toList());
+    }
+
+    private List<ExtractResult<E>> getExtractResults(Map<Integer, List<ExtractResult<E>>> sheetResults, int sheetIndex) {
         if (CollectionUtils.isEmpty(sheetResults)) {
             return new ArrayList<>(0);
         }
@@ -117,8 +154,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
         if (extractResults == null) {
             return new ArrayList<>(0);
         }
-        return extractResults.stream().map(ExtractResult::unwrap)
-                .collect(Collectors.toList());
+        return extractResults;
     }
 
     /**
