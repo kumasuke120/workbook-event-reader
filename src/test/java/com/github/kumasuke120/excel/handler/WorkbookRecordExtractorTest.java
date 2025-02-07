@@ -26,7 +26,13 @@ class WorkbookRecordExtractorTest {
         final Path filePath = ResourceUtil.getPathOfClasspathResource(TEST_RESOURCE_NAME);
         try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath)) {
             final WorkbookRecordExtractor<Sheet0OrderDetail> extractor = WorkbookRecordExtractor.ofRecord(Sheet0OrderDetail.class);
+            assertTrue(CollectionUtils.isEmpty(extractor.getAllRecords()));
+            assertTrue(CollectionUtils.isEmpty(extractor.getRecords(0)));
+            assertTrue(CollectionUtils.isEmpty(extractor.getRecords(1)));
+
             final List<Sheet0OrderDetail> result = extractor.extract(reader);
+            assertEquals(extractor.getRecords(0), result);
+            assertTrue(CollectionUtils.isEmpty(extractor.getRecords(1)));
 
             assertTrue(CollectionUtils.isEmpty(extractor.getAllColumnTitles(0)));
             assertEquals("", extractor.getColumnTitle(0, 0));
@@ -48,10 +54,11 @@ class WorkbookRecordExtractorTest {
 
     @Test
     void extractWithTitle() {
+        // reads titles from workbook row
         final Path filePath = ResourceUtil.getPathOfClasspathResource(TEST_RESOURCE_NAME);
         try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath)) {
-            final WorkbookRecordExtractor<Sheet0WithTitleOrderDetail> extractor = WorkbookRecordExtractor.ofRecord(Sheet0WithTitleOrderDetail.class);
-            final List<Sheet0WithTitleOrderDetail> result = extractor.extract(reader);
+            final WorkbookRecordExtractor<Sheet0TitleRowOrderDetail> extractor = WorkbookRecordExtractor.ofRecord(Sheet0TitleRowOrderDetail.class);
+            final List<Sheet0TitleRowOrderDetail> result = extractor.extract(reader);
 
             final List<String> columnTitles = extractor.getAllColumnTitles(0);
             assertTrue(CollectionUtils.isNotEmpty(columnTitles));
@@ -70,23 +77,55 @@ class WorkbookRecordExtractorTest {
             assertEquals("Unit Cost", extractor.getColumnTitle(0, 5));
             assertEquals("Total", extractor.getColumnTitle(0, 6));
 
+            assertEquals("", extractor.getColumnTitle(1, 0));
+
             assertEquals(43, result.size());
         }
 
+        // uses user-specified titles
+        try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath)) {
+            final WorkbookRecordExtractor<Sheet1TitleRowOrderDetailWithTitle> extractor = WorkbookRecordExtractor.ofRecord(Sheet1TitleRowOrderDetailWithTitle.class);
+            final List<Sheet1TitleRowOrderDetailWithTitle> result = extractor.extract(reader);
+
+            final List<String> columnTitles = extractor.getAllColumnTitles(1);
+            assertTrue(CollectionUtils.isNotEmpty(columnTitles));
+            assertEquals("订单日期", columnTitles.get(0));
+            assertEquals("地区", columnTitles.get(1));
+            assertEquals("销售代表", columnTitles.get(2));
+            assertEquals("商品", columnTitles.get(3));
+            assertEquals("数量", columnTitles.get(4));
+            assertEquals("单价（人民币）", columnTitles.get(5));
+            assertEquals("总价（人民币）", columnTitles.get(6));
+            assertEquals("订单日期", extractor.getColumnTitle(1, 0));
+            assertEquals("地区", extractor.getColumnTitle(1, 1));
+            assertEquals("销售代表", extractor.getColumnTitle(1, 2));
+            assertEquals("商品", extractor.getColumnTitle(1, 3));
+            assertEquals("数量", extractor.getColumnTitle(1, 4));
+            assertEquals("单价（人民币）", extractor.getColumnTitle(1, 5));
+            assertEquals("总价（人民币）", extractor.getColumnTitle(1, 6));
+
+            assertEquals("", extractor.getColumnTitle(0, 0));
+
+            assertEquals(43, result.size());
+        }
+
+        // workbook row has no titles
         final Path filePath2 = ResourceUtil.getPathOfClasspathResource(TEST_RESOURCE_NOTITLE_NAME);
         try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath2)) {
-            final WorkbookRecordExtractor<Sheet0WithTitleOrderDetail> extractor = WorkbookRecordExtractor.ofRecord(Sheet0WithTitleOrderDetail.class);
-            assertNull(extractor.getAllColumnTitles(0));
-            assertNull(extractor.getAllColumnTitles(1));
-            assertNull(extractor.getColumnTitle(0, 0));
+            final WorkbookRecordExtractor<Sheet0TitleRowOrderDetail> extractor = WorkbookRecordExtractor.ofRecord(Sheet0TitleRowOrderDetail.class);
+            assertTrue(CollectionUtils.isEmpty(extractor.getAllColumnTitles(0)));
+            assertTrue(CollectionUtils.isEmpty(extractor.getAllColumnTitles(1)));
+            assertEquals("", extractor.getColumnTitle(0, 0));
 
-            final List<Sheet0WithTitleOrderDetail> result = extractor.extract(reader);
+            final List<Sheet0TitleRowOrderDetail> result = extractor.extract(reader);
 
             assertTrue(CollectionUtils.isEmpty(extractor.getAllColumnTitles(0)));
             assertTrue(CollectionUtils.isEmpty(extractor.getAllColumnTitles(1)));
             assertEquals("", extractor.getColumnTitle(0, 0));
             assertEquals(43, result.size());
         }
+
+
     }
 
 
@@ -159,8 +198,34 @@ class WorkbookRecordExtractorTest {
 
     }
 
+    @SuppressWarnings("unused")
+    public static class OrderDetailWithTitle {
+
+        @Property(column = 0, title = "订单日期")
+        LocalDate orderDate;
+
+        @Property(column = 1, title = "地区")
+        String region;
+
+        @Property(column = 2, title = "销售代表")
+        String rep;
+
+        @Property(column = 3, title = "商品")
+        String item;
+
+        @Property(column = 4, title = "数量")
+        int units;
+
+        @Property(column = 5)
+        BigDecimal unitCost;
+
+        @Property(column = 6)
+        BigDecimal total;
+
+    }
+
     @WorkbookRecord(titleRow = 0, endSheet = 1, startRow = 1)
-    public static class Sheet0WithTitleOrderDetail extends OrderDetail {
+    public static class Sheet0TitleRowOrderDetail extends OrderDetail {
     }
 
     @WorkbookRecord(endSheet = 1, startRow = 1, endRow = 43)
@@ -186,6 +251,10 @@ class WorkbookRecordExtractorTest {
         public ErrorConstructorOrderDetail() {
             throw new UnsupportedOperationException();
         }
+    }
+
+    @WorkbookRecord(titleRow = 0, startSheet = 1, endSheet = 2, startRow = 1)
+    public static class Sheet1TitleRowOrderDetailWithTitle extends OrderDetailWithTitle {
     }
 
 }
