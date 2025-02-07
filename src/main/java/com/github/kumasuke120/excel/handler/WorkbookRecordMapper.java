@@ -159,11 +159,11 @@ class WorkbookRecordMapper<E> {
     }
 
     /**
-     * Gets all default column titles of the record.
+     * Gets all preset column titles of the record.
      *
-     * @return all default column titles of the record
+     * @return all preset column titles of the record
      */
-    TreeMap<Integer, String> getDefaultColumnTitles() {
+    TreeMap<Integer, String> getPresetColumnTitles() {
         return propertyBinder.getPropertyColumnTitles();
     }
 

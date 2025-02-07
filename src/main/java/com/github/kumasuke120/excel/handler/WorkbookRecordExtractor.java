@@ -100,6 +100,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      * @param sheetIndex the index of the sheet
      * @return a list of records in the specified sheet
      */
+    @NotNull
     public List<E> getRecords(int sheetIndex) {
         if (CollectionUtils.isEmpty(sheetRecords)) {
             return new ArrayList<>(0);
@@ -118,14 +119,14 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      * @param columnNum  the column number
      * @return the title of the specified column number
      */
+    @NotNull
     public String getColumnTitle(int sheetIndex, int columnNum) {
         Map<Integer, String> sheetColumnTitles;
         if (CollectionUtils.isEmpty(columnTitles) ||
                 (sheetColumnTitles = columnTitles.get(sheetIndex)) == null) {
             return "";
         }
-        final String title = sheetColumnTitles.get(columnNum);
-        return title == null ? "" : title;
+        return sheetColumnTitles.getOrDefault(columnNum, "");
     }
 
     /**
@@ -134,19 +135,20 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      * @param sheetIndex the index of the sheet
      * @return a list of all column titles
      */
+    @NotNull
     public List<String> getAllColumnTitles(int sheetIndex) {
         if (CollectionUtils.isEmpty(columnTitles)) {
-            return null;
+            return new ArrayList<>(0);
         }
         Map<Integer, String> sheetColumnTitles = columnTitles.get(sheetIndex);
         if (sheetColumnTitles == null) {
-            return null;
+            return new ArrayList<>(0);
         }
         final Integer maxColumn;
         try {
             maxColumn = Collections.max(sheetColumnTitles.keySet());
         } catch (NoSuchElementException e) {
-            return null;
+            return new ArrayList<>(0);
         }
         final List<String> titles = new ArrayList<>(maxColumn + 1);
         for (int i = 0; i <= maxColumn; i++) {
@@ -167,8 +169,10 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
         currentSheetName = sheetName;
         cancelIfSheetBeyondRange(sheetIndex);
 
-        columnTitles.putIfAbsent(sheetIndex, recordMapper.getDefaultColumnTitles());
-        sheetRecords.putIfAbsent(sheetIndex, new ArrayList<>());
+        if (recordMapper.withinRange(sheetIndex)) {
+            columnTitles.putIfAbsent(sheetIndex, recordMapper.getPresetColumnTitles());
+            sheetRecords.putIfAbsent(sheetIndex, new ArrayList<>());
+        }
     }
 
     @Override
@@ -209,7 +213,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
 
     @Override
     public void onHandleCell(int sheetIndex, int rowNum, int columnNum, @NotNull CellValue cellValue) {
-        if (recordMapper.isTitleRow(rowNum)) {
+        if (recordMapper.withinRange(sheetIndex) && recordMapper.isTitleRow(rowNum)) {
             if (!HandlerUtils.isValueEmpty(cellValue)) {
                 String columnTitle = cellValue.trim().stringValue();
                 columnTitles.get(sheetIndex).putIfAbsent(columnNum, columnTitle);
