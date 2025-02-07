@@ -152,7 +152,11 @@ public @interface WorkbookRecord {
         int column();
 
         /**
-         * Sets the title of the column.
+         * The title of the column.
+         * <p>
+         * Even if you set column by {@link WorkbookRecord#titleRow()}, this value still will override
+         * the auto-retrieved title of corresponding column.
+         * </p>
          *
          * @return the title of the column
          */
