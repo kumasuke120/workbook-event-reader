@@ -124,6 +124,7 @@ class WorkbookRecordMapper<E> {
      * @param record    the record to set
      * @param columnNum the column number of the cell
      * @param cellValue the value of the cell
+     * @throws WorkbookRecordException if failed to set the value
      */
     void setValue(@NotNull E record, int columnNum, @NotNull CellValue cellValue) {
         final WorkbookRecordProperty<E> property = propertyBinder.getByColumn(columnNum);

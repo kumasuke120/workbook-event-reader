@@ -6,10 +6,12 @@ import com.github.kumasuke120.excel.handler.WorkbookRecord.MetadataType;
 import com.github.kumasuke120.excel.util.CollectionUtils;
 import com.github.kumasuke120.excel.util.ObjectCreationException;
 import com.github.kumasuke120.excel.util.ObjectFactory;
+import com.github.kumasuke120.excel.util.StringUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * An extractor for extracting records from a workbook. It must be used with {@link WorkbookEventReader}.
@@ -28,11 +30,13 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
 
     private Map<Integer, Map<Integer, String>> columnTitles;
 
-    private Map<Integer, List<E>> sheetRecords;
+    private Map<Integer, List<ExtractResult<E>>> sheetResults;
+
+    private Map<Integer, List<ExtractResult<E>>> sheetFailResults;
 
     private String currentSheetName;
 
-    private E currentRecord;
+    private ExtractResult<E> currentRowResult;
 
     /**
      * Constructs a new {@code WorkbookRecordExtractor} for the specified record class.
@@ -76,40 +80,45 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
         return getAllRecords();
     }
 
+
     /**
-     * Returns a list of all records in all sheets.
+     * Returns a list of all success records in all sheets.
      *
-     * @return a list of all records
+     * @return a list of all success records
      */
     @NotNull
     public List<E> getAllRecords() {
-        if (CollectionUtils.isEmpty(sheetRecords)) {
+        if (CollectionUtils.isEmpty(sheetResults)) {
             return new ArrayList<>(0);
         }
 
         final List<E> records = new ArrayList<>();
-        for (List<E> sheetRecord : sheetRecords.values()) {
-            records.addAll(sheetRecord);
+        for (List<ExtractResult<E>> extractResults : sheetResults.values()) {
+            for (ExtractResult<E> extractResult : extractResults) {
+                final E record = extractResult.unwrap();
+                records.add(record);
+            }
         }
         return records;
     }
 
     /**
-     * Returns a list of records in the specified sheet.
+     * Returns a list of success records in the specified sheet.
      *
      * @param sheetIndex the index of the sheet
-     * @return a list of records in the specified sheet
+     * @return a list of success records in the specified sheet
      */
     @NotNull
     public List<E> getRecords(int sheetIndex) {
-        if (CollectionUtils.isEmpty(sheetRecords)) {
+        if (CollectionUtils.isEmpty(sheetResults)) {
             return new ArrayList<>(0);
         }
-        final List<E> records = sheetRecords.get(sheetIndex);
-        if (records == null) {
+        final List<ExtractResult<E>> extractResults = sheetResults.get(sheetIndex);
+        if (extractResults == null) {
             return new ArrayList<>(0);
         }
-        return new ArrayList<>(records);
+        return extractResults.stream().map(ExtractResult::unwrap)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -160,9 +169,9 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
     @Override
     public void onStartDocument() {
         columnTitles = new TreeMap<>();
-        sheetRecords = new TreeMap<>();
+        sheetResults = new TreeMap<>();
+        sheetFailResults = new TreeMap<>();
     }
-
 
     @Override
     public void onStartSheet(int sheetIndex, @NotNull String sheetName) {
@@ -171,7 +180,8 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
 
         if (recordMapper.withinRange(sheetIndex)) {
             columnTitles.putIfAbsent(sheetIndex, recordMapper.getPresetColumnTitles());
-            sheetRecords.putIfAbsent(sheetIndex, new ArrayList<>());
+            sheetResults.putIfAbsent(sheetIndex, new ArrayList<>());
+            sheetFailResults.putIfAbsent(sheetIndex, new ArrayList<>());
         }
     }
 
@@ -193,22 +203,47 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
             return;
         }
 
-        currentRecord = createRecord();
+        currentRowResult = createExtractResult(rowNum);
 
+        final E currentRecord = currentRowResult.unwrap();
         recordMapper.setMetadata(currentRecord, MetadataType.SHEET_INDEX, sheetIndex);
         recordMapper.setMetadata(currentRecord, MetadataType.SHEET_NAME, currentSheetName);
         recordMapper.setMetadata(currentRecord, MetadataType.ROW_NUMBER, rowNum);
     }
 
+    private ExtractResult<E> createExtractResult(int rowNum) {
+        final E record = createRecord();
+        return new ExtractResult<>(rowNum, record);
+    }
+
     @Override
     public void onEndRow(int sheetIndex, int rowNum) {
-        if (currentRecord == null) {
+        if (currentRowResult == null) {
             return;
         }
 
         if (recordMapper.withinRange(sheetIndex, rowNum)) {
-            sheetRecords.get(sheetIndex).add(currentRecord);
+            // direct failure result
+            if (recordCurrentIfFailure(sheetIndex)) {
+                return;
+            }
+            // user-defined failure result
+            currentRowResult.userFailReason = validate(currentRowResult);
+            if (recordCurrentIfFailure(sheetIndex)) {
+                return;
+            }
+
+            // success result
+            sheetResults.get(sheetIndex).add(currentRowResult);
         }
+    }
+
+    private boolean recordCurrentIfFailure(int sheetIndex) {
+        if (currentRowResult.failure()) {
+            sheetFailResults.get(sheetIndex).add(currentRowResult);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -221,9 +256,21 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
         }
 
         if (recordMapper.withinRange(sheetIndex, rowNum, columnNum)) {
-            recordMapper.setValue(currentRecord, columnNum, cellValue);
+            if (!cellValue.isNull()) {
+                currentRowResult.notBlankRow();
+            }
+
+            final E currentRecord = currentRowResult.unwrap();
+            try {
+                recordMapper.setValue(currentRecord, columnNum, cellValue);
+            } catch (WorkbookRecordException e) {
+                final String columnTitle = getColumnTitle(sheetIndex, columnNum);
+                ExtractColumnError columnError = new ExtractColumnError(columnNum, columnTitle, cellValue, e);
+                currentRowResult.addColumnError(columnError);
+            }
         }
     }
+
 
     /**
      * Creates a new record instance.
@@ -237,5 +284,84 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
             throw new WorkbookRecordException("cannot initialize @WorkbookRecord record class", e);
         }
     }
+
+    /**
+     * Validates the current extract result.
+     *
+     * @param extractResult the extract result
+     * @return the user fail reason, if it is not empty, the extract result will be treated as a failure
+     */
+    protected String validate(ExtractResult<E> extractResult) {
+        return "";
+    }
+
+    public static class ExtractResult<T> {
+
+        private final int rowNum;
+        private final T record;
+        private final List<ExtractColumnError> columnErrors;
+        private boolean blankRow;
+        private String userFailReason;
+
+        ExtractResult(int rowNum, T record) {
+            this.rowNum = rowNum;
+            this.record = record;
+            this.blankRow = true;
+            this.columnErrors = new ArrayList<>();
+            this.userFailReason = "";
+        }
+
+        public int getRowNum() {
+            return rowNum;
+        }
+
+        T unwrap() {
+            return record;
+        }
+
+        void notBlankRow() {
+            this.blankRow = false;
+        }
+
+        void addColumnError(ExtractColumnError columnError) {
+            columnErrors.add(columnError);
+        }
+
+        boolean failure() {
+            return blankRow || CollectionUtils.isNotEmpty(columnErrors) || StringUtils.isNotEmpty(userFailReason);
+        }
+    }
+
+    public static class ExtractColumnError {
+
+        private final int columnNum;
+        private final String title;
+        private final CellValue cellValue;
+        private final WorkbookRecordException exception;
+
+        public ExtractColumnError(int columnNum, String title, CellValue cellValue, WorkbookRecordException exception) {
+            this.columnNum = columnNum;
+            this.title = title;
+            this.cellValue = cellValue;
+            this.exception = exception;
+        }
+
+        public int getColumnNum() {
+            return columnNum;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public CellValue getCellValue() {
+            return cellValue;
+        }
+
+        public Exception getException() {
+            return exception;
+        }
+    }
+
 
 }

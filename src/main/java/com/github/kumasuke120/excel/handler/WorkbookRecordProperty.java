@@ -187,6 +187,7 @@ final class WorkbookRecordProperty<E> {
      *
      * @param record    the record to set the value to
      * @param cellValue the cell value to get the value from
+     * @throws WorkbookRecordException if failed to set the value
      */
     void set(@NotNull E record, @NotNull CellValue cellValue) {
         final Object value = valueMethod.getValue(record, cellValue);
@@ -208,6 +209,7 @@ final class WorkbookRecordProperty<E> {
      *
      * @param record the record to set the value to
      * @param value  the value to set
+     * @throws WorkbookRecordException if failed to set the value
      */
     void set(@NotNull E record, int value) {
         if (!field.isAccessible()) {
@@ -234,6 +236,7 @@ final class WorkbookRecordProperty<E> {
      *
      * @param record the record to set the value to
      * @param value  the value to set
+     * @throws WorkbookRecordException if failed to set the value
      */
     void set(@NotNull E record, String value) {
         if (!field.isAccessible()) {
