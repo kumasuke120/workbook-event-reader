@@ -1,10 +1,12 @@
 package com.github.kumasuke120.excel.handler;
 
+import com.github.kumasuke120.excel.CellValue;
 import com.github.kumasuke120.excel.WorkbookEventReader;
 import com.github.kumasuke120.excel.WorkbookProcessException;
 import com.github.kumasuke120.excel.handler.WorkbookRecord.Metadata;
 import com.github.kumasuke120.excel.handler.WorkbookRecord.MetadataType;
 import com.github.kumasuke120.excel.handler.WorkbookRecord.Property;
+import com.github.kumasuke120.excel.handler.WorkbookRecordExtractor.ExtractResult;
 import com.github.kumasuke120.excel.util.CollectionUtils;
 import com.github.kumasuke120.util.ResourceUtil;
 import org.junit.jupiter.api.Test;
@@ -20,6 +22,7 @@ class WorkbookRecordExtractorTest {
 
     private static final String TEST_RESOURCE_NAME = "handler/sample-data.xlsx";
     private static final String TEST_RESOURCE_NOTITLE_NAME = "handler/sample-data-notitle.xlsx";
+    private static final String TEST_RESOURCE_WITHERROR_NAME = "handler/sample-data-witherror.xlsx";
 
     @Test
     void extract() {
@@ -124,10 +127,7 @@ class WorkbookRecordExtractorTest {
             assertEquals("", extractor.getColumnTitle(0, 0));
             assertEquals(43, result.size());
         }
-
-
     }
-
 
     @Test
     void extractTwoSheets() {
@@ -145,6 +145,19 @@ class WorkbookRecordExtractorTest {
             assertEquals(1, result.get(9).sheetIndex);
             assertEquals(2, result.get(10).rowNum);
             assertEquals("江苏", result.get(15).region);
+        }
+    }
+
+    @Test
+    void testWithError() {
+        final Path filePath = ResourceUtil.getPathOfClasspathResource(TEST_RESOURCE_WITHERROR_NAME);
+        try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath)) {
+            final WorkbookRecordExtractor<OrderDetailV2> extractor = WorkbookRecordExtractor.ofRecord(OrderDetailV2.class);
+            extractor.extract(reader);
+            final List<OrderDetailV2> records = extractor.getRecords(0);
+            assertEquals(34, records.size());
+            final List<ExtractResult<OrderDetailV2>> failExtractResults = extractor.getFailExtractResults(0);
+            assertEquals(10, failExtractResults.size());
         }
     }
 
@@ -222,6 +235,45 @@ class WorkbookRecordExtractorTest {
         @Property(column = 6)
         BigDecimal total;
 
+    }
+
+    @SuppressWarnings("unused")
+    @WorkbookRecord(titleRow = 0, endSheet = 1, startRow = 1)
+    public static class OrderDetailV2 {
+
+        @Metadata(MetadataType.ROW_NUMBER)
+        Integer rowNum;
+
+        @Property(column = 0)
+        LocalDate orderDate;
+
+        @Property(column = 1, valueMethod = "handleRegion")
+        Region region;
+
+        @Property(column = 2)
+        String rep;
+
+        @Property(column = 3)
+        String item;
+
+        @Property(column = 4)
+        int units;
+
+        @Property(column = 5)
+        BigDecimal unitCost;
+
+        @Property(column = 6)
+        BigDecimal total;
+
+        public Region handleRegion(CellValue cellValue) {
+            final String region = cellValue.trim().stringValue().toUpperCase();
+            return Region.valueOf(region);
+        }
+
+    }
+
+    public enum Region {
+        CENTRAL, EAST, WEST
     }
 
     @WorkbookRecord(titleRow = 0, endSheet = 1, startRow = 1)
