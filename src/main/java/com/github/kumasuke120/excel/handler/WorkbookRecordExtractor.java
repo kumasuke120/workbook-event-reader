@@ -4,11 +4,11 @@ import com.github.kumasuke120.excel.CellValue;
 import com.github.kumasuke120.excel.WorkbookEventReader;
 import com.github.kumasuke120.excel.handler.WorkbookRecord.MetadataType;
 import com.github.kumasuke120.excel.util.CollectionUtils;
+import com.github.kumasuke120.excel.util.ObjectCreationException;
+import com.github.kumasuke120.excel.util.ObjectFactory;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -22,11 +22,9 @@ import java.util.*;
 @ApiStatus.Experimental
 public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHandler {
 
-    private final Class<E> recordClass;
-
     private final WorkbookRecordMapper<E> recordMapper;
 
-    private final Constructor<E> recordConstructor;
+    private final ObjectFactory<E> recordFactory;
 
     private Map<Integer, Map<Integer, String>> columnTitles;
 
@@ -43,17 +41,9 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      * @throws WorkbookRecordException if the specified class is not annotated with {@code @WorkbookRecord}
      */
     public WorkbookRecordExtractor(@NotNull(exception = NullPointerException.class) Class<E> recordClass) {
-        this.recordClass = HandlerUtils.ensureWorkbookRecordClass(recordClass);
+        HandlerUtils.ensureWorkbookRecordClass(recordClass);
         this.recordMapper = new WorkbookRecordMapper<>(recordClass);
-        this.recordConstructor = findNoArgRecordConstructor();
-    }
-
-    private Constructor<E> findNoArgRecordConstructor() {
-        try {
-            return recordClass.getConstructor();
-        } catch (NoSuchMethodException e) {
-            return null;
-        }
+        this.recordFactory = ObjectFactory.buildFactory(recordClass);
     }
 
     /**
@@ -75,7 +65,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      */
     public List<E> extract(WorkbookEventReader reader) {
         reader.read(this);
-        return getRecords();
+        return getAllRecords();
     }
 
     /**
@@ -83,7 +73,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      *
      * @return a list of all records
      */
-    public List<E> getRecords() {
+    public List<E> getAllRecords() {
         if (CollectionUtils.isEmpty(sheetRecords)) {
             return null;
         }
@@ -101,7 +91,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      * @param sheetIndex the index of the sheet
      * @return a list of records in the specified sheet
      */
-    public List<E> getRecordsIn(int sheetIndex) {
+    public List<E> getRecords(int sheetIndex) {
         if (CollectionUtils.isEmpty(sheetRecords)) {
             return null;
         }
@@ -110,16 +100,6 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
             return null;
         }
         return new ArrayList<>(records);
-    }
-
-    /**
-     * Returns the title of the specified column in sheet 0.
-     *
-     * @param columnNum the column number
-     * @return the title of the specified column number
-     */
-    public String getColumnTitle(int columnNum) {
-        return getColumnTitle(0, columnNum);
     }
 
     /**
@@ -145,7 +125,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      * @param sheetIndex the index of the sheet
      * @return a list of all column titles
      */
-    public List<String> getColumnTitles(int sheetIndex) {
+    public List<String> getAllColumnTitles(int sheetIndex) {
         if (CollectionUtils.isEmpty(columnTitles)) {
             return null;
         }
@@ -172,12 +152,13 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
         sheetRecords = new TreeMap<>();
     }
 
+
     @Override
     public void onStartSheet(int sheetIndex, @NotNull String sheetName) {
         currentSheetName = sheetName;
         cancelIfSheetBeyondRange(sheetIndex);
 
-        columnTitles.putIfAbsent(sheetIndex, new TreeMap<>());
+        columnTitles.putIfAbsent(sheetIndex, recordMapper.getDefaultColumnTitles());
         sheetRecords.putIfAbsent(sheetIndex, new ArrayList<>());
     }
 
@@ -222,7 +203,7 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
         if (recordMapper.isTitleRow(rowNum)) {
             if (!HandlerUtils.isValueEmpty(cellValue)) {
                 String columnTitle = cellValue.trim().stringValue();
-                columnTitles.get(sheetIndex).put(columnNum, columnTitle);
+                columnTitles.get(sheetIndex).putIfAbsent(columnNum, columnTitle);
             }
         }
 
@@ -237,14 +218,11 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      * @return a new record instance
      */
     protected E createRecord() {
-        if (recordConstructor != null) {
+        if (recordFactory != null) {
             try {
-                return recordConstructor.newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
+                return recordFactory.newInstance();
+            } catch (ObjectCreationException e) {
                 throw new WorkbookRecordException("cannot initialize @WorkbookRecord record class", e);
-            } catch (InvocationTargetException e) {
-                throw new WorkbookRecordException("error encountered when initializing @WorkbookRecord record class",
-                        e.getTargetException());
             }
         }
 

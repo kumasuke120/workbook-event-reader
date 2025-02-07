@@ -33,6 +33,14 @@ class StringUtilsTest {
     }
 
     @Test
+    void isNotEmpty() {
+        assertFalse(StringUtils.isNotEmpty(null));
+        assertFalse(StringUtils.isNotEmpty(""));
+        assertTrue(StringUtils.isNotEmpty(" "));
+        assertTrue(StringUtils.isNotEmpty("a"));
+    }
+
+    @Test
     void isBlank() {
         assertTrue(StringUtils.isBlank(null));
         assertTrue(StringUtils.isBlank(""));

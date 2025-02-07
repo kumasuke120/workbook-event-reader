@@ -174,21 +174,27 @@ class WorkbookRecordPropertyTest {
 
         final WorkbookRecordProperty<TestRecord> byteProperty = newTestProperty("lenientByteValue");
         byteProperty.set(record, numberValue);
+        assertEquals(1, record.lenientByteValue);
 
         final WorkbookRecordProperty<TestRecord> byteProperty2 = newTestProperty("lenientByteValue2");
         byteProperty2.set(record, numberValue);
+        assertEquals(Byte.valueOf((byte) 1), record.lenientByteValue2);
 
         final WorkbookRecordProperty<TestRecord> shortProperty = newTestProperty("lenientShortValue");
         shortProperty.set(record, numberValue);
+        assertEquals(1, record.lenientShortValue);
 
         final WorkbookRecordProperty<TestRecord> shortProperty2 = newTestProperty("lenientShortValue2");
         shortProperty2.set(record, numberValue);
+        assertEquals(Short.valueOf((short) 1), record.lenientShortValue2);
 
         final WorkbookRecordProperty<TestRecord> floatProperty = newTestProperty("lenientFloatValue");
         floatProperty.set(record, numberValue);
+        assertEquals(1.0f, record.lenientFloatValue, 1e-6);
 
         final WorkbookRecordProperty<TestRecord> floatProperty2 = newTestProperty("lenientFloatValue2");
         floatProperty2.set(record, numberValue);
+        assertEquals(1.0f, record.lenientFloatValue2, 1e-6);
 
         final CellValue dateTimeValue = newCellValue("2020-01-01 01:23:45");
         final WorkbookRecordProperty<TestRecord> dateProperty = newTestProperty("lenientDateValue");
@@ -205,10 +211,23 @@ class WorkbookRecordPropertyTest {
 
         final WorkbookRecordProperty<TestRecord> bigIntegerProperty = newTestProperty("lenientBigIntegerValue");
         bigIntegerProperty.set(record, numberValue);
+        assertEquals(BigInteger.ONE, record.lenientBigIntegerValue);
 
         final WorkbookRecordProperty<TestRecord> integerObjectValue = newTestProperty("integerObjectValue");
         integerObjectValue.set(record, numberValue);
         assertEquals(1, record.integerObjectValue);
+    }
+
+    @Test
+    void columnTitle() {
+        final WorkbookRecordProperty<TestRecord> integerObjectValue = newTestProperty("integerObjectValue");
+        assertEquals("", integerObjectValue.getColumnTitle());
+
+        final WorkbookRecordProperty<TestRecord> titleValue = newTestProperty("titleValue");
+        assertEquals("test title", titleValue.getColumnTitle());
+
+        final WorkbookRecordProperty<TestRecord> sheetIndex = newTestMetadataProperty("sheetIndex");
+        assertThrows(WorkbookRecordException.class, sheetIndex::getColumnTitle);
     }
 
     private static WorkbookRecordProperty<TestRecord> newTestProperty(String fieldName) {
@@ -262,7 +281,7 @@ class WorkbookRecordPropertyTest {
         private int intValue;
         @Property(column = 3)
         private Integer integerValue;
-        @SuppressWarnings("InjectedReferences")
+        @SuppressWarnings({"InjectedReferences", "RedundantSuppression"})
         @Property(column = 4, valueMethod = "notFoundMethod")
         private Integer notFoundMethod;
         @Property(column = 5, valueMethod = "privateMethod")
@@ -323,6 +342,9 @@ class WorkbookRecordPropertyTest {
 
         @Property(column = 30, valueType = CellValueType.LONG, strict = true)
         private Integer strictIntegerValue;
+
+        @Property(column = 31, title = "test title")
+        private String titleValue;
 
         private Object privateMethod(CellValue cellValue) {
             throw new UnsupportedOperationException();
