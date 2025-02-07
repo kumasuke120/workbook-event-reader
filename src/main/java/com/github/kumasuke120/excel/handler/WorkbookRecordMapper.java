@@ -1,6 +1,7 @@
 package com.github.kumasuke120.excel.handler;
 
 import com.github.kumasuke120.excel.CellValue;
+import com.github.kumasuke120.excel.util.StringUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -157,6 +158,16 @@ class WorkbookRecordMapper<E> {
         }
     }
 
+    /**
+     * Gets all default column titles of the record.
+     *
+     * @return all default column titles of the record
+     */
+    TreeMap<Integer, String> getDefaultColumnTitles() {
+        return propertyBinder.getPropertyColumnTitles();
+    }
+
+    @NotNull
     private Field[] getDeclaredFields() {
         List<Field> fields = new ArrayList<>();
         Class<?> clazz;
@@ -204,6 +215,9 @@ class WorkbookRecordMapper<E> {
         }
     }
 
+    /**
+     * A binder for binding properties to columns.
+     */
     final class PropertyBinder {
 
         private final Map<Integer, WorkbookRecordProperty<E>> properties;
@@ -212,13 +226,44 @@ class WorkbookRecordMapper<E> {
             this.properties = Collections.unmodifiableMap(properties);
         }
 
+        /**
+         * Gets the property of the specified column.
+         *
+         * @param column the column number
+         * @return the property of the specified column
+         */
         WorkbookRecordProperty<E> getByColumn(int column) {
             return properties.get(column);
         }
 
+        /**
+         * Gets the property of the specified metadata type.
+         *
+         * @param metadataType the metadata type
+         * @return the property of the specified metadata type
+         */
         WorkbookRecordProperty<E> getByMetadata(WorkbookRecord.MetadataType metadataType) {
             return properties.get(metadataType.getMetaColumn());
         }
+
+        /**
+         * Gets the column titles of the normal properties.
+         *
+         * @return the column titles of the properties
+         */
+        TreeMap<Integer, String> getPropertyColumnTitles() {
+            final TreeMap<Integer, String> columnTitles = new TreeMap<>();
+            for (WorkbookRecordProperty<E> property : properties.values()) {
+                if (property.isProperty()) {
+                    final String title = property.getColumnTitle();
+                    if (StringUtils.isNotEmpty(title)) {
+                        columnTitles.put(property.getColumn(), title);
+                    }
+                }
+            }
+            return columnTitles;
+        }
+
     }
 
 }

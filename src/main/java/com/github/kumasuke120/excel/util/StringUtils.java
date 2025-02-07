@@ -28,6 +28,16 @@ public class StringUtils {
      * @param charSequence the {@link CharSequence} to be checked
      * @return {@code true} if the given {@link CharSequence} is not {@code null} and not empty, otherwise {@code false}
      */
+    public static boolean isNotEmpty(CharSequence charSequence) {
+        return !isEmpty(charSequence);
+    }
+
+    /**
+     * Checks if the given {@link CharSequence} is not {@code null} and not empty
+     *
+     * @param charSequence the {@link CharSequence} to be checked
+     * @return {@code true} if the given {@link CharSequence} is not {@code null} and not empty, otherwise {@code false}
+     */
     public static boolean isBlank(CharSequence charSequence) {
         if (isEmpty(charSequence)) {
             return true;

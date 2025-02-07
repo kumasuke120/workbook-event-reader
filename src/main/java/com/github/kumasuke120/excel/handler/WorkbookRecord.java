@@ -152,6 +152,13 @@ public @interface WorkbookRecord {
         int column();
 
         /**
+         * Sets the title of the column.
+         *
+         * @return the title of the column
+         */
+        String title() default "";
+
+        /**
          * Whether the value should be strictly checked when getting from the workbook.
          *
          * @return {@code true} if the value should be strictly checked, {@code false} otherwise

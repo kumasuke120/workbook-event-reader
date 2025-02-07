@@ -90,6 +90,15 @@ final class WorkbookRecordProperty<E> {
     }
 
     /**
+     * Checks whether the property is a normal property.
+     *
+     * @return {@code true} if the property is a normal property, otherwise {@code false}
+     */
+    boolean isProperty() {
+        return kind == Kind.PROPERTY;
+    }
+
+    /**
      * Converts the annotation to a property annotation if possible.
      *
      * @return the property annotation
@@ -146,6 +155,19 @@ final class WorkbookRecordProperty<E> {
                 throw new AssertionError("Shouldn't happen");
         }
     }
+
+    /**
+     * Gets the column title of the property set on the annotation.
+     *
+     * @return the column title of the property
+     */
+    String getColumnTitle() {
+        if (kind != Kind.PROPERTY) {
+            throw new WorkbookRecordException("property is not a normal property");
+        }
+        return propertyAnnotation().title();
+    }
+
 
     /**
      * Determines whether the property is a metadata property.
