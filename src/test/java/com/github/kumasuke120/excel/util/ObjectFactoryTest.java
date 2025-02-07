@@ -25,6 +25,10 @@ class ObjectFactoryTest {
         assertNotNull(eHandleFactory);
         assertThrows(ObjectCreationException.class, eHandleFactory::newInstance);
 
+        final ObjectFactory<EA> eaHandleFactory = ObjectFactory.buildFactory(EA.class);
+        assertNotNull(eaHandleFactory);
+        assertThrows(AssertionError.class, eaHandleFactory::newInstance);
+
         assertThrows(ObjectCreationException.class, () -> ObjectFactory.buildFactory(P.class));
 
         assertThrows(ObjectCreationException.class, () -> ObjectFactory.buildFactory(N.class));
@@ -47,6 +51,12 @@ class ObjectFactoryTest {
     public static class E {
         public E() {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    public static class EA {
+        public EA() {
+            throw new AssertionError();
         }
     }
 

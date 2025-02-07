@@ -57,10 +57,12 @@ public class ObjectFactory<T> {
     public T newInstance() {
         try {
             return (T) constructorHandle.invoke();
-        } catch (ClassCastException ce) {
-            throw new AssertionError("Shouldn't happen", ce);
         } catch (Throwable e) {
-            throw new ObjectCreationException("failed to create new instance of '" + clazz + "'", e);
+            if (e instanceof Error) {
+                throw (Error) e;
+            } else {
+                throw new ObjectCreationException("failed to create new instance of '" + clazz + "'", e);
+            }
         }
     }
 
