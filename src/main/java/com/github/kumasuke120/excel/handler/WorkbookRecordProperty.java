@@ -274,14 +274,14 @@ final class WorkbookRecordProperty<E> {
          */
         ValueMethod(@NotNull CellValueType valueType, @NotNull String valueMethodName) {
             this.valueType = valueType;
-            this.usingValueType = determineValueType();
             this.valueMethodName = valueMethodName;
+            this.usingValueType = determineValueType();
             this.valueMethod = findValueMethod();
         }
 
         @NotNull
         private CellValueType determineValueType() {
-            if (CellValueType.AUTO != valueType) {
+            if (CellValueType.AUTO != valueType || StringUtils.isNotBlank(valueMethodName)) {
                 return valueType;
             }
 
