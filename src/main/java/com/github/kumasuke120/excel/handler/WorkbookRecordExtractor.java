@@ -39,11 +39,17 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      *
      * @param recordClass the record class
      * @throws WorkbookRecordException if the specified class is not annotated with {@code @WorkbookRecord}
+     * @throws WorkbookRecordException if the specified class has no suitable no-arg constructor
      */
     public WorkbookRecordExtractor(@NotNull(exception = NullPointerException.class) Class<E> recordClass) {
         HandlerUtils.ensureWorkbookRecordClass(recordClass);
         this.recordMapper = new WorkbookRecordMapper<>(recordClass);
-        this.recordFactory = ObjectFactory.buildFactory(recordClass);
+        try {
+            this.recordFactory = ObjectFactory.buildFactory(recordClass);
+        } catch (ObjectCreationException e) {
+            String msg = "the record class '" + recordClass.getName() + "' lacks a suitable no-argument constructor";
+            throw new WorkbookRecordException(msg, e);
+        }
     }
 
     /**
@@ -218,16 +224,11 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
      * @return a new record instance
      */
     protected E createRecord() {
-        if (recordFactory != null) {
-            try {
-                return recordFactory.newInstance();
-            } catch (ObjectCreationException e) {
-                throw new WorkbookRecordException("cannot initialize @WorkbookRecord record class", e);
-            }
+        try {
+            return recordFactory.newInstance();
+        } catch (ObjectCreationException e) {
+            throw new WorkbookRecordException("cannot initialize @WorkbookRecord record class", e);
         }
-
-        Exception e = new UnsupportedOperationException("or you can override WorkbookRecordExtractor#createRecord()");
-        throw new WorkbookRecordException("@WorkbookRecord record class has no suitable constructor", e);
     }
 
 }

@@ -113,8 +113,7 @@ class WorkbookRecordExtractorTest {
     void constructorException() {
         final Path filePath = ResourceUtil.getPathOfClasspathResource(TEST_RESOURCE_NAME);
         try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath)) {
-            final WorkbookRecordExtractor<NoConstructorOrderDetail> extractor = WorkbookRecordExtractor.ofRecord(NoConstructorOrderDetail.class);
-            assertThrows(WorkbookProcessException.class, () -> extractor.extract(reader));
+            assertThrows(WorkbookRecordException.class, () -> WorkbookRecordExtractor.ofRecord(NoConstructorOrderDetail.class));
 
             final WorkbookRecordExtractor<ErrorConstructorOrderDetail> extractor2 = WorkbookRecordExtractor.ofRecord(ErrorConstructorOrderDetail.class);
             assertThrows(WorkbookProcessException.class, () -> extractor2.extract(reader));

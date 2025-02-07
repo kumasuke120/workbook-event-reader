@@ -9,6 +9,11 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 
+/**
+ * A utility class that provides some common operations on object creation
+ *
+ * @param <T> the type of object to be created
+ */
 @ApiStatus.Internal
 public class ObjectFactory<T> {
 
@@ -26,15 +31,36 @@ public class ObjectFactory<T> {
         this.useHandle = useHandle;
     }
 
+    /**
+     * Creates a new {@code ObjectFactory} for the specified class
+     *
+     * @param clazz the class
+     * @param <T>   the type of object to be created
+     * @return a new {@code ObjectFactory} for the specified class
+     * @throws ObjectCreationException if failed to create the factory, such as the class has no public constructor
+     */
     @NotNull
     public static <T> ObjectFactory<T> buildFactory(@NotNull Class<T> clazz) {
         try {
             return buildFactory(clazz, true);
-        } catch (ObjectCreationException e) {
-            return buildFactory(clazz, false);
+        } catch (ObjectCreationException e1) {
+            try {
+                return buildFactory(clazz, false);
+            } catch (ObjectCreationException e2) {
+                e2.addSuppressed(e1);
+                throw e2;
+            }
         }
     }
 
+    /**
+     * Creates a new {@code ObjectFactory} for the specified class
+     *
+     * @param clazz     the class
+     * @param useHandle whether to use {@link MethodHandle} to create the object
+     * @param <T>       the type of object to be created
+     * @return a new {@code ObjectFactory} for the specified class
+     */
     @NotNull
     static <T> ObjectFactory<T> buildFactory(@NotNull Class<T> clazz, boolean useHandle) {
         if (useHandle) {
@@ -70,7 +96,12 @@ public class ObjectFactory<T> {
         return new ObjectFactory<>(clazz, constructor, null, false);
     }
 
-
+    /**
+     * Creates a new instance of the object
+     *
+     * @return a new instance of the object
+     * @throws ObjectCreationException if failed to create the object
+     */
     @NotNull
     public T newInstance() {
         if (useHandle) {
