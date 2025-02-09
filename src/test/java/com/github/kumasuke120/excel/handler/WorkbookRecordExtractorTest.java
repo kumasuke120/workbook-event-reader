@@ -146,6 +146,11 @@ class WorkbookRecordExtractorTest {
             assertEquals(1, result.get(9).sheetIndex);
             assertEquals(2, result.get(10).rowNum);
             assertEquals("江苏", result.get(15).region);
+
+            final List<ExtractResult<SheetsOrderDetail>> allFailExtractResults = extractor.getAllFailExtractResults();
+            assertTrue(CollectionUtils.isEmpty(allFailExtractResults));
+            final List<ExtractResult<SheetsOrderDetail>> failExtractResults0 = extractor.getFailExtractResults(0);
+            assertTrue(CollectionUtils.isEmpty(failExtractResults0));
         }
     }
 

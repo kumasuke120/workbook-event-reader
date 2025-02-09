@@ -100,6 +100,9 @@ class WorkbookRecordPropertyTest {
         assertEquals(TestEnum.B, record.testEnumValue);
         final CellValue cellValue6 = CellValue.newInstance("D");
         assertThrows(WorkbookRecordException.class, () -> property5.set(record, cellValue6));
+        final CellValue cellValue7 = CellValue.newInstance("A");
+        property5.set(record, cellValue7);
+        assertEquals(TestEnum.A, record.testEnumValue);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
