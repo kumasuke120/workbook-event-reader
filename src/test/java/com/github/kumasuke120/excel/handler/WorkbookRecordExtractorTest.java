@@ -9,6 +9,7 @@ import com.github.kumasuke120.excel.handler.WorkbookRecord.Property;
 import com.github.kumasuke120.excel.handler.WorkbookRecordExtractor.ExtractResult;
 import com.github.kumasuke120.excel.util.CollectionUtils;
 import com.github.kumasuke120.util.ResourceUtil;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -149,15 +150,43 @@ class WorkbookRecordExtractorTest {
     }
 
     @Test
-    void testWithError() {
+    void testWithErrorHandle() {
         final Path filePath = ResourceUtil.getPathOfClasspathResource(TEST_RESOURCE_WITHERROR_NAME);
         try (final WorkbookEventReader reader = WorkbookEventReader.open(filePath)) {
-            final WorkbookRecordExtractor<OrderDetailV2> extractor = WorkbookRecordExtractor.ofRecord(OrderDetailV2.class);
+            final WorkbookRecordExtractor<OrderDetailV2> extractor = new WorkbookRecordExtractor<OrderDetailV2>(OrderDetailV2.class) {
+                @Override
+                protected OrderDetailV2 createRecord() {
+                    // without the reflection in superclass, record creation would be faster
+                    return new OrderDetailV2();
+                }
+
+                @Override
+                protected @NotNull String validate(@NotNull ExtractResult<OrderDetailV2> extractResult) {
+                    assertNotNull(extractResult);
+                    final OrderDetailV2 record = extractResult.get();
+                    assertNotNull(record);
+                    if (BigDecimal.ZERO.compareTo(record.unitCost) == 0) {
+                        return "Field 'unitCost' cannot be zero because the item cannot be free";
+                    }
+                    return "";
+                }
+            };
+
             extractor.extract(reader);
             final List<OrderDetailV2> records = extractor.getRecords(0);
-            assertEquals(34, records.size());
-            final List<ExtractResult<OrderDetailV2>> failExtractResults = extractor.getFailExtractResults(0);
-            assertEquals(10, failExtractResults.size());
+            assertEquals(33, records.size());
+            final List<ExtractResult<OrderDetailV2>> failExtractResults0 = extractor.getFailExtractResults(0);
+            assertEquals(11, failExtractResults0.size());
+            final List<ExtractResult<OrderDetailV2>> failExtractResults1 = extractor.getFailExtractResults(1);
+            assertEquals(0, failExtractResults1.size());
+            final List<ExtractResult<OrderDetailV2>> allFailExtractResults = extractor.getAllFailExtractResults();
+            assertEquals(11, allFailExtractResults.size());
+            assertEquals(failExtractResults0, allFailExtractResults);
+
+            final ExtractResult<OrderDetailV2> row23Result = extractor.getFailExtractResult(0, 23);
+            assertNotNull(row23Result);
+            assertEquals(23, row23Result.getRowNum());
+            assertNotNull(row23Result.get());
         }
     }
 
