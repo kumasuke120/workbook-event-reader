@@ -157,6 +157,15 @@ final class WorkbookRecordProperty<E> {
     }
 
     /**
+     * Gets the name of the property.
+     *
+     * @return the name of the property
+     */
+    String getName() {
+        return field.getName();
+    }
+
+    /**
      * Gets the column title of the property set on the annotation.
      *
      * @return the column title of the property

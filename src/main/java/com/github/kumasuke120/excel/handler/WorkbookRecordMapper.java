@@ -160,6 +160,17 @@ class WorkbookRecordMapper<E> {
     }
 
     /**
+     * Gets the name of the property of the specified column number.
+     *
+     * @param columnNum the column number
+     * @return the name of the property of the specified column number
+     */
+    String getPropertyName(int columnNum) {
+        final WorkbookRecordProperty<E> property = propertyBinder.getByColumn(columnNum);
+        return property == null ? "" : property.getName();
+    }
+
+    /**
      * Gets all preset column titles of the record.
      *
      * @return all preset column titles of the record
