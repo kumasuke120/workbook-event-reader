@@ -40,4 +40,14 @@ public class StringUtils {
         return true;
     }
 
+    /**
+     * Checks if the given {@link CharSequence} is not {@code null} and not empty
+     *
+     * @param charSequence the {@link CharSequence} to be checked
+     * @return {@code true} if the given {@link CharSequence} is not {@code null} and not empty, otherwise {@code false}
+     */
+    public static boolean isNotBlank(CharSequence charSequence) {
+        return !isBlank(charSequence);
+    }
+
 }

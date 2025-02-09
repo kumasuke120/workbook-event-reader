@@ -40,4 +40,12 @@ class StringUtilsTest {
         assertFalse(StringUtils.isBlank("a"));
     }
 
+    @Test
+    void isNotBlank() {
+        assertFalse(StringUtils.isNotBlank(null));
+        assertFalse(StringUtils.isNotBlank(""));
+        assertFalse(StringUtils.isNotBlank(" "));
+        assertTrue(StringUtils.isNotBlank("a"));
+    }
+
 }

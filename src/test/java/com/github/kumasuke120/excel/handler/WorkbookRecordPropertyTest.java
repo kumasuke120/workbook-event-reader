@@ -8,7 +8,6 @@ import com.github.kumasuke120.excel.handler.WorkbookRecord.Property;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -73,25 +72,34 @@ class WorkbookRecordPropertyTest {
         final WorkbookRecordProperty<TestRecord> property = newTestProperty("value");
         assertEquals(1, property.getColumn());
 
-        final CellValue cellValue = newCellValue("test");
+        final CellValue cellValue = CellValue.newInstance("test");
         property.set(record, cellValue);
         assertEquals("test", record.value);
 
         // null value
-        final CellValue cellValue2 = newCellValue(null);
+        final CellValue cellValue2 = CellValue.newInstance(null);
         property.set(record, cellValue2);
         assertNull(record.value);
 
         // strict value
-        final CellValue cellValue3 = newCellValue(" 123 ");
+        final CellValue cellValue3 = CellValue.newInstance(" 123 ");
         final WorkbookRecordProperty<TestRecord> property3 = newTestProperty("strictLongValue");
         assertEquals(7, property3.getColumn());
         property3.set(record, cellValue2);
         assertThrows(WorkbookRecordException.class, () -> property3.set(record, cellValue3));
 
-        final CellValue cellValue4 = newCellValue(123L);
+        final CellValue cellValue4 = CellValue.newInstance(123L);
         final WorkbookRecordProperty<TestRecord> property4 = newTestProperty("strictIntegerValue");
         assertThrows(WorkbookRecordException.class, () -> property4.set(record, cellValue4));
+
+        // enum value
+        final CellValue cellValue5 = CellValue.newInstance("B");
+        final WorkbookRecordProperty<TestRecord> property5 = newTestProperty("testEnumValue");
+        assertEquals(31, property5.getColumn());
+        property5.set(record, cellValue5);
+        assertEquals(TestEnum.B, record.testEnumValue);
+        final CellValue cellValue6 = CellValue.newInstance("D");
+        assertThrows(WorkbookRecordException.class, () -> property5.set(record, cellValue6));
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -106,7 +114,7 @@ class WorkbookRecordPropertyTest {
         assertEquals(123, record.intValue);
 
         // null value
-        final CellValue cellValue2 = newCellValue(null);
+        final CellValue cellValue2 = CellValue.newInstance(null);
         property.set(record, cellValue2);
         assertEquals(0, record.intValue);
 
@@ -151,7 +159,7 @@ class WorkbookRecordPropertyTest {
         final TestRecord record = new TestRecord();
         assertThrows(WorkbookRecordException.class, () -> newTestProperty("notFoundMethod"));
 
-        final CellValue cellValue = newCellValue(-123);
+        final CellValue cellValue = CellValue.newInstance(-123);
         final WorkbookRecordProperty<TestRecord> property = newTestProperty("privateMethod");
         assertEquals(5, property.getColumn());
         assertThrows(WorkbookRecordException.class, () -> property.set(record, cellValue));
@@ -163,14 +171,14 @@ class WorkbookRecordPropertyTest {
 
         final WorkbookRecordProperty<TestRecord> property3 = newTestProperty("errorProneMethod");
         assertEquals(28, property3.getColumn());
-        final CellValue cellValue2 = newCellValue("abc");
+        final CellValue cellValue2 = CellValue.newInstance("abc");
         assertThrows(WorkbookRecordException.class, () -> property3.set(record, cellValue2));
     }
 
     @Test
     void setLenientValue() {
         final TestRecord record = new TestRecord();
-        final CellValue numberValue = newCellValue("1");
+        final CellValue numberValue = CellValue.newInstance("1");
 
         final WorkbookRecordProperty<TestRecord> byteProperty = newTestProperty("lenientByteValue");
         byteProperty.set(record, numberValue);
@@ -190,7 +198,7 @@ class WorkbookRecordPropertyTest {
         final WorkbookRecordProperty<TestRecord> floatProperty2 = newTestProperty("lenientFloatValue2");
         floatProperty2.set(record, numberValue);
 
-        final CellValue dateTimeValue = newCellValue("2020-01-01 01:23:45");
+        final CellValue dateTimeValue = CellValue.newInstance("2020-01-01 01:23:45");
         final WorkbookRecordProperty<TestRecord> dateProperty = newTestProperty("lenientDateValue");
         dateProperty.set(record, dateTimeValue);
 
@@ -231,17 +239,6 @@ class WorkbookRecordPropertyTest {
             assertDoesNotThrow(property::metadataAnnotation);
             assertThrows(WorkbookRecordException.class, property::propertyAnnotation);
             return property;
-        } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e);
-        }
-    }
-
-    private static CellValue newCellValue(Object value) {
-        try {
-            final Method newInstanceMethod = CellValue.class.getDeclaredMethod("newInstance", Object.class);
-            newInstanceMethod.setAccessible(true);
-            final CellValue cellValue = (CellValue) newInstanceMethod.invoke(null, value);
-            return cellValue.strict();
         } catch (ReflectiveOperationException e) {
             throw new AssertionError(e);
         }
@@ -324,6 +321,9 @@ class WorkbookRecordPropertyTest {
         @Property(column = 30, valueType = CellValueType.LONG, strict = true)
         private Integer strictIntegerValue;
 
+        @Property(column = 31, valueMethod = "testEnumValueMethod")
+        private TestEnum testEnumValue;
+
         private Object privateMethod(CellValue cellValue) {
             throw new UnsupportedOperationException();
         }
@@ -335,5 +335,13 @@ class WorkbookRecordPropertyTest {
         public Integer errorProneMethod(CellValue cellValue) {
             return Integer.parseInt(cellValue.stringValue());
         }
+
+        public TestEnum testEnumValueMethod(CellValue cellValue) {
+            return TestEnum.valueOf(cellValue.stringValue());
+        }
+    }
+
+    public enum TestEnum {
+        A, B, C
     }
 }
