@@ -293,6 +293,9 @@ final class WorkbookRecordProperty<E> {
             if (CellValueType.AUTO != valueType || StringUtils.isNotBlank(valueMethodName)) {
                 return valueType;
             }
+            if (StringUtils.isNotBlank(valueMethodName)) {
+                return CellValueType.AUTO;
+            }
 
             CellValueType autoValueType = null;
             final Class<?> type = field.getType();
