@@ -88,6 +88,15 @@ class WorkbookRecordMapperTest {
         assertDoesNotThrow(() -> mapper2.setMetadata(t2, WorkbookRecord.MetadataType.SHEET_INDEX, 1));
     }
 
+    @Test
+    void getPropertyName() {
+        final WorkbookRecordMapper<TestRecord> mapper = new WorkbookRecordMapper<>(TestRecord.class);
+        assertEquals("a", mapper.getPropertyName(0));
+        assertEquals("b", mapper.getPropertyName(1));
+        assertEquals("c", mapper.getPropertyName(2));
+        assertEquals("", mapper.getPropertyName(3));
+    }
+
     @WorkbookRecord
     public static class DuplicateAnnotationTestRecord {
         @Property(column = 0)

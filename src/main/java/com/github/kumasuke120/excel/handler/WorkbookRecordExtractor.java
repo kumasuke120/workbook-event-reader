@@ -366,6 +366,14 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
             return record;
         }
 
+        public List<ExtractColumnError> getColumnErrors() {
+            return new ArrayList<>(columnErrors);
+        }
+
+        public String getUserFailReason() {
+            return userFailReason;
+        }
+
         void setNonBlankRow() {
             this.blankRow = false;
         }
@@ -377,6 +385,16 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
         boolean incomplete() {
             return blankRow || CollectionUtils.isNotEmpty(columnErrors) || StringUtils.isNotEmpty(userFailReason);
         }
+    }
+
+    public enum ExtractErrorKind {
+
+        BLANK_ROW,
+
+        COLUMN_ERRORS,
+
+        USER_VALIDATION_FAIL
+
     }
 
     public static class ExtractColumnError {

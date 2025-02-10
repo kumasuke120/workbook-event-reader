@@ -1,5 +1,6 @@
 package com.github.kumasuke120.excel.util;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -7,6 +8,7 @@ import java.util.Map;
 /**
  * Text template renderer, which can render strings based on string templates
  */
+@ApiStatus.Internal
 public class TextTemplateRenderer {
 
     private final String template;
