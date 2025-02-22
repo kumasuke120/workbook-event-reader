@@ -366,6 +366,34 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
             return record;
         }
 
+        public ExtractResultKind getKind() {
+            if (blankRow) {
+                return ExtractResultKind.BLANK_ROW;
+            }
+            if (CollectionUtils.isNotEmpty(columnErrors)) {
+                return ExtractResultKind.COLUMN_ERRORS;
+            }
+            if (StringUtils.isNotEmpty(userFailReason)) {
+                return ExtractResultKind.USER_VALIDATION_FAIL;
+            }
+            return ExtractResultKind.SUCCESS;
+        }
+
+        public String formatMessage(ExtractResultMessageFormatter<T> messageBuilder) {
+            switch (getKind()) {
+                case SUCCESS:
+                    return messageBuilder.onSuccess(this);
+                case BLANK_ROW:
+                    return messageBuilder.onBlankRow(this);
+                case COLUMN_ERRORS:
+                    return messageBuilder.onColumnErrors(this, getColumnErrors());
+                case USER_VALIDATION_FAIL:
+                    return messageBuilder.onUserValidationFail(this, userFailReason);
+                default:
+                    throw new AssertionError("Shouldn't happen");
+            }
+        }
+
         public List<ExtractColumnError> getColumnErrors() {
             return new ArrayList<>(columnErrors);
         }
@@ -387,7 +415,29 @@ public class WorkbookRecordExtractor<E> implements WorkbookEventReader.EventHand
         }
     }
 
-    public enum ExtractErrorKind {
+    public interface ExtractResultMessageFormatter<T> {
+
+        default String onSuccess(ExtractResult<T> extractResult) {
+            return "";
+        }
+
+        default String onBlankRow(ExtractResult<T> extractResult) {
+            return "";
+        }
+
+        default String onColumnErrors(ExtractResult<T> extractResult, List<ExtractColumnError> columnErrors) {
+            return "";
+        }
+
+        default String onUserValidationFail(ExtractResult<T> extractResult, String userFailReason) {
+            return userFailReason;
+        }
+
+    }
+
+    public enum ExtractResultKind {
+
+        SUCCESS,
 
         BLANK_ROW,
 
