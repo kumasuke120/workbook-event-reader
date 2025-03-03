@@ -139,15 +139,6 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
     @Contract("-> new")
     abstract ReaderCleanAction createCleanAction();
 
-    @Override
-    protected final void finalize() throws Throwable {
-        try {
-            cleanAction.run();
-        } finally {
-            super.finalize();
-        }
-    }
-
     /**
      * {@inheritDoc}
      */

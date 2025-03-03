@@ -204,15 +204,20 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     private static class XSSFReaderCleanAction extends ReaderCleanAction {
         private final OPCPackage opcPackage;
+        private final SharedStringsTable sharedStringsTable;
 
         XSSFReaderCleanAction(@NotNull XSSFWorkbookEventReader reader) {
             this.opcPackage = reader.opcPackage;
+            this.sharedStringsTable = reader.sharedStringsTable;
         }
 
         @Override
         void doClean() throws Exception {
             if (opcPackage != null) {
                 opcPackage.close();
+            }
+            if (sharedStringsTable != null) {
+                sharedStringsTable.close();
             }
         }
     }
