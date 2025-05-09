@@ -12,12 +12,12 @@ import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
-import org.apache.poi.xssf.model.SharedStringsTable;
 import org.apache.poi.xssf.model.StylesTable;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.apache.xmlbeans.XmlException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTRst;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTWorkbookPr;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTXf;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.WorkbookDocument;
@@ -29,9 +29,13 @@ import org.xml.sax.helpers.DefaultHandler;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Map;
@@ -45,7 +49,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     private OPCPackage opcPackage;
     private XSSFReader xssfReader;
-    private SharedStringsTable sharedStringsTable;
+    private XSSFSharedStringsTable sharedStringsTable;
     private StylesTable stylesTable;
     private DataFormatter dataFormatter;
 
@@ -141,7 +145,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     private void initFromOpcPackage() throws IOException, OpenXML4JException, XmlException {
         xssfReader = new XSSFReader(opcPackage);
-        sharedStringsTable = xssfReader.getSharedStringsTable();
+        sharedStringsTable = XSSFSharedStringsTable.getSharedStringsTable(xssfReader);
         stylesTable = xssfReader.getStylesTable();
         dataFormatter = new DataFormatter();
 
@@ -204,7 +208,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     private static class XSSFReaderCleanAction extends ReaderCleanAction {
         private final OPCPackage opcPackage;
-        private final SharedStringsTable sharedStringsTable;
+        private final XSSFSharedStringsTable sharedStringsTable;
 
         XSSFReaderCleanAction(@NotNull XSSFWorkbookEventReader reader) {
             this.opcPackage = reader.opcPackage;
@@ -418,14 +422,8 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                         null, e);
             }
 
-            final RichTextString sharedString = getItemAt(sharedStringsTable, sharedStringIndex);
+            final RichTextString sharedString = sharedStringsTable.getItemAt(sharedStringIndex);
             return sharedString.getString();
-        }
-
-        @SuppressWarnings("deprecation")
-        @NotNull
-        private RichTextString getItemAt(@NotNull SharedStringsTable table, int idx) {
-            return new XSSFRichTextString(table.getEntryAt(idx));
         }
 
         @Nullable
@@ -511,4 +509,109 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         }
     }
 
+    // for compatibility with multiple versions of Apache POI (starting from 3.17
+    private static class XSSFSharedStringsTable implements Closeable {
+
+        private final Object table;
+        private final MethodHandle getEntryAtHandle;
+        private final MethodHandle getItemAtHandle;
+        private final MethodHandle closeHandle;
+
+        private XSSFSharedStringsTable(Object table) {
+            this.table = table;
+            this.getEntryAtHandle = getGetEntryAtHandle();
+            this.getItemAtHandle = getGetItemAtHandle();
+            this.closeHandle = getCloseHandle();
+        }
+
+        /**
+         * Get the shared strings table from the XSSFReader.
+         */
+        public static XSSFSharedStringsTable getSharedStringsTable(XSSFReader reader) throws IOException, InvalidFormatException {
+            Object table = reader.getSharedStringsTable();
+            if (table == null) {
+                return null;
+            } else {
+                return new XSSFSharedStringsTable(table);
+            }
+        }
+
+        /**
+         * Return a string item by index
+         *
+         * @param idx index of item to return.
+         * @return the item at the specified position in this Shared String table.
+         */
+        public RichTextString getItemAt(int idx) {
+            if (getItemAtHandle != null) {
+                try {
+                    return (RichTextString) getItemAtHandle.invoke(table, idx);
+                } catch (Throwable e) {
+                    if (e instanceof RuntimeException) {
+                        throw (RuntimeException) e;
+                    } else {
+                        throw new AssertionError(e);
+                    }
+                }
+            } else if (getEntryAtHandle != null) {
+                CTRst entry;
+                try {
+                    entry = (CTRst) getEntryAtHandle.invoke(table, idx);
+                } catch (Throwable e) {
+                    if (e instanceof RuntimeException) {
+                        throw (RuntimeException) e;
+                    } else {
+                        throw new AssertionError(e);
+                    }
+                }
+                return new XSSFRichTextString(entry);
+            } else {
+                throw new IndexOutOfBoundsException("Index out of bounds: " + idx);
+            }
+        }
+
+        public void close() throws IOException {
+            if (closeHandle == null) {
+                return;
+            }
+
+            try {
+                closeHandle.invoke(table);
+            } catch (Throwable e) {
+                if (e instanceof IOException) {
+                    throw (IOException) e;
+                } else {
+                    throw new AssertionError(e);
+                }
+            }
+        }
+
+        private MethodHandle getGetEntryAtHandle() {
+            try {
+                return MethodHandles.lookup().findVirtual(table.getClass(), "getEntryAt",
+                        MethodType.methodType(CTRst.class, int.class));
+            } catch (NoSuchMethodException | IllegalAccessException e) {
+                return null;
+            }
+        }
+
+        private MethodHandle getGetItemAtHandle() {
+            try {
+                return MethodHandles.lookup().findVirtual(table.getClass(), "getItemAt",
+                        MethodType.methodType(RichTextString.class, int.class));
+            } catch (NoSuchMethodException | IllegalAccessException e) {
+                return null;
+            }
+        }
+
+        private MethodHandle getCloseHandle() {
+            try {
+                return MethodHandles.lookup().findVirtual(table.getClass(), "close",
+                        MethodType.methodType(void.class));
+            } catch (NoSuchMethodException | IllegalAccessException e) {
+                return null;
+            }
+        }
+
+    }
 }
