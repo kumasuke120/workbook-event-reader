@@ -20,7 +20,7 @@
 | 依赖                    	   | 内置   	    | 最低		                                                                                                     |
 |---------------------------|-----------|----------------------------------------------------------------------------------------------------------|
 | Java 版本             	     | 无      	  | 8   	                                                                                                    |
-| Apache POI 版本       	     | 4.1.2   	 | 3.17<sup><a href="https://bz.apache.org/bugzilla/show_bug.cgi?id=61034" target="_blank">[?]</a></sup>  	 |
+| Apache POI 版本       	     | 5.4.0   	 | 3.17<sup><a href="https://bz.apache.org/bugzilla/show_bug.cgi?id=61034" target="_blank">[?]</a></sup>  	 |
 | Apache Xerces 版本        	 | 2.12.2  	 | 2.0.0                                                                                                    |
 | Apache Commons CSV 版本 	   | 1.8     	 | 1.0                                                                                                      |
 
