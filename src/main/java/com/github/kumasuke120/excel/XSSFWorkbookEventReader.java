@@ -157,7 +157,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
         // reads xl/workbook.xml
         final InputStream workbookIn = xssfReader.getWorkbookData();
-        final WorkbookDocument doc = WorkbookDocument.Factory.parse(workbookIn);
+        final WorkbookDocument doc = WorkbookDocumentFactory.parse(workbookIn);
         final CTWorkbookPr prefix = doc.getWorkbook().getWorkbookPr();
         use1904Windowing = prefix.getDate1904();
     }
@@ -509,7 +509,132 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         }
     }
 
-    // for compatibility with multiple versions of Apache POI (starting from 3.17
+    // for compatibility with multiple versions of Apache POI (starting from 3.17)
+    private static class WorkbookDocumentFactory {
+
+        private final Class<?> factoryClass;
+        private final Class<?> fieldFactoryClass;
+        private final MethodHandle factoryFieldHandle;
+        private final ParseFunction parseFunction;
+
+        private WorkbookDocumentFactory() {
+            this.factoryClass = getFactoryClass();
+            this.fieldFactoryClass = getFieldFactoryClass();
+            this.factoryFieldHandle = getFactoryFieldHandle();
+            this.parseFunction = getParseFunction();
+        }
+
+        public static WorkbookDocument parse(InputStream in) throws XmlException, IOException {
+            return new WorkbookDocumentFactory().parse0(in);
+        }
+
+        private WorkbookDocument parse0(InputStream in) throws XmlException, IOException {
+            if (parseFunction == null) {
+                throw new UnsupportedOperationException("cannot find parse() method for WorkbookDocument.Factory");
+            }
+            return parseFunction.parse(in);
+        }
+
+        private Class<?> getFactoryClass() {
+            try {
+                return Class.forName("org.openxmlformats.schemas.spreadsheetml.x2006.main.WorkbookDocument$Factory");
+            } catch (ClassNotFoundException e) {
+                return null;
+            }
+        }
+
+        private Class<?> getFieldFactoryClass() {
+            try {
+                return Class.forName("org.apache.xmlbeans.impl.schema.DocumentFactory");
+            } catch (ClassNotFoundException e) {
+                return null;
+            }
+        }
+
+        private MethodHandle getFactoryFieldHandle() {
+            if (fieldFactoryClass == null) {
+                return null;
+            }
+
+            try {
+                return MethodHandles.lookup().findStaticGetter(WorkbookDocument.class, "Factory", fieldFactoryClass);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                return null;
+            }
+        }
+
+        private @Nullable MethodHandle getFactoryClassHandle() {
+            try {
+                return MethodHandles.lookup().findStatic(factoryClass, "parse",
+                        MethodType.methodType(WorkbookDocument.class, InputStream.class));
+            } catch (NoSuchMethodException | IllegalAccessException e) {
+                return null;
+            }
+        }
+
+        private @Nullable MethodHandle getFieldFactoryHandle() {
+            try {
+                return MethodHandles.lookup().findVirtual(fieldFactoryClass, "parse",
+                        MethodType.methodType(Object.class, InputStream.class));
+            } catch (NoSuchMethodException | IllegalAccessException e) {
+                return null;
+            }
+        }
+
+        private ParseFunction getParseFunction() {
+            if (factoryClass != null) {
+                // for Apache POI 3.x and 4.x
+                MethodHandle factoryHandle = getFactoryClassHandle();
+                if (factoryHandle == null) {
+                    return null;
+                }
+                return inStream -> {
+                    try {
+                        return (WorkbookDocument) factoryHandle.invoke(inStream);
+                    } catch (Throwable e) {
+                        if (e instanceof XmlException) {
+                            throw (XmlException) e;
+                        } else if (e instanceof IOException) {
+                            throw (IOException) e;
+                        } else {
+                            throw new AssertionError(e);
+                        }
+                    }
+                };
+            } else if (factoryFieldHandle != null) {
+                // for Apache POI 5.x
+                MethodHandle fieldFactoryHandle = getFieldFactoryHandle();
+                if (fieldFactoryHandle == null) {
+                    return null;
+                }
+                return inStream -> {
+                    try {
+                        Object factory = factoryFieldHandle.invoke();
+                        return (WorkbookDocument) fieldFactoryHandle.invoke(factory, inStream);
+                    } catch (Throwable e) {
+                        if (e instanceof XmlException) {
+                            throw (XmlException) e;
+                        } else if (e instanceof IOException) {
+                            throw (IOException) e;
+                        } else {
+                            throw new AssertionError(e);
+                        }
+                    }
+                };
+            } else {
+                return null;
+            }
+        }
+
+        private interface ParseFunction {
+
+            WorkbookDocument parse(InputStream in) throws XmlException, IOException;
+
+        }
+
+    }
+
+    // for compatibility with multiple versions of Apache POI (starting from 3.17)
     private static class XSSFSharedStringsTable implements Closeable {
 
         private final Object table;
@@ -597,8 +722,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 try {
                     handle = MethodHandles.lookup().findVirtual(XSSFReader.class, "getSharedStringsTable",
                             MethodType.methodType(sharedStringsClass));
-                } catch (NoSuchMethodException | IllegalAccessException e) {
-                    return null;
+                } catch (NoSuchMethodException | IllegalAccessException ignore) {
                 }
             }
 
@@ -608,25 +732,24 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                     handle = MethodHandles.lookup().findVirtual(XSSFReader.class, "getSharedStringsTable",
                             MethodType.methodType(sharedStringsTableClass));
                 } catch (NoSuchMethodException | IllegalAccessException ignore) {
-                    return null;
                 }
             }
 
-            if (handle != null) {
-                try {
-                    return handle.invoke(reader);
-                } catch (Throwable e) {
-                    if (e instanceof IOException) {
-                        throw (IOException) e;
-                    } else if (e instanceof InvalidFormatException) {
-                        throw (InvalidFormatException) e;
-                    } else {
-                        throw new AssertionError(e);
-                    }
-                }
+            if (handle == null) {
+                throw new UnsupportedOperationException("cannot find getSharedStringsTable() method for XSSFReader");
             }
 
-            return null;
+            try {
+                return handle.invoke(reader);
+            } catch (Throwable e) {
+                if (e instanceof IOException) {
+                    throw (IOException) e;
+                } else if (e instanceof InvalidFormatException) {
+                    throw (InvalidFormatException) e;
+                } else {
+                    throw new AssertionError(e);
+                }
+            }
         }
 
         private static Class<?> getSharedStringsTableClass() {
