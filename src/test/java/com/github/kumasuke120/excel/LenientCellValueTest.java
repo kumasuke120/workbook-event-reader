@@ -67,6 +67,22 @@ class LenientCellValueTest {
             final boolean booleanValue = cellValue2.booleanValue();
             assertFalse(booleanValue);
         });
+
+        final LenientCellValue cellValue3 = newLenientCellValue("true");
+        assertFalse(cellValue3.isNull());
+        assertTrue(cellValue3.booleanValue());
+
+        final LenientCellValue cellValue4 = newLenientCellValue("0");
+        assertFalse(cellValue4.isNull());
+        assertFalse(cellValue4.booleanValue());
+
+        final LenientCellValue cellValue5 = newLenientCellValue("FALSE");
+        assertFalse(cellValue5.isNull());
+        assertFalse(cellValue5.booleanValue());
+
+        final LenientCellValue cellValue6 = newLenientCellValue("1");
+        assertFalse(cellValue6.isNull());
+        assertTrue(cellValue6.booleanValue());
     }
 
     @Test
