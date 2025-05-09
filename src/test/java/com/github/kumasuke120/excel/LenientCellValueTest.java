@@ -284,7 +284,7 @@ class LenientCellValueTest {
         assertFalse(cellValue.isNull());
         assertEquals("1", cellValue.originalValue());
         assertEquals(String.class, cellValue.originalType());
-        assertThrows(CellValueCastException.class, cellValue::booleanValue);
+        assertTrue(cellValue.booleanValue());
         assertDoesNotThrow(() -> {
             final int intValue = cellValue.intValue();
             assertEquals(1, intValue);
