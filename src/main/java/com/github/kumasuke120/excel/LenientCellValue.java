@@ -64,24 +64,12 @@ final class LenientCellValue extends AbstractCellValue {
             return ((Number) originalValue).intValue() != 0;
         } else if (originalValue instanceof String) {
             final String originalString = (String) this.originalValue;
-
-            if (originalString.equalsIgnoreCase("true")) {
+            if ("true".equalsIgnoreCase(originalString) || "1".equals(originalString)) {
                 return true;
-            } else if (originalString.equalsIgnoreCase("false")) {
+            } else if ("false".equalsIgnoreCase(originalString) || "0".equals(originalString)) {
                 return false;
             } else {
-                try {
-                    return Integer.parseInt(originalString) != 0;
-                } catch (NumberFormatException e1) {
-                    try {
-                        return ((int) Double.parseDouble(originalString)) != 0;
-                    } catch (NumberFormatException e2) {
-                        // it will be more reasonable to throw an exception which
-                        // indicates that the conversion to boolean has failed
-                        e1.addSuppressed(e2);
-                        throw new CellValueCastException(e1);
-                    }
-                }
+                throw new CellValueCastException();
             }
         } else {
             throw new CellValueCastException();
