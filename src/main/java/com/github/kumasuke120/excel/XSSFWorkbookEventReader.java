@@ -528,7 +528,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
          * Get the shared strings table from the XSSFReader.
          */
         public static XSSFSharedStringsTable getSharedStringsTable(XSSFReader reader) throws IOException, InvalidFormatException {
-            Object table = reader.getSharedStringsTable();
+            Object table = getSharedStringsTable0(reader);
             if (table == null) {
                 return null;
             } else {
@@ -584,6 +584,64 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 } else {
                     throw new AssertionError(e);
                 }
+            }
+        }
+
+        private static Object getSharedStringsTable0(XSSFReader reader) throws IOException, InvalidFormatException {
+            Class<?> sharedStringsClass = getSharedStringsClass();
+            Class<?> sharedStringsTableClass = getSharedStringsTableClass();
+
+            MethodHandle handle = null;
+            // for Apache POI 5.x
+            if (sharedStringsClass != null) {
+                try {
+                    handle = MethodHandles.lookup().findVirtual(XSSFReader.class, "getSharedStringsTable",
+                            MethodType.methodType(sharedStringsClass));
+                } catch (NoSuchMethodException | IllegalAccessException e) {
+                    return null;
+                }
+            }
+
+            // for Apache POI 3.x and 4.x
+            if (handle == null && sharedStringsTableClass != null) {
+                try {
+                    handle = MethodHandles.lookup().findVirtual(XSSFReader.class, "getSharedStringsTable",
+                            MethodType.methodType(sharedStringsTableClass));
+                } catch (NoSuchMethodException | IllegalAccessException ignore) {
+                    return null;
+                }
+            }
+
+            if (handle != null) {
+                try {
+                    return handle.invoke(reader);
+                } catch (Throwable e) {
+                    if (e instanceof IOException) {
+                        throw (IOException) e;
+                    } else if (e instanceof InvalidFormatException) {
+                        throw (InvalidFormatException) e;
+                    } else {
+                        throw new AssertionError(e);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private static Class<?> getSharedStringsTableClass() {
+            try {
+                return Class.forName("org.apache.poi.xssf.model.SharedStringsTable");
+            } catch (ClassNotFoundException e) {
+                return null;
+            }
+        }
+
+        private static Class<?> getSharedStringsClass() {
+            try {
+                return Class.forName("org.apache.poi.xssf.model.SharedStrings");
+            } catch (ClassNotFoundException e) {
+                return null;
             }
         }
 
