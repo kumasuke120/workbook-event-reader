@@ -570,6 +570,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             }
         }
 
+        @Override
         public void close() throws IOException {
             if (closeHandle == null) {
                 return;
