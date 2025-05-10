@@ -12,9 +12,7 @@ import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
-import org.apache.poi.xssf.model.SharedStringsTable;
 import org.apache.poi.xssf.model.StylesTable;
-import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.apache.xmlbeans.XmlException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -45,7 +43,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     private OPCPackage opcPackage;
     private XSSFReader xssfReader;
-    private SharedStringsTable sharedStringsTable;
+    private XSSFSharedStringsTable sharedStringsTable;
     private StylesTable stylesTable;
     private DataFormatter dataFormatter;
 
@@ -141,7 +139,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     private void initFromOpcPackage() throws IOException, OpenXML4JException, XmlException {
         xssfReader = new XSSFReader(opcPackage);
-        sharedStringsTable = xssfReader.getSharedStringsTable();
+        sharedStringsTable = XSSFSharedStringsTable.getSharedStringsTable(xssfReader);
         stylesTable = xssfReader.getStylesTable();
         dataFormatter = new DataFormatter();
 
@@ -153,7 +151,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
         // reads xl/workbook.xml
         final InputStream workbookIn = xssfReader.getWorkbookData();
-        final WorkbookDocument doc = WorkbookDocument.Factory.parse(workbookIn);
+        final WorkbookDocument doc = XSSFWorkbookDocumentFactory.parse(workbookIn);
         final CTWorkbookPr prefix = doc.getWorkbook().getWorkbookPr();
         use1904Windowing = prefix.getDate1904();
     }
@@ -204,7 +202,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     private static class XSSFReaderCleanAction extends ReaderCleanAction {
         private final OPCPackage opcPackage;
-        private final SharedStringsTable sharedStringsTable;
+        private final XSSFSharedStringsTable sharedStringsTable;
 
         XSSFReaderCleanAction(@NotNull XSSFWorkbookEventReader reader) {
             this.opcPackage = reader.opcPackage;
@@ -418,14 +416,8 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                         null, e);
             }
 
-            final RichTextString sharedString = getItemAt(sharedStringsTable, sharedStringIndex);
+            final RichTextString sharedString = sharedStringsTable.getItemAt(sharedStringIndex);
             return sharedString.getString();
-        }
-
-        @SuppressWarnings("deprecation")
-        @NotNull
-        private RichTextString getItemAt(@NotNull SharedStringsTable table, int idx) {
-            return new XSSFRichTextString(table.getEntryAt(idx));
         }
 
         @Nullable

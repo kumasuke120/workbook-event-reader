@@ -20,7 +20,7 @@ Requirements for this project are as follows:
 | Dependency               	 | Bundled 	  | Minimum  	                                                                                               |
 |----------------------------|------------|----------------------------------------------------------------------------------------------------------|
 | Java Ver.             	    | None     	 | 8      	                                                                                                 |
-| Apache POI Ver.       	    | 4.1.2   	  | 3.17<sup><a href="https://bz.apache.org/bugzilla/show_bug.cgi?id=61034" target="_blank">[?]</a></sup>  	 |
+| Apache POI Ver.       	    | 5.4.0   	  | 3.17<sup><a href="https://bz.apache.org/bugzilla/show_bug.cgi?id=61034" target="_blank">[?]</a></sup>  	 |
 | Apache Xerces Ver.    	    | 2.12.2  	  | 2.0.0 	                                                                                                  |
 | Apache Commons CSV Ver. 	  | 1.8     	  | 1.0   	                                                                                                  |
 
@@ -39,7 +39,7 @@ The Maven dependency for this project is:
 <dependency>
     <groupId>com.github.kumasuke120</groupId>
     <artifactId>workbook-event-reader</artifactId>
-    <version>1.6.2</version>
+    <version>1.6.3</version>
 </dependency>
 ```
 

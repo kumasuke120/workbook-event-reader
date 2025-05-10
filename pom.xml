@@ -6,7 +6,42 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.kumasuke120</groupId>
     <artifactId>workbook-event-reader</artifactId>
-    <version>1.6.2</version>
+    <version>1.6.3</version>
+
+    <profiles>
+        <!-- Profile for Apache POI 3.x -->
+        <profile>
+            <id>poi-3</id>
+            <properties>
+                <apache.poi.version>3.17</apache.poi.version>
+                <jacoco.report.output.dir>${project.build.directory}/site/jacoco-poi-3</jacoco.report.output.dir>
+                <jacoco.data.output.dir>${project.build.directory}/jacoco-poi-3.exec</jacoco.data.output.dir>
+            </properties>
+        </profile>
+
+        <!-- Profile for Apache POI 4.x -->
+        <profile>
+            <id>poi-4</id>
+            <properties>
+                <apache.poi.version>4.1.2</apache.poi.version>
+                <jacoco.report.output.dir>${project.build.directory}/site/jacoco-poi-4</jacoco.report.output.dir>
+                <jacoco.data.output.dir>${project.build.directory}/jacoco-poi-4.exec</jacoco.data.output.dir>
+            </properties>
+        </profile>
+
+        <!-- Profile for Apache POI 5.x -->
+        <profile>
+            <id>poi-5</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <apache.poi.version>5.4.0</apache.poi.version>
+                <jacoco.report.output.dir>${project.build.directory}/site/jacoco</jacoco.report.output.dir>
+                <jacoco.data.output.dir>${project.build.directory}/jacoco.exec</jacoco.data.output.dir>
+            </properties>
+        </profile>
+    </profiles>
 
     <properties>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -14,7 +49,6 @@
         <java.version>8</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <apache.poi.version>4.1.2</apache.poi.version>
         <apache.csv.version>1.8</apache.csv.version>
         <apache.xerces.version>2.12.2</apache.xerces.version>
         <junit.version>5.7.1</junit.version>
@@ -140,6 +174,9 @@
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
+                        <configuration>
+                            <destFile>${jacoco.data.output.dir}</destFile>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>report</id>
@@ -147,6 +184,10 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        <configuration>
+                            <dataFile>${jacoco.data.output.dir}</dataFile>
+                            <outputDirectory>${jacoco.report.output.dir}</outputDirectory>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
