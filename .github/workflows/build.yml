@@ -5,7 +5,9 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        profile: [poi-3, poi-4, poi-5]
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 8
@@ -14,10 +16,10 @@ jobs:
           java-version: '8'
           distribution: 'temurin'
       - name: Build with Maven
-        run: mvn --batch-mode --update-snapshots package
+        run: mvn --batch-mode --update-snapshots -P${{ matrix.profile }} test
       - name: Upload Jacoco to Codecov
         uses: codecov/codecov-action@v4
         with:
-          file: ./target/site/jacoco/jacoco.xml
+          files: ./target/site/jacoco-${{ matrix.profile }}/jacoco.xml
           flags: unittests
           token: ${{ secrets.CODECOV_TOKEN }}

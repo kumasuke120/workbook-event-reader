@@ -62,6 +62,15 @@ final class LenientCellValue extends AbstractCellValue {
             return (Boolean) originalValue;
         } else if (originalValue instanceof Number) {
             return ((Number) originalValue).intValue() != 0;
+        } else if (originalValue instanceof String) {
+            final String originalString = (String) this.originalValue;
+            if ("true".equalsIgnoreCase(originalString) || "1".equals(originalString)) {
+                return true;
+            } else if ("false".equalsIgnoreCase(originalString) || "0".equals(originalString)) {
+                return false;
+            } else {
+                throw new CellValueCastException();
+            }
         } else {
             throw new CellValueCastException();
         }
