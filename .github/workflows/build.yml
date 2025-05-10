@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        mvn-profile: [poi-3, poi-4, poi-5]
+        profile: [poi-3, poi-4, poi-5]
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 8
