@@ -16,11 +16,9 @@ jobs:
           java-version: '8'
           distribution: 'temurin'
       - name: Build with Maven
-        run:
-          mvn --batch-mode --update-snapshots -P${{ matrix.profile }} test
-          cp
+        run: mvn --batch-mode --update-snapshots -P${{ matrix.profile }} test
       - name: Upload Jacoco to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v4
         with:
           files: ./target/site/jacoco-${{ matrix.profile }}/jacoco.xml
           flags: unittests
