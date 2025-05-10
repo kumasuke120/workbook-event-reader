@@ -61,29 +61,25 @@ class XSSFSharedStringsTable implements Closeable {
     @NotNull
     public RichTextString getItemAt(int idx) {
         if (getItemAtHandle != null) {
-            try {
-                return (RichTextString) getItemAtHandle.invoke(table, idx);
-            } catch (Throwable e) {
-                if (e instanceof RuntimeException) {
-                    throw (RuntimeException) e;
-                } else {
-                    throw new AssertionError(e);
-                }
-            }
+            return invokeMethodHandleForItemAt(getItemAtHandle, table, idx);
         } else if (getEntryAtHandle != null) {
-            CTRst entry;
-            try {
-                entry = (CTRst) getEntryAtHandle.invoke(table, idx);
-            } catch (Throwable e) {
-                if (e instanceof RuntimeException) {
-                    throw (RuntimeException) e;
-                } else {
-                    throw new AssertionError(e);
-                }
-            }
+            final CTRst entry = invokeMethodHandleForItemAt(getEntryAtHandle, table, idx);
             return new XSSFRichTextString(entry);
         } else {
             throw new IndexOutOfBoundsException("Index out of bounds: " + idx);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T invokeMethodHandleForItemAt(MethodHandle handle, Object... args) {
+        try {
+            return (T) handle.invokeWithArguments(args);
+        } catch (Throwable e) {
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            } else {
+                throw new AssertionError(e);
+            }
         }
     }
 
@@ -132,6 +128,7 @@ class XSSFSharedStringsTable implements Closeable {
         final Class<?> sharedStringsTableClass = getSharedStringsTableClass();
 
         MethodHandle handle = null;
+
         // for Apache POI 5.x
         if (sharedStringsClass != null) {
             try {
