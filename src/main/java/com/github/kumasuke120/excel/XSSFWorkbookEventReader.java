@@ -30,9 +30,6 @@ import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Map;
@@ -154,7 +151,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
         // reads xl/workbook.xml
         final InputStream workbookIn = xssfReader.getWorkbookData();
-        final WorkbookDocument doc = WorkbookDocumentFactory.parse(workbookIn);
+        final WorkbookDocument doc = XSSFWorkbookDocumentFactory.parse(workbookIn);
         final CTWorkbookPr prefix = doc.getWorkbook().getWorkbookPr();
         use1904Windowing = prefix.getDate1904();
     }
@@ -504,131 +501,6 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 currentCellValueBuilder.append(ch, start, length);
             }
         }
-    }
-
-    // for compatibility with multiple versions of Apache POI (starting from 3.17)
-    private static class WorkbookDocumentFactory {
-
-        private final Class<?> factoryClass;
-        private final Class<?> fieldFactoryClass;
-        private final MethodHandle factoryFieldHandle;
-        private final ParseFunction parseFunction;
-
-        private WorkbookDocumentFactory() {
-            this.factoryClass = getFactoryClass();
-            this.fieldFactoryClass = getFieldFactoryClass();
-            this.factoryFieldHandle = getFactoryFieldHandle();
-            this.parseFunction = getParseFunction();
-        }
-
-        public static WorkbookDocument parse(InputStream in) throws XmlException, IOException {
-            return new WorkbookDocumentFactory().parse0(in);
-        }
-
-        private WorkbookDocument parse0(InputStream in) throws XmlException, IOException {
-            if (parseFunction == null) {
-                throw new UnsupportedOperationException("cannot find parse() method for WorkbookDocument.Factory");
-            }
-            return parseFunction.parse(in);
-        }
-
-        private Class<?> getFactoryClass() {
-            try {
-                return Class.forName("org.openxmlformats.schemas.spreadsheetml.x2006.main.WorkbookDocument$Factory");
-            } catch (ClassNotFoundException e) {
-                return null;
-            }
-        }
-
-        private Class<?> getFieldFactoryClass() {
-            try {
-                return Class.forName("org.apache.xmlbeans.impl.schema.DocumentFactory");
-            } catch (ClassNotFoundException e) {
-                return null;
-            }
-        }
-
-        private MethodHandle getFactoryFieldHandle() {
-            if (fieldFactoryClass == null) {
-                return null;
-            }
-
-            try {
-                return MethodHandles.lookup().findStaticGetter(WorkbookDocument.class, "Factory", fieldFactoryClass);
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                return null;
-            }
-        }
-
-        private @Nullable MethodHandle getFactoryClassHandle() {
-            try {
-                return MethodHandles.lookup().findStatic(factoryClass, "parse",
-                        MethodType.methodType(WorkbookDocument.class, InputStream.class));
-            } catch (NoSuchMethodException | IllegalAccessException e) {
-                return null;
-            }
-        }
-
-        private @Nullable MethodHandle getFieldFactoryHandle() {
-            try {
-                return MethodHandles.lookup().findVirtual(fieldFactoryClass, "parse",
-                        MethodType.methodType(Object.class, InputStream.class));
-            } catch (NoSuchMethodException | IllegalAccessException e) {
-                return null;
-            }
-        }
-
-        private ParseFunction getParseFunction() {
-            if (factoryClass != null) {
-                // for Apache POI 3.x and 4.x
-                MethodHandle factoryHandle = getFactoryClassHandle();
-                if (factoryHandle == null) {
-                    return null;
-                }
-                return inStream -> {
-                    try {
-                        return (WorkbookDocument) factoryHandle.invoke(inStream);
-                    } catch (Throwable e) {
-                        if (e instanceof XmlException) {
-                            throw (XmlException) e;
-                        } else if (e instanceof IOException) {
-                            throw (IOException) e;
-                        } else {
-                            throw new AssertionError(e);
-                        }
-                    }
-                };
-            } else if (factoryFieldHandle != null) {
-                // for Apache POI 5.x
-                MethodHandle fieldFactoryHandle = getFieldFactoryHandle();
-                if (fieldFactoryHandle == null) {
-                    return null;
-                }
-                return inStream -> {
-                    try {
-                        Object factory = factoryFieldHandle.invoke();
-                        return (WorkbookDocument) fieldFactoryHandle.invoke(factory, inStream);
-                    } catch (Throwable e) {
-                        if (e instanceof XmlException) {
-                            throw (XmlException) e;
-                        } else if (e instanceof IOException) {
-                            throw (IOException) e;
-                        } else {
-                            throw new AssertionError(e);
-                        }
-                    }
-                };
-            } else {
-                return null;
-            }
-        }
-
-        private interface ParseFunction {
-
-            WorkbookDocument parse(InputStream in) throws XmlException, IOException;
-
-        }
-
     }
 
 }

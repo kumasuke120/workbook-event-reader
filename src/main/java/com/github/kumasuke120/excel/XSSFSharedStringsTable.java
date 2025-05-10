@@ -5,7 +5,7 @@ import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTRst;
 
 import java.io.Closeable;
@@ -43,7 +43,7 @@ class XSSFSharedStringsTable implements Closeable {
      * @throws IOException            If an I/O error occurs.
      * @throws InvalidFormatException If the format of the shared strings table is invalid.
      */
-    public static XSSFSharedStringsTable getSharedStringsTable(XSSFReader reader) throws IOException, InvalidFormatException {
+    public static XSSFSharedStringsTable getSharedStringsTable(@NotNull XSSFReader reader) throws IOException, InvalidFormatException {
         final Object table = getSharedStringsTable0(reader);
         if (table == null) {
             return null;
@@ -58,6 +58,7 @@ class XSSFSharedStringsTable implements Closeable {
      * @param idx index of item to return.
      * @return the item at the specified position in this Shared String table.
      */
+    @NotNull
     public RichTextString getItemAt(int idx) {
         if (getItemAtHandle != null) {
             try {
@@ -126,7 +127,7 @@ class XSSFSharedStringsTable implements Closeable {
         }
     }
 
-    private static @Nullable MethodHandle getGetSharedStringsTableHandle() {
+    private static MethodHandle getGetSharedStringsTableHandle() {
         final Class<?> sharedStringsClass = getSharedStringsClass();
         final Class<?> sharedStringsTableClass = getSharedStringsTableClass();
 
