@@ -1,5 +1,6 @@
 package com.github.kumasuke120.excel;
 
+import com.github.kumasuke120.excel.util.ReflectionUtils;
 import org.apache.xmlbeans.XmlException;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -8,7 +9,6 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.WorkbookDocument;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
 /**
@@ -18,14 +18,17 @@ import java.lang.invoke.MethodType;
 @ApiStatus.Internal
 class XSSFWorkbookDocumentFactory {
 
+    private static final String FACTORY_CLASS_NAME = "org.openxmlformats.schemas.spreadsheetml.x2006.main.WorkbookDocument$Factory";
+    private static final String FIELD_FACTORY_CLASS_NAME = "org.apache.xmlbeans.impl.schema.DocumentFactory";
+
     private static final Class<?> factoryClass;
     private static final Class<?> fieldFactoryClass;
     private static final MethodHandle fieldFactoryFieldHandle;
     private static final ParseFunction parseFunction;
 
     static {
-        factoryClass = getFactoryClass();
-        fieldFactoryClass = getFieldFactoryClass();
+        factoryClass = ReflectionUtils.getClass(FACTORY_CLASS_NAME);
+        fieldFactoryClass = ReflectionUtils.getClass(FIELD_FACTORY_CLASS_NAME);
         fieldFactoryFieldHandle = getFieldFactoryFieldHandle();
         parseFunction = getParseFunction();
     }
@@ -50,50 +53,21 @@ class XSSFWorkbookDocumentFactory {
         return parseFunction.parse(in);
     }
 
-    private static Class<?> getFactoryClass() {
-        try {
-            return Class.forName("org.openxmlformats.schemas.spreadsheetml.x2006.main.WorkbookDocument$Factory");
-        } catch (ClassNotFoundException e) {
-            return null;
-        }
-    }
-
-    private static Class<?> getFieldFactoryClass() {
-        try {
-            return Class.forName("org.apache.xmlbeans.impl.schema.DocumentFactory");
-        } catch (ClassNotFoundException e) {
-            return null;
-        }
-    }
-
     private static MethodHandle getFieldFactoryFieldHandle() {
         if (fieldFactoryClass == null) {
             return null;
         }
-
-        try {
-            return MethodHandles.lookup().findStaticGetter(WorkbookDocument.class, "Factory", fieldFactoryClass);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            return null;
-        }
+        return ReflectionUtils.findStaticGetterHandle(WorkbookDocument.class, "Factory", fieldFactoryClass);
     }
 
     private static MethodHandle getFactoryClassHandle() {
-        try {
-            return MethodHandles.lookup().findStatic(factoryClass, "parse",
-                    MethodType.methodType(WorkbookDocument.class, InputStream.class));
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            return null;
-        }
+        return ReflectionUtils.findStaticHandle(factoryClass, "parse",
+                MethodType.methodType(WorkbookDocument.class, InputStream.class));
     }
 
     private static MethodHandle getFieldFactoryHandle() {
-        try {
-            return MethodHandles.lookup().findVirtual(fieldFactoryClass, "parse",
-                    MethodType.methodType(Object.class, InputStream.class));
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            return null;
-        }
+        return ReflectionUtils.findVirtualHandle(fieldFactoryClass, "parse",
+                MethodType.methodType(Object.class, InputStream.class));
     }
 
     private static ParseFunction getParseFunction() {
@@ -107,9 +81,6 @@ class XSSFWorkbookDocumentFactory {
         } else if (fieldFactoryFieldHandle != null) {
             // for Apache POI 5.x
             final MethodHandle fieldFactoryHandle = getFieldFactoryHandle();
-            if (fieldFactoryHandle == null) {
-                return null;
-            }
             final Object factory = getFieldFactoryInstance();
             return inStream -> invokeMethodHandle(fieldFactoryHandle, factory, inStream);
         } else {

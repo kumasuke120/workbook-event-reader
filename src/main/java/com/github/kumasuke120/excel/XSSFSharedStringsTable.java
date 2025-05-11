@@ -1,5 +1,6 @@
 package com.github.kumasuke120.excel;
 
+import com.github.kumasuke120.excel.util.ReflectionUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
@@ -11,7 +12,6 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTRst;
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
 /**
@@ -21,6 +21,8 @@ import java.lang.invoke.MethodType;
 @ApiStatus.Internal
 class XSSFSharedStringsTable implements Closeable {
 
+    private static final String SHARED_STRINGS_CLASS_NAME = "org.apache.poi.xssf.model.SharedStrings";
+    private static final String SHARED_STRINGS_TABLE_CLASS_NAME = "org.apache.poi.xssf.model.SharedStringsTable";
     private static final MethodHandle getSharedStringsTableHandle = getGetSharedStringsTableHandle();
 
     private final Object table;
@@ -30,9 +32,12 @@ class XSSFSharedStringsTable implements Closeable {
 
     private XSSFSharedStringsTable(Object table) {
         this.table = table;
-        this.getEntryAtHandle = getGetEntryAtHandle();
-        this.getItemAtHandle = getGetItemAtHandle();
-        this.closeHandle = getCloseHandle();
+        this.getEntryAtHandle = ReflectionUtils.findVirtualHandle(table.getClass(), "getEntryAt",
+                MethodType.methodType(CTRst.class, int.class));
+        this.getItemAtHandle = ReflectionUtils.findVirtualHandle(table.getClass(), "getItemAt",
+                MethodType.methodType(RichTextString.class, int.class));
+        this.closeHandle = ReflectionUtils.findVirtualHandle(table.getClass(), "close",
+                MethodType.methodType(void.class));
     }
 
     /**
@@ -124,73 +129,24 @@ class XSSFSharedStringsTable implements Closeable {
     }
 
     private static MethodHandle getGetSharedStringsTableHandle() {
-        final Class<?> sharedStringsClass = getSharedStringsClass();
-        final Class<?> sharedStringsTableClass = getSharedStringsTableClass();
+        final Class<?> sharedStringsClass = ReflectionUtils.getClass(SHARED_STRINGS_CLASS_NAME);
+        final Class<?> sharedStringsTableClass = ReflectionUtils.getClass(SHARED_STRINGS_TABLE_CLASS_NAME);
 
         MethodHandle handle = null;
 
         // for Apache POI 5.x
         if (sharedStringsClass != null) {
-            try {
-                handle = MethodHandles.lookup().findVirtual(XSSFReader.class, "getSharedStringsTable",
-                        MethodType.methodType(sharedStringsClass));
-            } catch (NoSuchMethodException | IllegalAccessException ignore) {
-            }
+            handle = ReflectionUtils.findVirtualHandle(XSSFReader.class, "getSharedStringsTable",
+                    MethodType.methodType(sharedStringsClass));
         }
 
         // for Apache POI 3.x and 4.x
         if (handle == null && sharedStringsTableClass != null) {
-            try {
-                handle = MethodHandles.lookup().findVirtual(XSSFReader.class, "getSharedStringsTable",
-                        MethodType.methodType(sharedStringsTableClass));
-            } catch (NoSuchMethodException | IllegalAccessException ignore) {
-            }
+            handle = ReflectionUtils.findVirtualHandle(XSSFReader.class, "getSharedStringsTable",
+                    MethodType.methodType(sharedStringsTableClass));
         }
 
         return handle;
-    }
-
-    private static Class<?> getSharedStringsTableClass() {
-        try {
-            return Class.forName("org.apache.poi.xssf.model.SharedStringsTable");
-        } catch (ClassNotFoundException e) {
-            return null;
-        }
-    }
-
-    private static Class<?> getSharedStringsClass() {
-        try {
-            return Class.forName("org.apache.poi.xssf.model.SharedStrings");
-        } catch (ClassNotFoundException e) {
-            return null;
-        }
-    }
-
-    private MethodHandle getGetEntryAtHandle() {
-        try {
-            return MethodHandles.lookup().findVirtual(table.getClass(), "getEntryAt",
-                    MethodType.methodType(CTRst.class, int.class));
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            return null;
-        }
-    }
-
-    private MethodHandle getGetItemAtHandle() {
-        try {
-            return MethodHandles.lookup().findVirtual(table.getClass(), "getItemAt",
-                    MethodType.methodType(RichTextString.class, int.class));
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            return null;
-        }
-    }
-
-    private MethodHandle getCloseHandle() {
-        try {
-            return MethodHandles.lookup().findVirtual(table.getClass(), "close",
-                    MethodType.methodType(void.class));
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            return null;
-        }
     }
 
 }
